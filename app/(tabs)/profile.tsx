@@ -1,22 +1,29 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Switch, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, ScrollView, StyleSheet, Switch, Alert, Platform } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { useThemeColors, spacing, radius, layout } from '@/theme';
+import { useThemeColors, spacing, radius, layout, muscleColor as muscleColorOf } from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { normalizeLanguage } from '@/i18n';
-import type { LanguageCode, WeightUnit } from '@/types';
+import type { LanguageCode, WeightUnit, OneRmFormula } from '@/types';
+import { getAllExercisesSync } from '@/data/queries';
+import { displayNameZh } from '@/constants';
+import { WEEKLY_GOAL_PRESETS, ONE_RM_FORMULA_LABELS } from '@/constants/settings';
+import { BackupSheet } from '@/components/BackupSheet';
+import { PlateConfigSheet } from '@/components/PlateConfigSheet';
 import {
   PressableScale,
   Icon,
   SlabDivider,
   MiniStat,
   OptionPicker,
+  useToast,
 } from '@/components/UIKit';
 import type { OptionPickerOption } from '@/components/UIKit';
 import { safeHaptic } from '@/utils/haptic';
-import { formatCompactCount } from '@/utils/format';
+import { formatCompactCount, dateShort } from '@/utils/format';
 
 // APP_VERSION is read from expo-constants manifest at runtime so this file
 // never drifts again.  The static literal here is used ONLY as a fallback
@@ -28,7 +35,9 @@ const APP_VERSION =
 
 export default function ProfileScreen() {
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const settings = useAppStore((s) => s.settings);
   const setSettings = useAppStore((s) => s.setSettings);
   // Granular subscriptions — only primitive/array references, not the whole
@@ -37,6 +46,20 @@ export default function ProfileScreen() {
   const workouts = useAppStore((s) => s.workouts);
   const favoriteIds = useAppStore((s) => s.favoriteIds);
   const resetAllData = useAppStore((s) => s.resetAllData);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const listRecentPRs = useAppStore((s: any) => s.listRecentPRs);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const deletePR = useAppStore((s: any) => s.deletePR);
+  const toast = useToast();
+  const recentPRs = listRecentPRs(5);
+
+  const effectiveLang: 'zh' | 'en' = i18n.language?.startsWith('en') ? 'en' : 'zh';
+  const allExercises = useMemo(() => getAllExercisesSync(), []);
+  const exMap = useMemo(
+    // 双保险 String 强制统一：详见 start.tsx exMap 注释
+    () => new Map(allExercises.map((e) => [String(e.id), e])),
+    [allExercises]
+  );
 
   // ----------------------------------------------------------
   // Derived stats — computed once per `workouts` reference change.
@@ -55,19 +78,26 @@ export default function ProfileScreen() {
     const store = useAppStore.getState();
     let volAcc = 0;
     let setAcc = 0;
-    const exerAcc = workouts.reduce((n, w) => n + w.exercises.length, 0);
-    for (const w of workouts) {
+    // 深度防御：workouts / exercises / sets 逐层归一化，避免历史数据缺字段闪退
+    const safeWorkouts = Array.isArray(workouts) ? workouts.filter(Boolean) : [];
+    const exerAcc = safeWorkouts.reduce(
+      (n, w) => n + (Array.isArray(w?.exercises) ? w.exercises.filter(Boolean).length : 0),
+      0
+    );
+    for (const w of safeWorkouts) {
+      if (!Array.isArray(w.exercises)) continue;
       for (const e of w.exercises) {
+        if (!e || !Array.isArray(e.sets)) continue;
         for (const set of e.sets) {
-          if (set.completed) {
-            volAcc += (set.weight || 0) * (set.reps || 0);
+          if (set && set.completed) {
+            volAcc += (Number(set.weight) || 0) * (Number(set.reps) || 0);
             setAcc += 1;
           }
         }
       }
     }
     return {
-      totalWorkouts: workouts.length,
+      totalWorkouts: safeWorkouts.length,
       totalExercises: exerAcc,
       totalSets: setAcc,
       totalVolume: Math.round(volAcc),
@@ -85,8 +115,11 @@ export default function ProfileScreen() {
   // screen-read as lists.  Stable callbacks wrapped in useCallback so
   // SettingRow props don't churn re-renders on every state tick.
   // ----------------------------------------------------------
-  type PickerKind = 'lang' | 'units' | 'theme' | 'rest' | null;
+  type PickerKind = 'lang' | 'units' | 'theme' | 'rest' | 'goal' | 'oneRm' | null;
   const [pickerOpen, setPickerOpen] = useState<PickerKind>(null);
+  // 备份 / 杠铃配置 —— 内容较多，各自独立成底部面板而不是挤进 OptionPicker
+  const [backupOpen, setBackupOpen] = useState(false);
+  const [plateOpen, setPlateOpen] = useState(false);
   const closePicker = useCallback(() => setPickerOpen(null), []);
   const openPicker = useCallback((k: Exclude<PickerKind, null>) => {
     safeHaptic('light');
@@ -94,7 +127,14 @@ export default function ProfileScreen() {
   }, []);
 
   const toggleKey = useCallback(
-    (key: 'restTimerEnabled' | 'autoRest' | 'saveHistory' | 'hapticFeedback') => {
+    (
+      key:
+        | 'restTimerEnabled'
+        | 'autoRest'
+        | 'saveHistory'
+        | 'hapticFeedback'
+        | 'countOnlyWorkingSets'
+    ) => {
       safeHaptic('light');
       setSettings({ [key]: !settings[key] });
     },
@@ -132,6 +172,24 @@ export default function ProfileScreen() {
     (next: number) => {
       safeHaptic('light');
       setSettings({ defaultRestSeconds: next });
+      closePicker();
+    },
+    [setSettings, closePicker]
+  );
+
+  const applyWeeklyGoal = useCallback(
+    (next: number) => {
+      safeHaptic('light');
+      setSettings({ weeklyGoal: next });
+      closePicker();
+    },
+    [setSettings, closePicker]
+  );
+
+  const applyOneRmFormula = useCallback(
+    (next: OneRmFormula) => {
+      safeHaptic('light');
+      setSettings({ oneRmFormula: next });
       closePicker();
     },
     [setSettings, closePicker]
@@ -205,6 +263,49 @@ export default function ProfileScreen() {
     [t]
   );
 
+  /** 每周目标：0 表示「不设目标」，文案单独给，避免显示成冰冷的 0 */
+  const goalOptions: OptionPickerOption<number>[] = useMemo(
+    () =>
+      WEEKLY_GOAL_PRESETS.map((n) => ({
+        value: n,
+        label:
+          n === 0
+            ? t('profile.goalNone', { defaultValue: '不设目标' })
+            : t('profile.goalPerWeek', { defaultValue: '每周 {{n}} 次', n }),
+        sublabel:
+          n === 0
+            ? t('profile.goalNoneSub', { defaultValue: '只记录，不做达成度提醒' })
+            : t('profile.goalSub', { defaultValue: '一周内完成 {{n}} 次训练即达标', n }),
+      })),
+    [t]
+  );
+
+  const oneRmOptions: OptionPickerOption<OneRmFormula>[] = useMemo(
+    () =>
+      (Object.keys(ONE_RM_FORMULA_LABELS) as OneRmFormula[]).map((k) => ({
+        value: k,
+        label: effectiveLang === 'zh' ? ONE_RM_FORMULA_LABELS[k].zh : ONE_RM_FORMULA_LABELS[k].en,
+        sublabel: t('profile.oneRmSub', { defaultValue: '影响 1RM 估算与 %1RM 反推' }),
+      })),
+    [t, effectiveLang]
+  );
+
+  const goalCurrentLabel = useMemo(
+    () =>
+      settings.weeklyGoal === 0
+        ? t('profile.goalNone', { defaultValue: '不设目标' })
+        : t('profile.goalPerWeek', { defaultValue: '每周 {{n}} 次', n: settings.weeklyGoal }),
+    [settings.weeklyGoal, t]
+  );
+
+  const oneRmCurrentLabel = useMemo(
+    () =>
+      effectiveLang === 'zh'
+        ? ONE_RM_FORMULA_LABELS[settings.oneRmFormula].zh
+        : ONE_RM_FORMULA_LABELS[settings.oneRmFormula].en,
+    [settings.oneRmFormula, effectiveLang]
+  );
+
   const langCurrentLabel = useMemo(
     () => (currentLang === 'zh' ? t('profile.languageZh') : t('profile.languageEn')),
     [currentLang, t]
@@ -228,14 +329,16 @@ export default function ProfileScreen() {
   const styles = useMemo(() => StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     content: { paddingHorizontal: layout.paddingHorizontal, paddingTop: spacing.sm },
-    header: { marginBottom: spacing.md },
+    header: { marginBottom: spacing.md, minWidth: 0, paddingHorizontal: spacing.md },
     brandLine: {
       color: colors.primary,
       letterSpacing: 1.4,
       textTransform: 'uppercase',
       fontSize: 11,
+      lineHeight: 14,
       fontWeight: '800',
-      marginBottom: 2,
+      marginBottom: spacing.xs,
+      paddingLeft: spacing.xs,
     },
     title: {
       fontSize: 28,
@@ -243,6 +346,7 @@ export default function ProfileScreen() {
       letterSpacing: -0.6,
       lineHeight: 34,
       color: colors.textPrimary,
+      paddingLeft: spacing.xs,
     },
     heroCard: {
       backgroundColor: colors.surface,
@@ -277,10 +381,11 @@ export default function ProfileScreen() {
       letterSpacing: -0.3,
       color: colors.textPrimary,
       lineHeight: 26,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     heroSubtitle: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '500',
       color: colors.textSecondary,
     },
@@ -302,6 +407,7 @@ export default function ProfileScreen() {
     },
     heroRankLabel: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0.6,
@@ -324,12 +430,14 @@ export default function ProfileScreen() {
     },
     sectionTitle: {
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
       letterSpacing: -0.1,
     },
     sectionCount: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0.4,
@@ -346,7 +454,7 @@ export default function ProfileScreen() {
     pillBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs + 1,
       borderRadius: 999,
@@ -354,10 +462,11 @@ export default function ProfileScreen() {
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
       minHeight: 30,
-      paddingRight: 6,
+      paddingRight: spacing.sm,
     },
     pillBtnLabel: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       color: colors.textSecondary,
       maxWidth: 140,
@@ -389,10 +498,11 @@ export default function ProfileScreen() {
     },
     dangerTitle: {
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.danger,
       letterSpacing: -0.1,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     dangerSub: {
       fontSize: 12,
@@ -404,19 +514,110 @@ export default function ProfileScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 4,
+      gap: spacing.xs,
       marginBottom: spacing.md,
     },
     versionText: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
     gapMd: { height: spacing.md },
-    bottomInset: { height: layout.tabBarHeight + spacing.xxl },
-  }), [colors]);
+    prCardRow: {
+      flexDirection: 'row',
+      marginHorizontal: -layout.paddingHorizontal + spacing.sm,
+      paddingHorizontal: layout.paddingHorizontal - spacing.sm,
+      marginBottom: spacing.md,
+    },
+    prMiniCard: {
+      width: 200,
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      marginRight: spacing.sm,
+      overflow: 'hidden',
+      flexShrink: 0,
+    },
+    prTopStripe: {
+      height: 4,
+      width: '100%',
+    },
+    prCardBody: {
+      padding: spacing.md,
+    },
+    prCardName: {
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '800',
+      color: colors.textPrimary,
+      letterSpacing: -0.1,
+      marginBottom: spacing.xs,
+    },
+    prCardValueRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-end',
+      gap: spacing.xs,
+    },
+    prCardStats: {
+      flex: 1,
+      minWidth: 0,
+    },
+    prCardValue: {
+      fontSize: 14,
+      fontWeight: '900',
+      color: colors.textPrimary,
+      letterSpacing: -0.1,
+      lineHeight: 18,
+    },
+    prCardDate: {
+      fontSize: 10,
+      lineHeight: 14,
+      fontWeight: '600',
+      color: colors.textTertiary,
+      marginTop: spacing.xs,
+    },
+    prDeleteBtn: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.danger + '10',
+      borderWidth: 1,
+      borderColor: colors.danger + '22',
+      flexShrink: 0,
+    },
+    prPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: 999,
+      borderWidth: 1,
+      backgroundColor: colors.accent + '12',
+      borderColor: colors.accent + '30',
+      minHeight: 26,
+    },
+    prPillText: {
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '800',
+      color: colors.accent,
+      letterSpacing: 0.1,
+    },
+    bottomInset: {
+      height:
+        Math.max(insets.bottom, spacing.xs)
+        + (Platform.OS === 'ios' ? 58 : 56)
+        + spacing.xxl,
+    },
+  }), [colors, insets.bottom]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -427,7 +628,7 @@ export default function ProfileScreen() {
       >
         {/* HEADER / PROFILE */}
         <View style={styles.header}>
-          <Text style={styles.brandLine}>PROFILE</Text>
+          <Text style={styles.brandLine}>{t('ui.brandProfile')}</Text>
           <Text style={styles.title}>{t('profile.title')}</Text>
         </View>
 
@@ -451,7 +652,9 @@ export default function ProfileScreen() {
             label={t('profile.statStreak')}
             value={`${streak}`}
             unit={t('profile.statUnits')}
-            icon="flame"
+            // 'flame' 是 Ionicons 的叫法，MaterialCommunityIcons 里叫 'fire'。
+            // 用错字体名不会报错，只会静默渲染成问号。
+            icon="fire"
             iconColor={colors.accent}
           />
           <MiniStat
@@ -485,7 +688,7 @@ export default function ProfileScreen() {
           desc={t('profile.languageDesc')}
           accent={colors.info}
           right={
-            <PressableScale onPress={() => openPicker('lang')} style={styles.pillBtn}>
+            <PressableScale onPress={() => openPicker('lang')} style={styles.pillBtn} accessibilityRole="button" accessibilityLabel={t('a11y.changeLanguage')}>
               <Text style={[styles.pillBtnLabel, styles.pillInfoAccent]}>
                 {langCurrentLabel}
               </Text>
@@ -500,7 +703,7 @@ export default function ProfileScreen() {
           desc={t('profile.unitsDesc')}
           accent={colors.primary}
           right={
-            <PressableScale onPress={() => openPicker('units')} style={styles.pillBtn}>
+            <PressableScale onPress={() => openPicker('units')} style={styles.pillBtn} accessibilityRole="button" accessibilityLabel={t('a11y.changeUnits')}>
               <Text style={[styles.pillBtnLabel, styles.pillPrimaryAccent]}>
                 {unitsCurrentLabel}
               </Text>
@@ -515,7 +718,7 @@ export default function ProfileScreen() {
           desc={t('profile.themeDesc')}
           accent={colors.muscle.shoulders}
           right={
-            <PressableScale onPress={() => openPicker('theme')} style={styles.pillBtn}>
+            <PressableScale onPress={() => openPicker('theme')} style={styles.pillBtn} accessibilityRole="button" accessibilityLabel={t('a11y.changeTheme')}>
               <Text style={styles.pillBtnLabel}>
                 {themeCurrentLabel}
               </Text>
@@ -606,6 +809,8 @@ export default function ProfileScreen() {
             <PressableScale
               onPress={() => openPicker('rest')}
               style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.changeRestSeconds')}
             >
               <Text style={[styles.pillBtnLabel, styles.pillWarningAccent]}>
                 {settings.defaultRestSeconds}
@@ -615,6 +820,347 @@ export default function ProfileScreen() {
             </PressableScale>
           }
         />
+
+        {/* section: 目标与计算口径（v5） */}
+        <SlabDivider accent={colors.muscle['upper legs']} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {t('profile.sectionGoal', { defaultValue: '目标与计算' })}
+          </Text>
+          <Text style={styles.sectionCount}>
+            <Icon name="target" size={10} color={colors.textTertiary} />
+          </Text>
+        </View>
+
+        <SettingRow
+          icon="calendar-check"
+          label={t('profile.weeklyGoal', { defaultValue: '每周训练目标' })}
+          desc={t('profile.weeklyGoalDesc', {
+            defaultValue: '决定首页与数据面板的「本周达成度」进度环。',
+          })}
+          accent={colors.success}
+          right={
+            <PressableScale
+              onPress={() => openPicker('goal')}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.changeWeeklyGoal', { defaultValue: '修改每周目标' })}
+            >
+              <Text style={[styles.pillBtnLabel, { color: colors.success }]}>
+                {goalCurrentLabel}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.success} />
+            </PressableScale>
+          }
+        />
+
+        <SettingRow
+          icon="chart-line"
+          label={t('profile.oneRmFormula', { defaultValue: '1RM 估算公式' })}
+          desc={t('profile.oneRmFormulaDesc', {
+            defaultValue: '训练页的实时 1RM 徽标与强度百分比按此公式计算。',
+          })}
+          accent={colors.accent}
+          right={
+            <PressableScale
+              onPress={() => openPicker('oneRm')}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.changeOneRmFormula', { defaultValue: '修改 1RM 公式' })}
+            >
+              <Text style={[styles.pillBtnLabel, { color: colors.accent }]} numberOfLines={1}>
+                {oneRmCurrentLabel}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.accent} />
+            </PressableScale>
+          }
+        />
+
+        <SettingRow
+          icon="filter-outline"
+          label={t('profile.countOnlyWorkingSets', { defaultValue: '容量只统计正式组' })}
+          desc={t('profile.countOnlyWorkingSetsDesc', {
+            defaultValue: '开启后热身组不计入总容量与统计；关闭则全部计入。',
+          })}
+          accent={colors.info}
+          right={
+            <Switch
+              value={settings.countOnlyWorkingSets}
+              onValueChange={() => toggleKey('countOnlyWorkingSets')}
+              thumbColor={settings.countOnlyWorkingSets ? colors.info : colors.textTertiary}
+              trackColor={{ false: colors.surfaceElevated, true: colors.info + '66' }}
+              ios_backgroundColor={colors.surfaceElevated}
+            />
+          }
+        />
+
+        <SettingRow
+          icon="calculator-variant-outline"
+          label={t('profile.plateConfig', { defaultValue: '杠铃配置' })}
+          desc={t('profile.plateConfigDesc', {
+            defaultValue: '设置空杆重量与你健身房实际有的片，配重计算才准。',
+          })}
+          accent={colors.warning}
+          right={
+            <PressableScale
+              onPress={() => {
+                safeHaptic('light');
+                setPlateOpen(true);
+              }}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.openPlateConfig', { defaultValue: '打开杠铃配置' })}
+            >
+              <Text style={[styles.pillBtnLabel, styles.pillWarningAccent]}>
+                {settings.plateConfig.barWeight}
+                {settings.units}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.warning} />
+            </PressableScale>
+          }
+        />
+
+        {/* section: 数据备份（纯文本，零权限零联网） */}
+        <SlabDivider accent={colors.muscle.chest} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {t('backup.title', { defaultValue: '备份与恢复' })}
+          </Text>
+          <Text style={styles.sectionCount}>
+            <Icon name="shield-check-outline" size={10} color={colors.textTertiary} />
+          </Text>
+        </View>
+        <SettingRow
+          icon="database-export-outline"
+          label={t('profile.backup', { defaultValue: '导出 / 导入数据' })}
+          desc={t('profile.backupDesc', {
+            defaultValue: '全部数据都在本机。导出为一段文本自行保存；换机时贴回即可恢复。',
+          })}
+          accent={colors.primary}
+          right={
+            <PressableScale
+              onPress={() => {
+                safeHaptic('light');
+                setBackupOpen(true);
+              }}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.openBackup', { defaultValue: '打开备份' })}
+            >
+              <Text style={[styles.pillBtnLabel, styles.pillPrimaryAccent]}>
+                {t('profile.backupOpen', { defaultValue: '打开' })}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.primary} />
+            </PressableScale>
+          }
+        />
+
+        {/* =================== MY CONTENT: 模板 + 身体数据 (v1.1.0 MVP) =================== */}
+        <SlabDivider accent={colors.primary} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>{t('profile.sectionTemplates')}</Text>
+          <Text style={styles.sectionCount}>
+            <Icon name="clipboard-list-outline" size={10} color={colors.textTertiary} />
+          </Text>
+        </View>
+        <SettingRow
+          icon="clipboard-play-outline"
+          label={t('profile.openTemplates')}
+          // 命名空间是 workout.*，不是 templates.* —— 后者整个命名空间
+          // 在翻译资源里根本不存在，写错就等于把 key 名当文案渲染出来。
+          desc={t('workout.templateEmptyHint')}
+          accent={colors.primary}
+          right={
+            <PressableScale
+              onPress={() => {
+                safeHaptic('light');
+                router.push('/templates' as any);
+              }}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.openTemplates')}
+            >
+              <Text style={[styles.pillBtnLabel, styles.pillPrimaryAccent]}>
+                {t('templates.title')}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.primary} />
+            </PressableScale>
+          }
+        />
+        <SlabDivider accent={colors.accent} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>{t('profile.sectionBody')}</Text>
+          <Text style={styles.sectionCount}>
+            <Icon name="ruler" size={10} color={colors.textTertiary} />
+          </Text>
+        </View>
+        <SettingRow
+          icon="scale-bathroom"
+          label={t('profile.openBody')}
+          desc={t('body.emptyHint')}
+          accent={colors.accent}
+          right={
+            <PressableScale
+              onPress={() => {
+                safeHaptic('light');
+                router.push('/body' as any);
+              }}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.openBodyMetrics')}
+            >
+              <Text style={styles.pillBtnLabel}>
+                {t('body.title')}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.accent} />
+            </PressableScale>
+          }
+        />
+
+        {/* section: Warmup / Stretching */}
+        <SlabDivider accent={colors.info} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {t('warmup.section', { defaultValue: 'Warmup & Stretching' })}
+          </Text>
+          <Text style={styles.sectionCount}>
+            <Icon name="fire" size={10} color={colors.textTertiary} />
+          </Text>
+        </View>
+        <SettingRow
+          icon="fire"
+          label={t('warmup.openFromProfile', { defaultValue: 'Open Warmup' })}
+          desc={t('warmup.emptyHint', {
+            defaultValue:
+              'Dynamic warmup before training + static stretches post-workout to reduce injury risk.',
+          })}
+          accent={colors.info}
+          right={
+            <PressableScale
+              onPress={() => {
+                safeHaptic('light');
+                router.push('/warmup' as any);
+              }}
+              style={styles.pillBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.openWarmup')}
+            >
+              <Text style={[styles.pillBtnLabel, styles.pillInfoAccent]}>
+                {t('warmup.title', { defaultValue: 'Warmup' })}
+              </Text>
+              <Icon name="chevron-right" size={11} color={colors.info} />
+            </PressableScale>
+          }
+        />
+
+        {/* =================== RECENT PRs SECTION =================== */}
+        <SlabDivider accent={colors.accent} />
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>
+            {(t('pr.sectionTop') || 'Recent PRs')}
+          </Text>
+          <View style={styles.prPill}>
+            <Icon name="trophy-outline" size={10} color={colors.accent} />
+            <Text style={styles.prPillText}>{recentPRs.length}</Text>
+          </View>
+        </View>
+
+        {recentPRs.length === 0 ? (
+          <SettingRow
+            icon="trophy-outline"
+            label={(t('pr.noneYet') || 'No PR yet')}
+            desc={t('pr.startHint')}
+            accent={colors.info}
+            right={
+              <PressableScale
+                onPress={() => {
+                  safeHaptic('light');
+                  router.push('/(tabs)/workout' as any);
+                }}
+                style={[styles.pillBtn, { backgroundColor: colors.info + '12', borderColor: colors.info + '30' }]}
+                accessibilityRole="button"
+                accessibilityLabel={t('a11y.startWorkout')}
+              >
+                <Text style={[styles.pillBtnLabel, { color: colors.info }]}>
+                  Start →
+                </Text>
+              </PressableScale>
+            }
+          />
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.prCardRow}
+          >
+            {recentPRs.map((pr: any) => {
+              const exInfo = exMap.get(String(pr.exerciseId));
+              const dispName = effectiveLang === 'zh'
+                ? (exInfo ? displayNameZh(exInfo) : pr.exerciseId)
+                : (exInfo?.name || pr.exerciseId);
+              const muscleColor = exInfo ? muscleColorOf(colors, exInfo.body_part) : colors.primary;
+              const bestText = t('pr.badgeBest', {
+                weight: pr.weight,
+                units: settings.units,
+                reps: pr.reps,
+                date: dateShort(pr.date),
+              });
+              // Remove 🏆 prefix if present (cleaner compact card display)
+              const cleanedText = typeof bestText === 'string'
+                ? bestText.replace(/^🏆\s*/u, '')
+                : `${pr.weight ?? 0}${settings.units} × ${pr.reps ?? 0} · ${dateShort(pr.date)}`;
+              return (
+                <View key={pr.id} style={styles.prMiniCard}>
+                  <View style={[styles.prTopStripe, { backgroundColor: muscleColor }]} />
+                  <View style={styles.prCardBody}>
+                    <Text style={styles.prCardName} numberOfLines={1}>
+                      {dispName}
+                    </Text>
+                    <View style={styles.prCardValueRow}>
+                      <View style={styles.prCardStats}>
+                        <Text style={styles.prCardValue} numberOfLines={1}>
+                          {cleanedText}
+                        </Text>
+                        <Text style={styles.prCardDate}>{dateShort(pr.date)}</Text>
+                      </View>
+                      <PressableScale
+                        onPress={() => {
+                          safeHaptic('warning');
+                          Alert.alert(
+                            t('common.confirm') || 'Confirm',
+                            t('pr.deleteConfirm') || 'Delete this PR record?',
+                            [
+                              { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                              {
+                                text: t('common.delete') || 'Delete',
+                                style: 'destructive',
+                                onPress: () => {
+                                  deletePR(pr.id);
+                                  safeHaptic('success');
+                                  toast.show({
+                                    title: t('pr.deleted') || 'PR deleted',
+                                    variant: 'success',
+                                  });
+                                },
+                              },
+                            ]
+                          );
+                        }}
+                        hitSlop={4}
+                        style={styles.prDeleteBtn}
+                        scaleTo={0.92}
+                        accessibilityRole="button"
+                        accessibilityLabel={t('a11y.deletePR')}
+                      >
+                        <Icon name="trash-can-outline" size={13} color={colors.danger} />
+                      </PressableScale>
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
+          </ScrollView>
+        )}
 
         {/* =================== INFO / DATA =================== */}
         <SlabDivider accent={colors.info} />
@@ -653,6 +1199,8 @@ export default function ProfileScreen() {
           onPress={handleReset}
           style={styles.dangerBtn}
           scaleTo={0.98}
+          accessibilityRole="button"
+          accessibilityLabel={t('profile.resetAll')}
         >
           <View style={styles.dangerIconTray}>
             <Icon name="trash-can-outline" size={16} color={colors.danger} />
@@ -721,6 +1269,39 @@ export default function ProfileScreen() {
         cancelLabel={t('common.cancel')}
         accent={colors.warning}
       />
+      <OptionPicker<number>
+        visible={pickerOpen === 'goal'}
+        title={t('profile.pickerTitleGoal', { defaultValue: '每周训练目标' })}
+        options={goalOptions}
+        value={settings.weeklyGoal}
+        onSelect={applyWeeklyGoal}
+        onClose={closePicker}
+        cancelLabel={t('common.cancel')}
+        accent={colors.success}
+      />
+      <OptionPicker<OneRmFormula>
+        visible={pickerOpen === 'oneRm'}
+        title={t('profile.pickerTitleOneRm', { defaultValue: '1RM 估算公式' })}
+        options={oneRmOptions}
+        value={settings.oneRmFormula}
+        onSelect={applyOneRmFormula}
+        onClose={closePicker}
+        cancelLabel={t('common.cancel')}
+        accent={colors.accent}
+      />
+
+      {/* 备份 / 杠铃配置 —— 内容比 OptionPicker 复杂，独立成底部面板 */}
+      <BackupSheet visible={backupOpen} onClose={() => setBackupOpen(false)} />
+      <PlateConfigSheet
+        visible={plateOpen}
+        config={settings.plateConfig}
+        unit={settings.units}
+        onClose={() => setPlateOpen(false)}
+        onChange={(next) => {
+          setSettings({ plateConfig: next });
+          safeHaptic('success');
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -747,7 +1328,7 @@ function SettingRow({
     sRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: spacing.md + 2,
+      padding: spacing.lg,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
@@ -769,10 +1350,11 @@ function SettingRow({
     },
     sLabel: {
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
       letterSpacing: -0.1,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     sDesc: {
       fontSize: 12,
@@ -823,7 +1405,7 @@ function InfoCard({
     card: {
       flexDirection: 'row',
       gap: spacing.sm,
-      padding: spacing.md + 2,
+      padding: spacing.lg,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
       borderWidth: 1,
@@ -845,9 +1427,10 @@ function InfoCard({
     },
     title: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       letterSpacing: -0.1,
-      marginBottom: 4,
+      marginBottom: spacing.xs,
     },
     desc: {
       fontSize: 12,

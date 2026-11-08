@@ -1,0 +1,47 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+  <!-- 只有 VIBRATE：触觉反馈（打钩 / 计时结束）是唯一真实需要的权限。
+
+       其余全部是 Expo / RN 模板残留，与「纯离线工具」的定位冲突，
+       所以显式移除而不是留着：
+         · INTERNET / ACCESS_NETWORK_STATE —— App 从不联网。1324 张动作图与
+           GIF 全部走 file:///android_asset/（打进 APK 里），也没有 OTA。
+           留着它等于向用户和商店宣称「我可能联网」，是无谓的信任成本。
+         · READ/WRITE_EXTERNAL_STORAGE —— 备份走纯文本方案，不碰共享存储。
+         · SYSTEM_ALERT_WINDOW —— 仅 Expo dev 悬浮菜单需要。
+
+       用 tools:node="remove" 而不是直接删掉这些行：Expo 的 config plugin
+       会在 prebuild 时把它们重新注入，只有 remove 能真正生效。 -->
+  <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" tools:node="remove"/>
+  <uses-permission android:name="android.permission.VIBRATE"/>
+  <queries>
+    <intent>
+      <action android:name="android.intent.action.VIEW"/>
+      <category android:name="android.intent.category.BROWSABLE"/>
+      <data android:scheme="https"/>
+    </intent>
+  </queries>
+  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false">
+    <!-- 项目没有引入 expo-updates，这几条 OTA meta-data 是模板残留。
+         CHECK_ON_LAUNCH=ALWAYS 尤其误导（它暗示每次启动联网查更新），一并清掉。 -->
+    <meta-data android:name="expo.modules.updates.ENABLED" android:value="false" tools:node="remove"/>
+    <meta-data android:name="expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT" tools:node="remove"/>
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" tools:node="remove"/>
+    <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" tools:node="remove"/>
+    <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize|assetsPaths" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="choyeon-exercises"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useMemo } from 'react';
 import { Text, StyleSheet, View, type GestureResponderEvent } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useThemeColors, typography, spacing, radius } from '@/theme';
+import { useThemeColors, typography, spacing, radius, muscleColor } from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
 import {
   BODY_PART_LABELS,
@@ -80,7 +80,7 @@ function BodyPartChipImpl({
     icon: iconForBodyPart(bodyPart),
   };
   const color =
-    colors.muscle[bodyPart as keyof typeof colors.muscle] || colors.primary;
+    muscleColor(colors, bodyPart);
 
   const labelText = lang === 'en' ? info.en : info.zh;
 

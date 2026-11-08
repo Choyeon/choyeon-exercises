@@ -1,19 +1,65 @@
 import type { LanguageCode, BodyPart } from '@/types';
+import { Platform } from 'react-native';
 
-// Use jsdelivr CDN for the exercise media (images and gifs)
-export const MEDIA_CDN_BASE =
-  'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main';
+// ============================================================================
+// LOCAL-BUNDLE MEDIA RESOLVER
+// ============================================================================
+// All 1,324 JPG posters + 1,324 animated GIFs from the public dataset
+// (D:\WebProjects\exercises-dataset) are COPIED VERBATIM into
+//   android/app/src/main/assets/exercises/{images,videos}/
+// at build time, so they ship inside the APK (~131 MB) and are accessed
+// directly through Android's AssetManager.  There is ZERO network I/O.
+//
+// • URL scheme used:   file:///android_asset/exercises/<relativePath>
+//     — Glide (expo-image's native Android loader) has a built-in
+//       AndroidAssetUriLoader that decodes this scheme directly from the
+//       APK, no file-system extraction needed.
+//     — React Native's vanilla <Image> also supports it.
+//
+// • Dev-mode note: In Metro dev-server builds the asset is NOT present in
+//   the on-device APK bundle so the URI fails to resolve.  That is expected
+//   because <HybridImage> in UIKit falls back to the muscle-tint
+//   <LocalImageCover> on any load error — the UI stays 100% usable during
+//   development.  Only the release (or debug .apk) build ships the media.
+//
+// • If ever running on iOS / web: the Platform.select branches below return
+//   '' (safe empty path) so the placeholder fallback chain kicks in again
+//   — no crash, no broken images.
+// ============================================================================
 
+/**
+ * Absolute base-URI for media bundled inside the Android APK `assets/exercises/`
+ * subfolder.  On non-Android platforms (iOS / web / Expo Go / Windows) this
+ * is '' and the UI falls back to tinted placeholders automatically.
+ */
+export const MEDIA_CDN_BASE: string = Platform.select({
+  android: 'file:///android_asset/exercises/',
+  default: '',
+}) as string;
+
+/**
+ * Returns the LOCAL android_asset URI for a poster JPG, or '' on non-Android.
+ *
+ * @param relativePath e.g. "images/0001-2gPfomN.jpg"  (same key as exercises.json)
+ */
 export const getImageUrl = (relativePath: string): string => {
   if (!relativePath) return '';
-  const clean = relativePath.replace(/^\.\//, '').replace(/^\//, '');
-  return `${MEDIA_CDN_BASE}/${clean}`;
+  if (Platform.OS !== 'android') return '';
+  // Normalise: strip a leading "./" or "/" just in case dataset drifts.
+  const clean = relativePath.replace(/^\.?\//, '');
+  return MEDIA_CDN_BASE + clean;
 };
 
+/**
+ * Returns the LOCAL android_asset URI for an animated GIF, or '' on non-Android.
+ *
+ * @param relativePath e.g. "videos/0001-2gPfomN.gif"
+ */
 export const getGifUrl = (relativePath: string): string => {
   if (!relativePath) return '';
-  const clean = relativePath.replace(/^\.\//, '').replace(/^\//, '');
-  return `${MEDIA_CDN_BASE}/${clean}`;
+  if (Platform.OS !== 'android') return '';
+  const clean = relativePath.replace(/^\.?\//, '');
+  return MEDIA_CDN_BASE + clean;
 };
 
 export const DEFAULT_LANGUAGE: LanguageCode = 'zh';
@@ -344,6 +390,7 @@ export const LANGUAGE_LABELS: Record<
   pl: { zh: '波兰语', native: 'Polski', code: 'PL', icon: 'alpha-p-circle-outline' },
   ko: { zh: '韩语', native: '한국어', code: '한', icon: 'alpha-k-circle-outline' },
   fr: { zh: '法语', native: 'Français', code: 'FR', icon: 'alpha-f-circle-outline' },
+  ja: { zh: '日语', native: '日本語', code: '日', icon: 'alpha-j-circle-outline' },
 };
 
 // ============================================================================
@@ -367,30 +414,242 @@ export function iconForEquipment(eq: string | null | undefined): string {
   return EQUIPMENT_LABELS[eq]?.icon || 'dumbbell';
 }
 
+// ============================================================================
+// MUSCLE ALIAS — en abbreviation → zh full label.
+// Covers the free-form strings that appear in exercises-dataset `target`
+// and `secondary_muscles` fields (not controlled body-part slugs).
+// ============================================================================
+const MUSCLE_ALIAS_ZH: Record<string, string> = {
+  // ===== Core =====
+  abs: '腹直肌', rectusabdominis: '腹直肌', abdominals: '腹部', abdominis: '腹部',
+  obliques: '腹外斜肌', externalobliques: '腹外斜肌', obliquesexternus: '腹外斜肌', obliquusexternus: '腹外斜肌', externaloblique: '腹外斜肌',
+  obliquesinternus: '腹内斜肌', obliquusinternus: '腹内斜肌', internaloblique: '腹内斜肌',
+  transverseabdominis: '腹横肌', transversusabdominis: '腹横肌', tva: '腹横肌',
+  core: '核心', coremuscles: '核心肌群',
+  stabilizers: '稳定肌',
+  diaphragm: '膈肌', intercostals: '肋间肌',
+  multifidus: '多裂肌', lumbarmultifidus: '腰部多裂肌',
+  quadratuslumborum: '腰方肌', ql: '腰方肌', quadratus_lumborum: '腰方肌',
+  // ===== Chest =====
+  pecs: '胸大肌', pectorals: '胸大肌', pectoralismajor: '胸大肌', pectoralis_minor: '胸小肌', pectoralisminor: '胸小肌', pectoralisminorus: '胸小肌', chest: '胸部', chestmuscles: '胸部肌群',
+  upperchest: '上胸', lowerchest: '下胸', innerchest: '中胸',
+  // ===== Back =====
+  lats: '背阔肌', latissimusdorsi: '背阔肌', latsdorsi: '背阔肌',
+  trapezius: '斜方肌', traps: '斜方肌', trap: '斜方肌', uppertraps: '上斜方肌', trapeziusmiddle: '中斜方肌', trapeziusmid: '中斜方肌', midtraps: '中斜方肌', middletraps: '中斜方肌', trapeziuslower: '下斜方肌', lowertraps: '下斜方肌', lowtraps: '下斜方肌', trapeziusmuscle: '斜方肌',
+  rhomboids: '菱形肌', rhomboidsmajor: '大菱形肌', rhomboidsminor: '小菱形肌', rhomboid: '菱形肌',
+  serratusanterior: '前锯肌', serratus: '前锯肌',
+  levatorscapulae: '肩胛提肌', levatorscapula: '肩胛提肌',
+  erectorspinae: '竖脊肌', erectors: '竖脊肌', spinalerectors: '竖脊肌', erectorspinae_group: '竖脊肌', sacrospinalis: '竖脊肌',
+  teresmajor: '大圆肌', teresminor: '小圆肌', teres_minor: '小圆肌',
+  infraspinatus: '冈下肌', infraspinous: '冈下肌',
+  supraspinatus: '冈上肌', supraspinous: '冈上肌',
+  subscapularis: '肩胛下肌',
+  rotatorcuff: '肩袖肌群', rotatorcuffs: '肩袖肌群',
+  low: '下背', lowerback: '下背部', lumbars: '下背', lumbar: '腰部', lumbarspine: '腰椎', lowerbackmuscles: '下背部',
+  upperback: '上背部', midback: '中背部',
+  backmuscles: '背部肌群', backmuscle: '背部肌群',
+  shouldergirdle: '肩胛带',
+  scapularstabilizers: '肩胛稳定肌', scapularstabiliser: '肩胛稳定肌',
+  scapula: '肩胛骨', sternum: '胸骨', patella: '髌骨', pelvis: '骨盆',
+  // ===== Shoulders =====
+  delts: '三角肌', deltoids: '三角肌', deltoid: '三角肌',
+  deltoidanterior: '三角肌前束', anteriordelt: '三角肌前束', frontdelt: '三角肌前束', anteriordeltoid: '三角肌前束',
+  deltoidlateral: '三角肌中束', lateraldelt: '三角肌中束', sidedelt: '三角肌中束', middledelt: '三角肌中束', lateraldeltoid: '三角肌中束',
+  deltoidposterior: '三角肌后束', posteriordelt: '三角肌后束', reardelt: '三角肌后束', backdelt: '三角肌后束', posteriordeltoid: '三角肌后束',
+  // ===== Upper Arms =====
+  tris: '肱三头肌', triceps: '肱三头肌', tricepsbrachii: '肱三头肌',
+  tricepslonghead: '肱三头肌长头', longheadofthetriceps: '肱三头肌长头', triceps_long_head: '肱三头肌长头',
+  tricepslateralhead: '肱三头肌外侧头', lateralheadofthetriceps: '肱三头肌外侧头', triceps_lateral_head: '肱三头肌外侧头',
+  tricepsmedialhead: '肱三头肌内侧头', medialheadofthetriceps: '肱三头肌内侧头',
+  bis: '肱二头肌', biceps: '肱二头肌', bicepsbrachii: '肱二头肌',
+  brachialis: '肱肌', brachialismuscle: '肱肌',
+  brachioradialis: '肱桡肌',
+  elbowflexors: '肘屈肌', elbowextensors: '肘伸肌',
+  // ===== Forearms =====
+  forearms: '前臂', wristflexors: '腕屈肌', wristextensors: '腕伸肌', flexors: '屈肌', extensors: '伸肌',
+  handmuscles: '手部肌群', handgrip: '握力', grip: '握力',
+  // ===== Glutes / Hips =====
+  glutes: '臀大肌', gluteusmaximus: '臀大肌', glutemax: '臀大肌', glut: '臀大肌', glutealmuscles: '臀部肌群',
+  gluteusmedius: '臀中肌', glutemed: '臀中肌', gluteus_medius: '臀中肌',
+  gluteusminimus: '臀小肌', glutemin: '臀小肌', gluteus_minimus: '臀小肌',
+  piriformis: '梨状肌', piriformismuscle: '梨状肌',
+  hip: '髋部', hips: '髋部', hipflexors: '髋屈肌', iliopsoas: '髂腰肌', iliopsoasmuscle: '髂腰肌', psoas: '髂腰肌',
+  hipprimarymover: '髋部主动肌', gluteal: '臀部',
+  // ===== Hamstrings =====
+  ham: '腘绳肌', hams: '腘绳肌', hamstrings: '腘绳肌', bicepsfemoris: '股二头肌', bicepfemoris: '股二头肌', bicepsfem: '股二头肌', bicepsfemor: '股二头肌',
+  semitendinosus: '半腱肌', semi_tendinosus: '半腱肌',
+  semimembranosus: '半膜肌', semi_membranosus: '半膜肌',
+  hamstringmuscles: '腘绳肌群',
+  // ===== Quads =====
+  quads: '股四头肌', quadriceps: '股四头肌', quadricepsfemoris: '股四头肌', quadricep: '股四头肌',
+  vastusmedialis: '股内侧肌', vastus_medialis: '股内侧肌', vmo: '股内侧肌',
+  vastuslateralis: '股外侧肌', vastus_lateralis: '股外侧肌', vl: '股外侧肌',
+  vastusintermedius: '股中间肌', vastus_intermedius: '股中间肌', vi: '股中间肌',
+  // ===== Adductors / Abductors =====
+  adductors: '内收肌', hipadductors: '内收肌',
+  adductorlongus: '长收肌', adductor_longus: '长收肌', longadductor: '长收肌',
+  adductormagnus: '大收肌', adductor_magnus: '大收肌', greatadductor: '大收肌',
+  adductorbrevis: '短收肌', adductor_brevis: '短收肌', shortadductor: '短收肌',
+  pectineus: '耻骨肌', gracilis: '股薄肌', sartorius: '缝匠肌',
+  abductors: '外展肌', hipabductors: '外展肌',
+  // ===== Calves / Lower Leg =====
+  calves: '小腿', calfmuscles: '小腿肌群',
+  gastrocnemius: '腓肠肌',
+  gastrocnemiusmedial: '腓肠肌内侧头', gastrocnemiusmedialhead: '腓肠肌内侧头', medialgastrocnemius: '腓肠肌内侧头',
+  gastrocnemiuslateral: '腓肠肌外侧头', lateralheadgastrocnemius: '腓肠肌外侧头',
+  soleus: '比目鱼肌',
+  tibialisanterior: '胫骨前肌', tibialisant: '胫骨前肌',
+  anklemuscles: '踝关节肌群',
+  intrinsicfootmuscles: '足底固有肌',
+  // ===== Whole-body / Compound meta =====
+  fullbody: '全身肌群', wholebody: '全身肌群', totalbody: '全身肌群', entirebody: '全身肌群',
+  lowerbody: '下肢', upperbody: '上肢', lowerextremity: '下肢', upperextremity: '上肢', lowerextremities: '下肢', upperextremities: '上肢',
+  // ===== Cardiovascular / spine / cardio meta =====
+  cardiovascularsystem: '心血管系统', cardiovascular: '心血管', system: '系统',
+  cardiorespiratory: '心肺', cardiorespiratorysystem: '心肺系统',
+  spine: '脊柱', spinalcolumn: '脊柱', vertebralcolumn: '脊柱',
+  // ===== Neck =====
+  neck: '颈部',
+};
+
+// ============================================================================
+// EQUIPMENT ALIAS ZH — en free-form equipment phrase / canonical slug
+// shorthand → zh label 25+ 条。仅用于中文显示。lang==en 或未命中时
+// 调用 labelForEquipment 回退到 EQUIPMENT_LABELS。
+// ============================================================================
+export const EQUIPMENT_ALIAS_ZH: Record<string, string> = {
+  barbell: '杠铃', 'bar': '杠铃', 'olympicbar': '奥杆', 'olympicbarbell': '奥杆',
+  dumbbell: '哑铃', 'db': '哑铃', 'dumbbells': '哑铃', 'bell': '哑铃',
+  kettlebell: '壶铃', 'kb': '壶铃', 'kettlebells': '壶铃',
+  cable: '绳索机', 'cables': '绳索机', 'cablemachine': '绳索机', 'pulley': '滑轮机',
+  smithmachine: '史密斯架', 'smith': '史密斯架',
+  lever: '杠杆机', 'leveragemachine': '杠杆机', 'levermachine': '杠杆机',
+  machine: '固定器械', 'machines': '固定器械', 'gymmachine': '综合器械',
+  bodyweight: '自重', 'body': '自重', 'bw': '自重', 'bodyweightonly': '自重',
+  band: '弹力带', 'bands': '弹力带', 'resistanceband': '弹力带', 'resistancebands': '弹力带', 'miniband': '迷你弹力带',
+  ezcurlbar: 'EZ曲杆', 'ezbar': 'EZ曲杆', 'ezbarbell': 'EZ曲杆', 'curlbar': '曲杆',
+  preachercurl: '牧师凳机', 'preacherbench': '牧师凳', 'preacher': '牧师凳',
+  tbarrow: 'T杠划船', 'tbar': 'T杠', 't-bar': 'T杠',
+  assisted: '辅助式', 'assistedmachine': '辅助器械',
+  hammerstrength: '悍马机', 'hammer': '悍马机',
+  hyperextension: '山羊挺身凳', 'hyperextensionbench': '山羊挺身凳', 'ghd': '山羊挺身凳', 'romanchairextension': '山羊挺身',
+  plyobox: '跳箱', 'plyometricbox': '跳箱', 'stepbox': '跳箱', 'boxjump': '跳箱',
+  pullupbar: '单杠', 'pullup': '单杠', 'chinningbar': '单杠', 'chinups': '单杠',
+  parallelbar: '双杠', 'parallels': '双杠', 'dipsbar': '双杠', 'dipstation': '双杠',
+  romanchair: '罗马椅', 'romanchairbench': '罗马椅',
+  sled: '雪橇机', 'sledmachine': '雪橇机', 'sledpush': '雪橇', 'sledpull': '雪橇',
+  trapbar: '六角杠铃', 'trap': '六角杆', 'hexbar': '六角杠铃', 'hex': '六角杆',
+  vikingpress: '维京推举', 'viking': '维京机',
+  landmine: '地雷管', 'landmines': '地雷管', 'landminebar': '地雷管',
+  medicineball: '药球', 'medball': '药球', 'medballslam': '药球',
+  suspension: '悬挂训练带', 'suspensiontrainer': '悬挂训练带', 'trx': '悬挂训练带',
+};
+
+// ============================================================================
+// labelForEquipment — v1.0.7 先查 EQUIPMENT_ALIAS_ZH 再 fallback EQUIPMENT_LABELS
+// ============================================================================
+/**
+ * @param eq 原始器械字符串 (slug / 自由格式 / 别名)
+ * @param lang 'zh' 走 EQUIPMENT_ALIAS_ZH → EQUIPMENT_LABELS 链路；其他语言首字母大写回退
+ */
 export function labelForEquipment(eq: string | null | undefined, lang?: LanguageCode): string {
   if (!eq) return '未知器械';
-  const meta = EQUIPMENT_LABELS[eq];
-  if (!meta) return String(eq);
-  return lang === 'en' ? meta.en : meta.zh;
+  const raw = String(eq).trim();
+  if (lang === 'en') {
+    // — lang=en: 先查 EQUIPMENT_LABELS 的 en 名，否则首字母大写
+    const meta = EQUIPMENT_LABELS[raw.toLowerCase()];
+    if (meta?.en) return meta.en;
+    return raw.length ? raw.charAt(0).toUpperCase() + raw.slice(1) : raw;
+  }
+  // — lang=zh 或未指定：先查别名表 (归一化 = 去空格去连字符小写)，再查 EQUIPMENT_LABELS.zh
+  const key = raw.toLowerCase().replace(/[\s_\-]/g, '');
+  if (EQUIPMENT_ALIAS_ZH[key]) return EQUIPMENT_ALIAS_ZH[key];
+  const meta = EQUIPMENT_LABELS[raw];
+  if (meta?.zh) return meta.zh;
+  // 兜底：原字符串（未命中时保留）
+  return raw;
+}
+
+/**
+ * Translate a free-form muscle abbreviation/phrase (as seen in `target` /
+ * `secondary_muscles`) to zh full name.  For `lang !== 'zh'` returns the
+ * original string with first-letter capitalisation.
+ */
+export function labelForMuscle(
+  raw: string | null | undefined,
+  lang: LanguageCode = 'zh',
+): string {
+  if (!raw) return '';
+  const key = String(raw).trim().toLowerCase().replace(/[\s_\-0-9]/g, '');
+  if (lang === 'zh') {
+    if (MUSCLE_ALIAS_ZH[key]) return MUSCLE_ALIAS_ZH[key];
+    if (BODY_PART_LABELS[key as BodyPart]?.zh) return BODY_PART_LABELS[key as BodyPart].zh;
+    // fallback: return the raw original (usually descriptive zh already)
+    const original = String(raw).trim();
+    return original;
+  }
+  const s = String(raw).trim();
+  return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+}
+
+/**
+ * Helper: translate a `target` field or turn an English muscle phrase
+ * into zh by splitting on punctuation and running each word/segment
+ * through `labelForMuscle`.  If everything ends up untranslated we fall
+ * back to the exercise's zh instructions lead sentence.
+ */
+export function translateTargetPhrase(
+  raw: string | null | undefined,
+  lang: LanguageCode = 'zh',
+  fallbackZh?: string,
+): string {
+  if (!raw) return fallbackZh ?? '';
+  if (lang !== 'zh') {
+    const s = String(raw).trim();
+    return s.length ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  }
+  const original = String(raw).trim();
+  // If it contains Chinese already, just return as-is.
+  if (/[\u4e00-\u9fff]/.test(original)) return original;
+  // v1.0.7 升级：对 3 种分隔符都能正确拆词：
+  //   (1) "Muscle1 & Muscle2" / "Muscle1, Muscle2 and Muscle3" → 并列表
+  //   (2) "Region (primary/secondary)" → 先去括号外层保留内部 (primary/secondary)
+  //   (3) 单个空格分隔的两词 (Glutes & Hamstrings / Chest Shoulders Triceps)
+  // 分割符覆盖：/ , & + ( ) 空格 以及 " and / or "
+  const parenStripped = original
+    .replace(/\(([^)]+)\)/g, ' $1 ')           // "Lower body (quads/glutes)" → "Lower body  quads/glutes "
+    .replace(/[()]/g, ' ');                     // 残留括号清掉
+  const tokens = parenStripped
+    .split(/[\/,&+]+|\s+(?:and|or)\s+|\s+/i)
+    .map((t) => t.trim())
+    .filter((t) => t && t.length >= 2);         // 丢掉 1 字 token (噪声介词/冠词)
+  // tokens 可能是多词肌肉短语（例如 "Trapezius Middle"）→ 不是逐词而是逐段翻译
+  const translated = tokens.map((t) => {
+    // 先整段查别名（例如 "trapeziusmiddle" / "trapezius middle" 统一归一）
+    const zh = labelForMuscle(t, 'zh');
+    // 如果整段查不到，就把该段输出原文（避免错误翻译）
+    return zh || t;
+  });
+  const result = translated.join('、');
+  if (!result || /^[\s、]+$/.test(result)) return fallbackZh ?? original;
+  return result;
 }
 
 // Target is a free-form English muscle label (not a controlled slug).
 // Returns a presentable title-case string.  There is no 1:1 canonical mapping
 // because exercises-dataset target values are descriptive English phrases
 // (e.g. "Biceps Brachii", "Quadriceps", "Upper Chest"), not slugs.
-export function labelForTarget(target: string | null | undefined): string {
+export function labelForTarget(target: string | null | undefined, lang: LanguageCode = 'zh'): string {
   if (!target) return '-';
-  // Dataset uses title-cased English names already, so pass through.
-  return String(target);
+  return translateTargetPhrase(target, lang);
 }
 
 // Animations in exercises-dataset live under `gif_url` (legacy dataset key) or
-// the newer semantic `animation` field.  Both are media-relative paths served
-// from the same CDN prefix.
+// the newer semantic `animation` field.  We resolve them the same way as
+// getGifUrl — always from the locally-bundled assets, never network.
 export function getAnimationUrl(relativePath: string | null | undefined): string {
   if (!relativePath) return '';
-  const clean = relativePath.replace(/^\.\//, '').replace(/^\//, '');
-  return `${MEDIA_CDN_BASE}/${clean}`;
+  return getGifUrl(relativePath);
 }
 
 // Chinese display name for an Exercise with graceful fallback.

@@ -20,11 +20,15 @@ export type HapticKind =
   | 'selection';
 
 export function safeHaptic(kind: HapticKind = 'light'): void {
+  // 参数白名单 guard：任何 undefined/null/非标准字符串 → 直接 return，避免 expo-haptics 原生桥接未知枚举值导致闪退
+  const ALLOWED: HapticKind[] = ['light','medium','heavy','success','warning','error','selection'];
+  if (!kind || ALLOWED.indexOf(kind as HapticKind) < 0) return;
   // Pull synchronously from store to avoid requiring React hooks context.
   // Works both inside and outside of component trees.
   let enabled: boolean;
   try {
-    enabled = !!useAppStore.getState().settings.hapticFeedback;
+    const st = useAppStore.getState?.();
+    enabled = !!(st && st.settings && (st.settings as any).hapticFeedback !== false);
   } catch {
     enabled = true;
   }
@@ -33,28 +37,28 @@ export function safeHaptic(kind: HapticKind = 'light'): void {
   try {
     switch (kind) {
       case 'light':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Haptics.impactAsync?.(Haptics.ImpactFeedbackStyle?.Light ?? 0);
         break;
       case 'medium':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        Haptics.impactAsync?.(Haptics.ImpactFeedbackStyle?.Medium ?? 1);
         break;
       case 'heavy':
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        Haptics.impactAsync?.(Haptics.ImpactFeedbackStyle?.Heavy ?? 2);
         break;
       case 'success':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Haptics.notificationAsync?.(Haptics.NotificationFeedbackType?.Success ?? 0);
         break;
       case 'warning':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        Haptics.notificationAsync?.(Haptics.NotificationFeedbackType?.Warning ?? 1);
         break;
       case 'error':
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Haptics.notificationAsync?.(Haptics.NotificationFeedbackType?.Error ?? 2);
         break;
       case 'selection':
-        Haptics.selectionAsync();
+        Haptics.selectionAsync?.();
         break;
     }
   } catch {
-    // iOS 模拟器 / 低端 Android 不支持，静默即可。
+    // iOS 模拟器 / 低端 Android / 平板无振动器 —— 静默即可，绝不 rethrow 导致闪退
   }
 }

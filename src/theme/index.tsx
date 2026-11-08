@@ -259,6 +259,30 @@ export const typography = {
     lineHeight: 14,
     letterSpacing: 0.6,
   },
+  label: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    lineHeight: 16,
+    letterSpacing: 0.2,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '800' as const,
+    lineHeight: 26,
+    letterSpacing: -0.3,
+  },
+  sub: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    lineHeight: 20,
+    letterSpacing: -0.1,
+  },
+  micro: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    lineHeight: 12,
+    letterSpacing: 0.3,
+  },
   mono: {
     fontSize: 16,
     fontWeight: '800' as const,
@@ -275,10 +299,113 @@ export const radius = {
   pill: 999,
 } as const;
 
+// ============================================================================
+// 标准视觉令牌 — v1.0.12「柔和描边/阴影」统一规范。
+// 任何 screen / component 自定义样式必须使用下列函数，不得硬编码纯 #FFFFFF/#000000 描边
+// 或 shadowOpacity≥0.6 / shadowRadius≥8 / diagonal offset 的 neo-brutalist 写法。
+// ============================================================================
+
+/** frameStroke — 普通卡片/容器描边：dark 28%白 / light 10%黑。不区分主题的「通用柔和描边」 */
+export function getFrameStroke(isDark: boolean): string {
+  return isDark ? 'rgba(255,255,255,0.28)' : 'rgba(16,20,24,0.10)';
+}
+
+/** accentStroke — 主 CTA / 序号块等高识别度元素：40%不透明度 accent 色描边 */
+export function getAccentStroke(accent: string): string {
+  return accent + '66';
+}
+
+/**
+ * softShadow — 统一柔和阴影标准：
+ * shadowColor 永远 '#000'
+ * shadowOffset 永远 {width:0, height:2} 仅向下
+ * shadowRadius 永远 6
+ * shadowOpacity  dark=0.55 / light=0.18
+ */
+export function getSoftShadow(isDark: boolean) {
+  return {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 } as { width: number; height: number },
+    shadowRadius: 6,
+    shadowOpacity: isDark ? 0.55 : 0.18,
+    elevation: isDark ? 4 : 2,
+  };
+}
+
+/** 与 Colors 对象绑定的便捷版 — 直接从 colors.bg 判断 dark/light */
+export function strokeFromColors(colors: Colors) {
+  const isDark = colors.bg === '#07090C';
+  return {
+    frameStroke: getFrameStroke(isDark),
+    accentStroke: getAccentStroke(colors.primary),
+    softShadow: getSoftShadow(isDark),
+    isDark,
+  };
+}
+
+// ============================================================================
+// 语义色板块 — v1.0.13「视觉一致性」收口。
+//
+// 问题：Badge / HapticButton 等基础组件曾各自硬编码一套「近似但不等价」的调色
+// 板（#BAFF2E / #4C9AFF / #FF7A59），与 theme 的 primary / info / accent
+// （#BFF23D / #48C6FF / #FF6A3D）存在肉眼可辨的色差。结果是同一个页面里
+// Badge 的绿和按钮的绿不是同一种绿，整体显得廉价、不统一。
+//
+// 解决方案：把「填充档」统一为 `语义色 + 透明度后缀` 的三档体系，
+// 任何组件都从这里取色，杜绝再出现第二套调色板。
+// ============================================================================
+
+/** 语义色的三档填充：subtle(8%) / soft(14%) / border(38%) */
+export function tint(color: string, level: 'subtle' | 'soft' | 'border' | 'strong') {
+  const alpha = level === 'subtle' ? '08' : level === 'soft' ? '14' : level === 'border' ? '38' : '66';
+  return color + alpha;
+}
+
+/**
+ * 肌群色映射的唯一出口。
+ *
+ * 之前 `colors.muscle[bodyPart] ?? colors.primary` 这个表达式散落在
+ * Home / Library / 详情页 / 训练执行页 / 热身页等 8+ 个文件里，各自的兜底
+ * 还不一样（有的兜 primary、有的兜 chest、有的直接写死 hex），同一肌群在
+ * 不同页面呈现不同颜色。统一到这个函数后所有页面取色一致。
+ */
+export function muscleColor(c: Colors, bodyPart?: string | null): string {
+  if (!bodyPart) return c.primary;
+  const table = c.muscle as unknown as Record<string, string | undefined>;
+  return table[bodyPart] ?? c.primary;
+}
+
+/**
+ * 语义色映射 —— 把「语义名」映射到当前主题的实际色值。
+ * 组件应使用 `semanticColors(colors).primary` 而非硬编码 hex。
+ */
+export function semanticColors(c: Colors) {
+  return {
+    primary: c.primary,
+    info: c.info,
+    accent: c.accent,
+    success: c.success,
+    warning: c.warning,
+    danger: c.danger,
+    neutral: c.textSecondary,
+  } as const;
+}
+
+export type SemanticName = keyof ReturnType<typeof semanticColors>;
+
+/**
+ * 模态遮罩色 —— 全 App 统一。dark 用 62% 纯黑（保留深处墨感），
+ * light 用 45% 中性黑（避免在浅色界面上过重）。此前各屏幕自己写
+ * rgba(7,9,12,0.62) / rgba(0,0,0,0.45) / rgba(0,0,0,0.10) 三种不同值。
+ */
+export function getScrim(isDark: boolean): string {
+  return isDark ? 'rgba(7,9,12,0.62)' : 'rgba(16,20,24,0.42)';
+}
+
 export const shadows = {
-  sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.28, shadowRadius: 4, elevation: 2 },
-  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.38, shadowRadius: 10, elevation: 5 },
-  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.48, shadowRadius: 20, elevation: 10 },
+  sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.18, shadowRadius: 6, elevation: 2 },
+  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.55, shadowRadius: 6, elevation: 4 },
+  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.55, shadowRadius: 6, elevation: 6 },
 } as const;
 
 export const layout = {
@@ -300,7 +427,9 @@ export function createGlobalStyles(c: Colors) {
     screen: { flex: 1, backgroundColor: c.bg },
     screenContent: {
       paddingHorizontal: layout.paddingHorizontal,
-      paddingBottom: layout.tabBarHeight + spacing.lg,
+      // NOTE: 若页面在 (tabs) Tab 导航下，请改用页面内 useSafeAreaInsets().bottom 动态计算 bottomPad。
+      // 这里是 legacy 兜底：layout.tabBarHeight (静态) + 额外 32px buffer + lg 防止 OEM 导航条溢出。
+      paddingBottom: layout.tabBarHeight + spacing.xxl + spacing.lg,
     },
     surfaceCard: {
       backgroundColor: c.surface,

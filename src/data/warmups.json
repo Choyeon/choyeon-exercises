@@ -1,0 +1,218 @@
+[
+  {
+    "id": "w-jumping-jacks",
+    "category": "warmup",
+    "name": { "zh": "开合跳", "en": "Jumping Jacks" },
+    "instruction": {
+      "zh": "双脚起跳同时手脚张开，落地并拢；保持节奏，呼吸均匀。",
+      "en": "Jump while spreading arms and legs wide, then land together; keep the rhythm and breathe evenly."
+    },
+    "durationSec": 30,
+    "bodyPart": "cardio",
+    "icon": "human-handsup"
+  },
+  {
+    "id": "w-high-knees",
+    "category": "warmup",
+    "name": { "zh": "原地高抬腿", "en": "High Knees" },
+    "instruction": {
+      "zh": "原地快速交替将膝盖抬至髋部高度，摆臂配合，核心收紧。",
+      "en": "Quickly alternate driving knees up to hip height in place, pump arms and engage your core."
+    },
+    "durationSec": 30,
+    "bodyPart": "cardio",
+    "icon": "run-fast"
+  },
+  {
+    "id": "w-arm-circles",
+    "category": "warmup",
+    "name": { "zh": "手臂大绕环", "en": "Arm Circles" },
+    "instruction": {
+      "zh": "双臂侧平举，向前做大圈环绕 20 秒，再反向向后 20 秒。",
+      "en": "Arms out to the sides, make large forward circles for 20s, then reverse to backward circles for another 20s."
+    },
+    "durationSec": 40,
+    "bodyPart": "shoulders",
+    "icon": "rotate-orbit"
+  },
+  {
+    "id": "w-bodyweight-squats",
+    "category": "warmup",
+    "name": { "zh": "徒手浅蹲", "en": "Bodyweight Squats (shallow)" },
+    "instruction": {
+      "zh": "双脚与肩同宽，下蹲至大腿约平行地面即起身，注意膝盖对齐脚尖。",
+      "en": "Feet shoulder-width, squat until thighs roughly parallel then stand; keep knees tracking over toes."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper legs",
+    "icon": "human-handsdown"
+  },
+  {
+    "id": "w-cat-cow",
+    "category": "warmup",
+    "name": { "zh": "猫牛式脊柱激活", "en": "Cat-Cow Spinal Release" },
+    "instruction": {
+      "zh": "四足跪姿，吸气抬头塌腰（牛），呼气弓背低头（猫），缓慢交替。",
+      "en": "On hands and knees, inhale arching back lifting head (cow), exhale rounding back tucking chin (cat); alternate slowly."
+    },
+    "durationSec": 30,
+    "bodyPart": "core",
+    "icon": "yoga"
+  },
+  {
+    "id": "w-hip-circles",
+    "category": "warmup",
+    "name": { "zh": "髋关节环绕", "en": "Hip Circles" },
+    "instruction": {
+      "zh": "双手叉腰，以髋为轴顺时针画大圈 20 秒，再逆时针 20 秒。",
+      "en": "Hands on hips, rotate pelvis clockwise in large circles for 20s, then counter-clockwise for 20s."
+    },
+    "durationSec": 40,
+    "bodyPart": "upper legs",
+    "icon": "rotate-3d"
+  },
+  {
+    "id": "w-scapular-pushups",
+    "category": "warmup",
+    "name": { "zh": "肩胛俯卧撑", "en": "Scapular Push-ups" },
+    "instruction": {
+      "zh": "高平板姿势，保持手臂伸直，只靠肩胛骨收缩下沉再推起。",
+      "en": "High plank with straight arms, lower by retracting shoulder blades only, then push back up protracting."
+    },
+    "durationSec": 30,
+    "bodyPart": "chest",
+    "icon": "push-up-outline"
+  },
+  {
+    "id": "w-glute-bridges",
+    "category": "warmup",
+    "name": { "zh": "臀桥激活", "en": "Glute Bridges" },
+    "instruction": {
+      "zh": "仰卧屈膝，双脚踩地，臀部发力顶起身体至肩髋膝成一线。",
+      "en": "Lie on your back with knees bent, drive through heels to lift hips until body forms a straight line from shoulders to knees."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper legs",
+    "icon": "seat-outline"
+  },
+  {
+    "id": "s-hamstring",
+    "category": "stretch",
+    "name": { "zh": "坐姿腘绳肌拉伸", "en": "Seated Hamstring Stretch" },
+    "instruction": {
+      "zh": "坐姿一条腿伸直，另一条腿弯曲贴大腿，上身前倾至腿后有牵拉感保持。",
+      "en": "Sit with one leg straight, the other bent with foot against inner thigh; hinge forward from hips until you feel a stretch behind the thigh, hold."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper legs",
+    "icon": "human-male-height"
+  },
+  {
+    "id": "s-quad",
+    "category": "stretch",
+    "name": { "zh": "站姿股四头肌拉伸", "en": "Standing Quad Stretch" },
+    "instruction": {
+      "zh": "单脚站立，手拉另一只脚的脚背贴臀部，膝盖对齐，感受大腿前侧牵拉。",
+      "en": "Stand on one leg, pull the top of the other foot toward your glutes; keep knees close together and feel the stretch on the front thigh."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper legs",
+    "icon": "human"
+  },
+  {
+    "id": "s-chest-opener",
+    "category": "stretch",
+    "name": { "zh": "扩胸胸大肌拉伸", "en": "Chest-Door Opener" },
+    "instruction": {
+      "zh": "小臂贴门框或墙面，身体前倾感受胸部牵拉，打开肩膀。",
+      "en": "Place forearm on a wall or doorframe, lean forward until you feel a stretch across the chest and front of the shoulder."
+    },
+    "durationSec": 30,
+    "bodyPart": "chest",
+    "icon": "arms-outline"
+  },
+  {
+    "id": "s-child",
+    "category": "stretch",
+    "name": { "zh": "婴儿式背部拉伸", "en": "Child Pose Back Stretch" },
+    "instruction": {
+      "zh": "跪坐，上身前倾贴大腿，双臂前伸或放身体两侧，放松背部。",
+      "en": "Kneel with big toes touching, sit back onto heels and fold forward; rest arms extended or alongside body, relax the back."
+    },
+    "durationSec": 30,
+    "bodyPart": "back",
+    "icon": "human-handsup"
+  },
+  {
+    "id": "s-cat-camel-stretch",
+    "category": "stretch",
+    "name": { "zh": "猫驼式脊柱", "en": "Cat-Camel Stretch" },
+    "instruction": {
+      "zh": "四足跪姿，慢速交替做弓背（呼气）和塌腰（吸气），活动整段脊柱。",
+      "en": "On hands and knees, slowly alternate rounding the back up (exhale) and arching it down (inhale) to mobilize the entire spine."
+    },
+    "durationSec": 30,
+    "bodyPart": "core",
+    "icon": "spine"
+  },
+  {
+    "id": "s-shoulder-cross",
+    "category": "stretch",
+    "name": { "zh": "肩交叉三角肌拉伸", "en": "Cross-Body Shoulder Stretch" },
+    "instruction": {
+      "zh": "一臂水平横过胸前，另一手臂在肘窝处拉向身体，20 秒/侧。",
+      "en": "Bring one arm horizontally across the chest, hook the other arm around the elbow and pull toward the body; 20s per side."
+    },
+    "durationSec": 30,
+    "bodyPart": "shoulders",
+    "icon": "arm-flex-outline"
+  },
+  {
+    "id": "s-triceps",
+    "category": "stretch",
+    "name": { "zh": "三头肌过头拉伸", "en": "Overhead Triceps Stretch" },
+    "instruction": {
+      "zh": "一手高举过头弯肘向后，另一手握住手肘轻轻下拉，20 秒/侧。",
+      "en": "Raise one arm overhead and bend elbow behind your head; use the other hand to gently pull the elbow down; 20s per side."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper arms",
+    "icon": "dumbbell"
+  },
+  {
+    "id": "s-lat",
+    "category": "stretch",
+    "name": { "zh": "站立侧弯腰方肌/背阔肌拉伸", "en": "Standing Side Bend Lat Stretch" },
+    "instruction": {
+      "zh": "双脚站立，一手上举过头弯向对侧侧屈，感受背部和侧腰牵拉。",
+      "en": "Stand tall, raise one arm overhead and side-bend to the opposite side; feel the stretch along the lats and side body."
+    },
+    "durationSec": 30,
+    "bodyPart": "back",
+    "icon": "human"
+  },
+  {
+    "id": "s-hip-flexor",
+    "category": "stretch",
+    "name": { "zh": "跪姿髋屈肌拉伸", "en": "Kneeling Hip-Flexor Stretch" },
+    "instruction": {
+      "zh": "单膝跪地，前腿弓步，重心前移下压，感受髋前部牵拉，30 秒/侧。",
+      "en": "Kneel on one knee with front leg in a lunge, shift hips forward and sink down; feel the stretch on the front of the hip, 30s per side."
+    },
+    "durationSec": 30,
+    "bodyPart": "upper legs",
+    "icon": "human-male"
+  },
+  {
+    "id": "s-neck-rolls",
+    "category": "stretch",
+    "name": { "zh": "颈部环绕放松", "en": "Neck Rolls" },
+    "instruction": {
+      "zh": "放松肩膀，缓慢做颈部顺时针和逆时针的轻柔环绕，避免用力。",
+      "en": "Relax shoulders, slowly roll the neck in gentle circles clockwise then counter-clockwise; no force."
+    },
+    "durationSec": 30,
+    "bodyPart": "neck",
+    "icon": "head-outline"
+  }
+]

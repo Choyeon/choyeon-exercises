@@ -1,15 +1,16 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, View, Image as RNImage, StyleSheet } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { useThemeColors } from '@/theme';
+import type { Colors } from '@/theme';
 import { Icon } from './UIKit';
 
 const FILL: any = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
 
 interface GifPlayerProps {
-  /** Full CDN URL to the .gif file */
+  /** URL to the .gif file — in offline-only mode this is typically '' */
   gifUri: string;
-  /** Full CDN URL to the static poster JPG — used as fallback when GIF fails */
+  /** URL to the static poster JPG — used as fallback when GIF fails */
   posterUri: string;
   /** Whether to play GIF (true) or show poster (false) */
   active: boolean;
@@ -19,31 +20,67 @@ interface GifPlayerProps {
   onFallbackToPoster?: () => void;
   /** Optional override for placeholder icon name */
   placeholderIcon?: string;
+  /**
+   * Frame fitting: 'cover' fills the frame (detail hero), 'contain' letterboxes
+   * so the FULL animation frame stays visible (list cards — never cropped).
+   */
+  contentFit?: 'cover' | 'contain';
 }
 
 /**
- * GifPlayer — robust 4-tier fallback chain for fitness GIF animations.
+ * 与主题无关的静态样式一次建好；依赖 colors 的部分按主题缓存（见 getGifStyles）。
+ */
+const GIF_STATIC_STYLES = StyleSheet.create({
+  container: { width: '100%', height: '100%' },
+  img: { width: '100%', height: '100%' },
+  loadingOverlay: { ...FILL, alignItems: 'center', justifyContent: 'center' },
+  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+});
+
+const gifStylesCache = new WeakMap<Colors, ReturnType<typeof createGifStyles>>();
+
+function createGifStyles(colors: Colors) {
+  return StyleSheet.create({
+    container: {
+      ...GIF_STATIC_STYLES.container,
+      backgroundColor: colors.surfaceElevated,
+    },
+    img: {
+      ...GIF_STATIC_STYLES.img,
+      backgroundColor: colors.surfaceElevated,
+    },
+    loadingOverlay: {
+      ...GIF_STATIC_STYLES.loadingOverlay,
+      backgroundColor: colors.surfaceElevated,
+    },
+    placeholder: GIF_STATIC_STYLES.placeholder,
+  });
+}
+
+function getGifStyles(colors: Colors) {
+  let cached = gifStylesCache.get(colors);
+  if (!cached) {
+    cached = createGifStyles(colors);
+    gifStylesCache.set(colors, cached);
+  }
+  return cached;
+}
+
+/**
+ * GifPlayer — renders exercise media with a robust fallback chain.
  *
- * ROOT CAUSES OF "BLACK SCREEN WHEN GIF PLAYS" ON ANDROID:
- *   1. RN core Image (Fresco) animated-gif silently fails on some OEM GPUs,
- *      leaving a fully-transparent layer.  Without backgroundColor the
- *      hardware black shows through.
- *   2. expo-image uses Glide on Android — when Glide's GIF pipeline chokes
- *      on malformed GIFs or CDN rate-limit responses, it also produces a
- *      transparent frame.
- *   3. Either decoder can hang on a network timeout from jsdelivr CDN.
+ * OFFLINE MODE (current default):
+ *   All media URLs resolve to '' so no network is ever used.  This component
+ *   detects empty URIs immediately and short-circuits straight to the
+ *   Tier-D tinted placeholder slab — no loading spinner, no timeout wait,
+ *   no wasted CPU on doomed HTTP requests.  The placeholder uses a
+ *   muscle-group tint + body-part icon, which is still visually scannable.
  *
- * FALLBACK ORDER when `active=true`:
+ * FALLBACK ORDER when URIs are actually provided and `active=true`:
  *   Tier A — expo-image (Glide, best caching + network handling).
  *   Tier B — RN core Image (Fresco + explicit animated-gif dep).
- *   Tier C — static poster JPG (guaranteed to render).
- *   Tier D — solid tinted placeholder slab (never blank).
- *
- * CRITICAL GRADLE CONFIG (applied in android/app/build.gradle):
- *   implementation("com.facebook.fresco:animated-gif:3.6.0")
- *   implementation("com.facebook.fresco:animated-webp:3.6.0")
- *   implementation("com.facebook.fresco:webpsupport:3.6.0")
- *   implementation("com.facebook.fresco:okhttp3-image-loader:3.6.0")
+ *   Tier C — static poster JPG.
+ *   Tier D — solid tinted placeholder slab (never blank, guaranteed render).
  */
 export function GifPlayer({
   gifUri,
@@ -52,83 +89,99 @@ export function GifPlayer({
   tint,
   onFallbackToPoster,
   placeholderIcon = 'dumbbell',
+  contentFit = 'cover',
 }: GifPlayerProps) {
   const colors = useThemeColors();
+  // ★ 修复内存泄漏：组件卸载后异步回调（onLoadEnd/onError）不再 setState
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const safeSet = useCallback((fn: () => void) => {
+    if (mountedRef.current) fn();
+  }, []);
+
+  // ------------------------------------------------------------------
+  // OFFLINE SHORT-CIRCUIT — no media URLs provided → instant placeholder.
+  // This is the 99.9% path in the current offline-only build.
+  // ------------------------------------------------------------------
+  const hasAnyMedia = !!gifUri || !!posterUri;
 
   // Simplified state machine — each tier is tried ONCE per activation.
-  // No more confusing retryCount that never actually retried the same tier.
   type Tier = 'expo' | 'rn' | 'poster' | 'placeholder';
-  const [tier, setTier] = useState<Tier>(() => (active ? 'expo' : 'poster'));
+  const [tier, setTier] = useState<Tier>(() => {
+    if (!hasAnyMedia) return 'placeholder';
+    return active ? 'expo' : 'poster';
+  });
   const [loading, setLoading] = useState(false);
 
   // Reset when animation toggles or URL changes (new exercise).
   useEffect(() => {
-    if (!active) {
-      setTier('poster');
-      setLoading(false);
+    if (!hasAnyMedia) {
+      safeSet(() => { setTier('placeholder'); setLoading(false); });
       return;
     }
-    setTier('expo');
-    setLoading(true);
-  }, [active, gifUri]);
+    if (!active) {
+      safeSet(() => { setTier('poster'); setLoading(false); });
+      return;
+    }
+    safeSet(() => { setTier('expo'); setLoading(true); });
+  }, [active, gifUri, posterUri, hasAnyMedia, safeSet]);
 
   const tintColor = tint ?? colors.primary;
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      width: '100%',
-      height: '100%',
-      // OPAQUE container — the #1 fix for "GIF looks black".  If any GIF
-      // decoder produces a transparent frame, this surface color shows
-      // through instead of the phone's black hardware background.
-      backgroundColor: colors.surfaceElevated,
-    },
-    img: {
-      width: '100%',
-      height: '100%',
-      // BOTH expo-image and RN Image respect backgroundColor on Android.
-      // Setting it to match the container guarantees transparent GIF frames
-      // never reveal the hardware black, even if decoding partially succeeds.
-      backgroundColor: colors.surfaceElevated,
-    },
-    loadingOverlay: {
-      ...FILL,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surfaceElevated,
-    },
-    placeholder: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: tintColor + '18',
-    },
-  }), [colors.surfaceElevated, tintColor]);
+  // 样式按主题缓存到模块级：GifPlayer 被 ExerciseCard 用在 FlashList 的每一个
+  // 可见 cell 里，逐实例 StyleSheet.create 会在滚动过程中持续制造分配与 GC。
+  const styles = getGifStyles(colors);
 
   // --- Error handlers: each tier tries ONCE, then moves down the chain ---
 
   const handleExpoError = useCallback(() => {
-    // expo-image (Glide) failed → try RN core Image (Fresco).
-    setTier('rn');
-    setLoading(true);
-  }, []);
+    safeSet(() => { setTier('rn'); setLoading(true); });
+  }, [safeSet]);
 
   const handleRnError = useCallback(() => {
-    // RN core Image (Fresco) also failed → show static poster permanently.
-    setTier('poster');
-    setLoading(false);
+    safeSet(() => { setTier('poster'); setLoading(false); });
     onFallbackToPoster?.();
-  }, [onFallbackToPoster]);
+  }, [safeSet, onFallbackToPoster]);
 
-  // Not playing → show poster, always (tier-independent).
+  // If poster also fails → move to placeholder (never blank screen).
+  const handlePosterError = useCallback(() => {
+    safeSet(() => { setTier('placeholder'); setLoading(false); });
+    onFallbackToPoster?.();
+  }, [safeSet, onFallbackToPoster]);
+
+  const handleLoadEnd = useCallback(() => {
+    safeSet(() => setLoading(false));
+  }, [safeSet]);
+
+  // ============================================================
+  // TIER D (fast path) — solid tinted placeholder slab.
+  // Used whenever hasAnyMedia is false (offline mode) OR every
+  // remote-load tier has failed.  Renders instantly, zero I/O.
+  // ============================================================
+  if (tier === 'placeholder' || !hasAnyMedia) {
+    return (
+      // placeholder 的底色依赖 tint（每张卡都不同），只能走 inline style；
+      // 其余与主题相关的部分已随 colors 缓存。
+      <View style={[styles.placeholder, { backgroundColor: tintColor + '18' }]}>
+        <Icon name={placeholderIcon} size={48} color={tintColor} />
+      </View>
+    );
+  }
+
+  // Not playing → show poster JPG.
   if (!active) {
     return (
       <View style={styles.container}>
         <ExpoImage
           source={posterUri}
           style={styles.img}
-          contentFit="cover"
+          contentFit={contentFit}
           transition={200}
+          onError={handlePosterError}
         />
       </View>
     );
@@ -143,8 +196,8 @@ export function GifPlayer({
         <ExpoImage
           source={gifUri}
           style={styles.img}
-          contentFit="cover"
-          onLoadEnd={() => setLoading(false)}
+          contentFit={contentFit}
+          onLoadEnd={handleLoadEnd}
           onError={handleExpoError}
         />
         {loading && (
@@ -165,8 +218,8 @@ export function GifPlayer({
         <RNImage
           source={{ uri: gifUri }}
           style={styles.img}
-          resizeMode="cover"
-          onLoadEnd={() => setLoading(false)}
+          resizeMode={contentFit}
+          onLoadEnd={handleLoadEnd}
           onError={handleRnError}
         />
         {loading && (
@@ -179,26 +232,16 @@ export function GifPlayer({
   }
 
   // ============================================================
-  // TIER C — static poster JPG (guaranteed to render)
-  // ============================================================
-  if (tier === 'poster') {
-    return (
-      <View style={styles.container}>
-        <ExpoImage
-          source={posterUri}
-          style={styles.img}
-          contentFit="cover"
-        />
-      </View>
-    );
-  }
-
-  // ============================================================
-  // TIER D — tinted placeholder slab (never blank)
+  // TIER C — static poster JPG (guaranteed to render if URL works)
   // ============================================================
   return (
-    <View style={styles.placeholder}>
-      <Icon name={placeholderIcon} size={48} color={tintColor} />
+    <View style={styles.container}>
+      <ExpoImage
+        source={posterUri}
+        style={styles.img}
+        contentFit={contentFit}
+        onError={handlePosterError}
+      />
     </View>
   );
 }

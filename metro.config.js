@@ -10,9 +10,9 @@ config.resolver.alias = {
   '@': path.resolve(__dirname, 'src'),
 };
 
-// Make sure JSON is included (covered by default but explicit for large file)
+// NativeWind v4: 允许 .css 文件被 Metro 解析和转换
 config.resolver.sourceExts = Array.from(
-  new Set([...(config.resolver.sourceExts || []), 'json'])
+  new Set([...(config.resolver.sourceExts || []), 'json', 'css'])
 );
 
 // Allow the large dataset (17MB) to be bundled without warning

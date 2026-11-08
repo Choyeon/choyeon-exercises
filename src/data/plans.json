@@ -1,0 +1,229 @@
+[
+  {
+    "id": "template-fullbody-beginner-a",
+    "level": "beginner",
+    "goal": "hypertrophy",
+    "daysPerWeek": 3,
+    "durationMinPerSession": 45,
+    "equipmentRequired": ["dumbbell", "body weight"],
+    "name": {
+      "zh": "新手全身训练 A",
+      "en": "Beginner Full-Body A"
+    },
+    "description": {
+      "zh": "3 天/周 · 45 分钟 · 哑铃+自重。适合新手前 12 周建立基础动作模式。",
+      "en": "3x/week · 45 min · Dumbbell + Bodyweight. Perfect for your first 12 weeks building movement patterns."
+    },
+    "sessions": [
+      {
+        "day": "Day A",
+        "name": { "zh": "全身 A：下肢为主", "en": "Day A · Lower-body focus" },
+        "exerciseIds": ["1207", "0301", "1064", "0018", "1300", "0895"],
+        "defaults": {
+          "1207": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0301": { "sets": 3, "reps": 10, "restSec": 120 },
+          "1064": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0018": { "sets": 3, "reps": 10, "restSec": 90 },
+          "1300": { "sets": 3, "reps": 15, "restSec": 60 },
+          "0895": { "sets": 3, "reps": 30, "restSec": 45 }
+        }
+      },
+      {
+        "day": "Day B",
+        "name": { "zh": "全身 B：推拉为主", "en": "Day B · Push / Pull focus" },
+        "exerciseIds": ["0847", "0313", "0014", "0040", "0894", "1063"],
+        "defaults": {
+          "0847": { "sets": 3, "reps": 10, "restSec": 120 },
+          "0313": { "sets": 3, "reps": 10, "restSec": 120 },
+          "0014": { "sets": 3, "reps": 10, "restSec": 90 },
+          "0040": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0894": { "sets": 3, "reps": 15, "restSec": 60 },
+          "1063": { "sets": 3, "reps": 60, "restSec": 45 }
+        }
+      },
+      {
+        "day": "Day C",
+        "name": { "zh": "全身 C：与 A 轮换", "en": "Day C · Rotate with A" },
+        "exerciseIds": ["1207", "0301", "1064", "0018", "1300", "0895"],
+        "defaults": {
+          "1207": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0301": { "sets": 3, "reps": 10, "restSec": 120 },
+          "1064": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0018": { "sets": 3, "reps": 10, "restSec": 90 },
+          "1300": { "sets": 3, "reps": 15, "restSec": 60 },
+          "0895": { "sets": 3, "reps": 30, "restSec": 45 }
+        }
+      }
+    ]
+  },
+  {
+    "id": "template-ppl-push",
+    "level": "intermediate",
+    "goal": "hypertrophy",
+    "daysPerWeek": 6,
+    "durationMinPerSession": 75,
+    "equipmentRequired": ["barbell", "dumbbell", "cable", "machine"],
+    "name": {
+      "zh": "PPL · 推日",
+      "en": "PPL · Push Day"
+    },
+    "description": {
+      "zh": "胸 / 肩 / 肱三头肌。适合中级训练者，每个肌群 16-20 组/周。",
+      "en": "Chest / Shoulders / Triceps. 16-20 working sets per muscle group per week for intermediates."
+    },
+    "sessions": [
+      {
+        "day": "Push",
+        "name": { "zh": "推日：胸+肩+肱三", "en": "Push · Chest / Shoulders / Tris" },
+        "exerciseIds": ["0847", "0126", "0313", "0129", "0289", "0290", "0155", "0200"],
+        "defaults": {
+          "0847": { "sets": 4, "reps": 8, "restSec": 180 },
+          "0126": { "sets": 4, "reps": 10, "restSec": 120 },
+          "0313": { "sets": 4, "reps": 10, "restSec": 120 },
+          "0129": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0289": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0290": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0155": { "sets": 3, "reps": 12, "restSec": 75 },
+          "0200": { "sets": 3, "reps": 15, "restSec": 60 }
+        }
+      }
+    ]
+  },
+  {
+    "id": "template-ppl-pull",
+    "level": "intermediate",
+    "goal": "hypertrophy",
+    "daysPerWeek": 6,
+    "durationMinPerSession": 75,
+    "equipmentRequired": ["barbell", "dumbbell", "cable", "machine"],
+    "name": {
+      "zh": "PPL · 拉日",
+      "en": "PPL · Pull Day"
+    },
+    "description": {
+      "zh": "背 / 肱二 / 后束。与 PPL Push 轮换。",
+      "en": "Back / Biceps / Rear delts. Rotate with PPL Push day."
+    },
+    "sessions": [
+      {
+        "day": "Pull",
+        "name": { "zh": "拉日：背+肱二+后束", "en": "Pull · Back / Biceps / Rear delts" },
+        "exerciseIds": ["0300", "0312", "0835", "0848", "0850", "0060", "0175", "0063"],
+        "defaults": {
+          "0300": { "sets": 4, "reps": 8, "restSec": 180 },
+          "0312": { "sets": 4, "reps": 10, "restSec": 120 },
+          "0835": { "sets": 3, "reps": 12, "restSec": 120 },
+          "0848": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0850": { "sets": 3, "reps": 12, "restSec": 90 },
+          "0060": { "sets": 3, "reps": 10, "restSec": 90 },
+          "0175": { "sets": 3, "reps": 12, "restSec": 75 },
+          "0063": { "sets": 3, "reps": 15, "restSec": 60 }
+        }
+      }
+    ]
+  },
+  {
+    "id": "template-ppl-legs",
+    "level": "intermediate",
+    "goal": "hypertrophy",
+    "daysPerWeek": 6,
+    "durationMinPerSession": 90,
+    "equipmentRequired": ["barbell", "dumbbell", "machine"],
+    "name": {
+      "zh": "PPL · 腿日",
+      "en": "PPL · Leg Day"
+    },
+    "description": {
+      "zh": "股四 / 膕绳 / 臀 / 小腿。腿日每周至少 2 次。",
+      "en": "Quads / Hamstrings / Glutes / Calves. Minimum twice a week."
+    },
+    "sessions": [
+      {
+        "day": "Legs",
+        "name": { "zh": "腿日：股四/膕绳/臀/小腿", "en": "Legs · Quads / Hams / Glutes / Calves" },
+        "exerciseIds": ["1207", "0301", "1318", "1302", "0018", "1300", "0895", "1294"],
+        "defaults": {
+          "1207": { "sets": 4, "reps": 10, "restSec": 180 },
+          "0301": { "sets": 4, "reps": 10, "restSec": 180 },
+          "1318": { "sets": 3, "reps": 12, "restSec": 120 },
+          "1302": { "sets": 3, "reps": 12, "restSec": 120 },
+          "0018": { "sets": 3, "reps": 12, "restSec": 90 },
+          "1300": { "sets": 4, "reps": 15, "restSec": 60 },
+          "0895": { "sets": 4, "reps": 20, "restSec": 60 },
+          "1294": { "sets": 3, "reps": 20, "restSec": 45 }
+        }
+      }
+    ]
+  },
+  {
+    "id": "template-5x5-strength",
+    "level": "intermediate",
+    "goal": "strength",
+    "daysPerWeek": 3,
+    "durationMinPerSession": 60,
+    "equipmentRequired": ["barbell", "bench", "squat rack"],
+    "name": {
+      "zh": "5x5 力量训练 A",
+      "en": "StrongLifts 5×5 A"
+    },
+    "description": {
+      "zh": "深蹲/卧推/杠铃划船 5x5 + 硬拉 1x5。每次加重 2.5kg。",
+      "en": "Squat / Bench / Barbell row 5×5 · Deadlift 1×5. Add 2.5 kg each session while you can."
+    },
+    "sessions": [
+      {
+        "day": "Workout A",
+        "name": { "zh": "训练 A：深蹲/卧推/划船", "en": "A · Squat / Bench / Row" },
+        "exerciseIds": ["1207", "0847", "0300"],
+        "defaults": {
+          "1207": { "sets": 5, "reps": 5, "restSec": 180 },
+          "0847": { "sets": 5, "reps": 5, "restSec": 180 },
+          "0300": { "sets": 5, "reps": 5, "restSec": 180 }
+        }
+      },
+      {
+        "day": "Workout B",
+        "name": { "zh": "训练 B：深蹲/推举/硬拉", "en": "B · Squat / Press / Deadlift" },
+        "exerciseIds": ["1207", "0313", "0301"],
+        "defaults": {
+          "1207": { "sets": 5, "reps": 5, "restSec": 180 },
+          "0313": { "sets": 5, "reps": 5, "restSec": 180 },
+          "0301": { "sets": 1, "reps": 5, "restSec": 300 }
+        }
+      }
+    ]
+  },
+  {
+    "id": "template-home-bodyweight",
+    "level": "beginner",
+    "goal": "maintenance",
+    "daysPerWeek": 3,
+    "durationMinPerSession": 30,
+    "equipmentRequired": ["body weight"],
+    "name": {
+      "zh": "家庭自重训练",
+      "en": "Home · Bodyweight Only"
+    },
+    "description": {
+      "zh": "零器械。俯卧撑/深蹲/引体（或反向划船替代品）/平板。30 分钟即可。",
+      "en": "Zero-equipment. Push-ups / Squats / Inverted rows alternatives / Plank. Done in 30 minutes."
+    },
+    "sessions": [
+      {
+        "day": "Home BW",
+        "name": { "zh": "家庭：推+拉+腿+核心", "en": "Home · Push / Pull / Legs / Core" },
+        "exerciseIds": ["1064", "1063", "1207", "1300", "1065", "1066", "0894", "1296"],
+        "defaults": {
+          "1064": { "sets": 4, "reps": 15, "restSec": 60 },
+          "1063": { "sets": 4, "reps": 10, "restSec": 60 },
+          "1207": { "sets": 4, "reps": 20, "restSec": 60 },
+          "1300": { "sets": 4, "reps": 20, "restSec": 45 },
+          "1065": { "sets": 3, "reps": 12, "restSec": 60 },
+          "1066": { "sets": 3, "reps": 30, "restSec": 45 },
+          "0894": { "sets": 3, "reps": 20, "restSec": 45 },
+          "1296": { "sets": 3, "reps": 60, "restSec": 30 }
+        }
+      }
+    ]
+  }
+]

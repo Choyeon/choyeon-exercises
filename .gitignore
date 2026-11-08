@@ -1,7 +1,7 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# Dependencies
 node_modules/
+.pnp/
+.pnp.js
 
 # Expo
 .expo/
@@ -9,33 +9,94 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
-.kotlin/
-*.orig.*
+# Native Android
+android/.gradle/
+android/app/build/
+android/build/
+android/app/.cxx/
+android/local.properties
+android/**/*.keystore
+android/**/*.jks
+
+# Native iOS
+ios/build/
+ios/Pods/
+ios/.symlinks/
+
+# Metro
+.metro-health-check*
+.metro/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Keys / Certificates
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
 *.pem
 
-# local env files
-.env*.local
+# Build artifacts
+*.apk
+*.aab
+*.ipa
+*.dmg
+*.exe
+*.blockmap
+latest.yml
 
-# typescript
-*.tsbuildinfo
+# Test / Coverage
+coverage/
+.nyc_output/
 
-# generated native folders
-/ios
-/android
+# Turbo
+.turbo/
+
+# Temporary
+*.tmp
+*.bak
+
+# Project-specific local / machine state (never commit)
+.workbuddy/
+
+# Stray build logs / screenshots / debug dumps at repo root
+# (anchored to root so they never match the legitimate android/res or assets)
+/build-log*.txt
+/output.md
+/test-screen-*.png
+/screen-*.png
+/app-*.png
+/app-running-*.png
+/app-screen-*.png
+/detail-screenshot.png
+/expo-*.png
+/gif-screenshot.png
+/home-screenshot.png
+/ui.xml
+/ui2.xml

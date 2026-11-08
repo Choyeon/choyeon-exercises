@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   ChoyeonExercises — 设计令牌 CSS 变量
+   与 src/theme/index.tsx 中的 lightColors / darkColors 完全同步。
+   NativeWind 通过根节点 className="light" / "dark" 自动切换变量。
+   ========================================================================= */
+
+/* ---------- Dark Theme (默认) ---------- */
+:root,
+.dark {
+  --color-bg: 7 9 12;                 /* #07090C */
+  --color-surface: 14 18 22;          /* #0E1216 */
+  --color-surface-2: 18 23 29;        /* #12171D */
+  --color-surface-3: 25 31 38;        /* #191F26 */
+  --color-surface-border: 33 40 49;   /* #212831 */
+  --color-surface-divider: 26 32 40;  /* #1A2028 */
+  --color-surface-elevated: 23 29 36; /* #171D24 */
+  --color-surface-hover: 26 32 40;    /* #1A2028 */
+  --color-surface-pressed: 31 38 48;  /* #1F2630 */
+  --color-surface-focus: 33 40 49;    /* #212831 */
+
+  --color-text: 245 247 250;          /* #F5F7FA */
+  --color-text-secondary: 177 186 200;/* #B1BAC8 */
+  --color-text-tertiary: 145 154 169; /* #919AA9 */
+  --color-text-inverse: 255 255 255;  /* #FFFFFF */
+
+  --color-primary: 138 192 26;        /* #8AC01A */
+  --color-primary-hover: 122 170 21;  /* #7AAA15 */
+  --color-primary-dim: 138 192 26;    /* rgba 由 alpha 控制 */
+  --color-primary-stroke: 138 192 26;
+  --color-accent: 229 76 32;          /* #E54C20 */
+  --color-accent-dim: 229 76 32;
+  --color-accent-stroke: 229 76 32;
+
+  --color-info: 46 158 221;           /* #2E9EDD */
+  --color-info-dim: 46 158 221;
+}
+
+/* ---------- Light Theme ---------- */
+.light {
+  --color-bg: 246 247 248;            /* #F6F7F8 */
+  --color-surface: 255 255 255;       /* #FFFFFF */
+  --color-surface-2: 242 244 247;     /* #F2F4F7 */
+  --color-surface-3: 234 237 241;     /* #EAEDF1 */
+  --color-surface-border: 228 231 237;/* #E4E7ED */
+  --color-surface-divider: 233 236 241;/* #E9ECF1 */
+  --color-surface-elevated: 255 255 255;
+  --color-surface-hover: 242 244 247;
+  --color-surface-pressed: 234 237 241;
+  --color-surface-focus: 228 231 237;
+
+  --color-text: 17 21 26;             /* #11151A */
+  --color-text-secondary: 93 102 118; /* #5D6676 */
+  --color-text-tertiary: 140 148 161; /* #8C94A1 */
+  --color-text-inverse: 255 255 255;
+
+  --color-primary: 138 192 26;
+  --color-primary-hover: 122 170 21;
+  --color-primary-dim: 138 192 26;
+  --color-primary-stroke: 138 192 26;
+  --color-accent: 229 76 32;
+  --color-accent-dim: 229 76 32;
+  --color-accent-stroke: 229 76 32;
+
+  --color-info: 46 158 221;
+  --color-info-dim: 46 158 221;
+}

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { ThemeProvider, useThemeColors, typography, spacing, getResolvedTheme } from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { bootstrapI18n } from '@/i18n';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Text } from 'react-native';
 
 /**
@@ -41,6 +42,14 @@ function InnerRoot() {
             name="exercise/[id]"
             options={{
               headerTitle: t('exercise.overview') + ' ·',
+              presentation: 'card',
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="stats"
+            options={{
+              headerTitle: t('statsPage.title', { defaultValue: '数据面板' }),
               presentation: 'card',
               animation: 'slide_from_right',
             }}
@@ -124,7 +133,15 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      {bootstrapped ? <InnerRoot /> : <BootScreen />}
+      {/*
+        全局 ErrorBoundary：
+        - 包在 InnerRoot 外层 → 捕获任何屏幕渲染期异常，避免白屏/闪退；
+        - 位于 ThemeProvider 内部 → 兜底 UI 能够读取主题色，
+          即使设置页本身崩溃，提示卡片仍与 App 视觉风格一致。
+      */}
+      <ErrorBoundary>
+        {bootstrapped ? <InnerRoot /> : <BootScreen />}
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

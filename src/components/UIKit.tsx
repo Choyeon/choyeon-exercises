@@ -1,4 +1,4 @@
-import React, { memo, forwardRef, useState, useCallback, useMemo } from 'react';
+import React, { memo, forwardRef, useState, useCallback, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,8 +17,10 @@ import Animated, {
   withSpring,
   WithSpringConfig,
 } from 'react-native-reanimated';
+import { Image as ExpoImage } from 'expo-image';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useThemeColors, typography, spacing, radius, layout } from '@/theme';
+import { useThemeColors, typography, spacing, radius, layout, getScrim, strokeFromColors } from '@/theme';
+import { useTranslation } from 'react-i18next';
 
 // ==========================================================================
 // Icon — single gateway for MaterialCommunityIcons.  Everything goes through
@@ -129,7 +131,7 @@ export function SectionHeader({
       alignItems: 'flex-start',
       gap: spacing.sm,
       marginBottom: spacing.md,
-      paddingTop: 2,
+      paddingTop: spacing.xs,
     },
     sectionHeaderInline: {
       marginBottom: 0,
@@ -139,7 +141,7 @@ export function SectionHeader({
       width: 3,
       height: 16,
       borderRadius: 2,
-      marginTop: 2,
+      marginTop: spacing.xs,
     },
     iconTray: {
       width: 24,
@@ -156,7 +158,7 @@ export function SectionHeader({
     sectionNote: {
       ...typography.caption,
       color: colors.textTertiary,
-      marginTop: 2,
+      marginTop: spacing.xs,
       lineHeight: 16,
     },
   }), [colors]);
@@ -229,10 +231,11 @@ export interface SearchBarProps {
 function SearchBarImpl({
   value,
   onChange,
-  placeholder = '搜索动作、肌肉、器械…',
+  placeholder = 'Search exercises, muscles…',
   onClear,
 }: SearchBarProps) {
   const colors = useThemeColors();
+  const { t } = useTranslation();
   const searchStyles = useMemo(() => StyleSheet.create({
     wrap: {
       flexDirection: 'row',
@@ -249,6 +252,7 @@ function SearchBarImpl({
       flex: 1,
       color: colors.textPrimary,
       fontSize: 15,
+      lineHeight: 20,
       fontWeight: '500',
       letterSpacing: -0.1,
       height: '100%',
@@ -284,6 +288,8 @@ function SearchBarImpl({
           onPress={onClear || (() => onChange(''))}
           style={searchStyles.clearBtn}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.clearSearch')}
         >
           <Icon
             name="close"
@@ -365,7 +371,7 @@ export function StatsHero({
     statBlock: {
       alignItems: 'center',
       flex: 1,
-      gap: 4,
+      gap: spacing.xs,
     },
     iconTray: {
       width: 28,
@@ -374,16 +380,18 @@ export function StatsHero({
       backgroundColor: colors.surfaceElevated,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     statValue: {
       ...typography.display,
       fontSize: 24,
+      lineHeight: 32,
       color: colors.textPrimary,
       letterSpacing: -0.6,
     },
     statSuffix: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0,
@@ -392,7 +400,7 @@ export function StatsHero({
       ...typography.small,
       color: colors.textSecondary,
       textTransform: 'uppercase',
-      marginTop: 2,
+      marginTop: spacing.xs,
     },
   }), [colors]);
 
@@ -514,11 +522,11 @@ export function EmptyState({ icon, title, desc, actionLabel, onAction }: EmptySt
       marginBottom: spacing.sm,
     },
     title: {
-      ...typography.h3,
+      ...typography.title,
       color: colors.textPrimary,
     },
     desc: {
-      ...typography.caption,
+      ...typography.sub,
       color: colors.textSecondary,
       textAlign: 'center',
       maxWidth: 260,
@@ -550,7 +558,7 @@ export function EmptyState({ icon, title, desc, actionLabel, onAction }: EmptySt
       <Text style={emptyStyles.title}>{title}</Text>
       {desc ? <Text style={emptyStyles.desc}>{desc}</Text> : null}
       {actionLabel && onAction ? (
-        <PressableScale onPress={onAction} style={emptyStyles.actionBtn}>
+        <PressableScale onPress={onAction} style={emptyStyles.actionBtn} accessibilityRole="button" accessibilityLabel={actionLabel}>
           <Icon name="plus" size={14} color={colors.primary} />
           <Text style={emptyStyles.actionText}>{actionLabel}</Text>
         </PressableScale>
@@ -581,30 +589,32 @@ export function MiniStat({
   const colors = useThemeColors();
   const resolvedIconColor = iconColor ?? colors.textSecondary;
   const miniStyles = useMemo(() => StyleSheet.create({
-    col: { alignItems: 'center', flex: 1, gap: 2 },
+    col: { alignItems: 'center', flex: 1, gap: spacing.xs },
     iconTray: {
       width: 26,
       height: 26,
       borderRadius: 13,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     value: {
       ...typography.display,
       fontSize: 20,
+      lineHeight: 26,
       color: colors.textPrimary,
       letterSpacing: -0.3,
     },
     unit: {
       fontSize: 11,
+      lineHeight: 14,
       fontWeight: '700',
       color: colors.textTertiary,
     },
     label: {
       ...typography.small,
       color: colors.textSecondary,
-      marginTop: 2,
+      marginTop: spacing.xs,
     },
   }), [colors]);
 
@@ -646,15 +656,15 @@ export function Badge({
     wrap: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
       paddingHorizontal: spacing.sm,
-      paddingVertical: 5,
+      paddingVertical: spacing.xs,
       borderRadius: radius.sm,
       borderWidth: 1,
     },
     wrapSm: {
       paddingHorizontal: spacing.sm - 2,
-      paddingVertical: 3,
+      paddingVertical: spacing.xs,
       borderRadius: radius.sm,
     },
     text: {
@@ -664,6 +674,7 @@ export function Badge({
     },
     textSm: {
       fontSize: 10,
+      lineHeight: 14,
     },
   }), []);
 
@@ -732,7 +743,8 @@ function OptionPickerImpl<T extends string | number>(
   const op = useMemo(() => StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      // 视觉一致性：遮罩统一走 getScrim()，避免全 App 出现 0.45/0.62/0.18 混用
+      backgroundColor: getScrim(strokeFromColors(colors).isDark),
       justifyContent: 'flex-end',
     },
     sheet: {
@@ -799,12 +811,12 @@ function OptionPickerImpl<T extends string | number>(
     rowLabel: {
       ...typography.bodyBold,
       color: colors.textPrimary,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     rowSublabel: {
       ...typography.caption,
       color: colors.textTertiary,
-      lineHeight: 16,
+      lineHeight: 18,
     },
     radio: {
       width: 24,
@@ -852,6 +864,8 @@ function OptionPickerImpl<T extends string | number>(
               style={op.closeBtn}
               hitSlop={8}
               scaleTo={0.94}
+              accessibilityRole="button"
+              accessibilityLabel={cancelLabel}
             >
               <Text style={op.closeText}>{cancelLabel}</Text>
             </PressableScale>
@@ -881,6 +895,7 @@ function OptionPickerImpl<T extends string | number>(
                   scaleTo={0.985}
                   accessibilityRole="radio"
                   accessibilityState={{ selected }}
+                  accessibilityLabel={opt.label}
                 >
                   {opt.icon ? (
                     <View
@@ -975,7 +990,7 @@ export function OptionPickerToggle({
     pill: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs + 1,
       borderRadius: 999,
@@ -983,17 +998,18 @@ export function OptionPickerToggle({
       borderWidth: 1,
       borderColor: colors.surfaceBorder,
       minHeight: 30,
-      paddingRight: 6,
+      paddingRight: spacing.sm,
     },
     label: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       maxWidth: 140,
     },
   }), [colors]);
 
   return (
-    <PressableScale onPress={onPress} style={opToggle.pill}>
+    <PressableScale onPress={onPress} style={opToggle.pill} accessibilityRole="button" accessibilityLabel={label}>
       <Text style={[opToggle.label, { color: resolvedAccent }]} numberOfLines={1}>
         {label}
       </Text>
@@ -1001,3 +1017,295 @@ export function OptionPickerToggle({
     </PressableScale>
   );
 }
+
+// ============================================================================
+// LocalImageCover — offline-only image placeholder.
+//
+// Replaces remote-loaded <Image source={getImageUrl(x.image)} /> calls with a
+// zero-network, instant-render slab.  Every exercise in the dataset has a
+// body_part and equipment, so we render a muscle-tinted background + the
+// body-part icon.  This is visually informative (users scan cards by color
+// first anyway) and guarantees no loading spinners, no CDN timeouts, and
+// no transparent/black frames — even on first-launch airplane-mode.
+// ============================================================================
+
+export interface LocalImageCoverProps {
+  /** Muscle group / accent tint.  Should come from `colors.muscle[body_part]`. */
+  tint: string;
+  /** MaterialCommunityIcons glyph name.  Usually the body-part icon. */
+  iconName?: string;
+  /** Optional style override (width / height / borderRadius / borderColor). */
+  style?: StyleProp<ViewStyle>;
+  /** Icon size as a fraction of container shortest-edge.  Default 0.45. */
+  iconRatio?: number;
+  /**
+   * When true, draws an 88%-container circular "muscle ring" inset instead
+   * of filling the whole rectangle.  Used by <HybridImage> fallback so
+   * cards without a poster still look muscle-branded instead of showing
+   * a flat "?" icon.  Default true.
+   */
+  circular?: boolean;
+}
+
+export const LocalImageCover = memo(function LocalImageCover({
+  tint,
+  iconName = 'dumbbell',
+  style,
+  iconRatio = 0.45,
+  circular = true,
+}: LocalImageCoverProps) {
+  const colors = useThemeColors();
+  const [dims, setDims] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const handleLayout = useCallback(
+    (e: any) => {
+      const { width, height } = e.nativeEvent.layout;
+      if (width > 0 && height > 0) setDims({ w: width, h: height });
+    },
+    []
+  );
+  const edge = Math.min(dims.w, dims.h) || 0;
+  const iconSize = edge > 0 ? Math.round(edge * iconRatio) : 32;
+  // 88% inner circular placeholder (ring-style inset)
+  const ringDiameter = edge > 0 ? Math.round(edge * 0.88) : 0;
+  const ringBg = tint ? tint + '18' : colors.surface;
+  const ringStroke = tint ? tint : colors.primary;
+
+  if (!circular) {
+    return (
+      <View
+        onLayout={handleLayout}
+        style={[
+          {
+            backgroundColor: tint + '18',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+          },
+          style,
+        ]}
+      >
+        <Icon name={iconName} size={iconSize || 32} color={tint || colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View
+      onLayout={handleLayout}
+      style={[
+        {
+          backgroundColor: colors.surface,
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        },
+        style,
+      ]}
+    >
+      <View
+        style={{
+          width: ringDiameter || '88%',
+          aspectRatio: 1,
+          borderRadius: ringDiameter / 2 || 9999,
+          borderWidth: 2,
+          borderColor: ringStroke,
+          backgroundColor: ringBg,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon name={iconName} size={iconSize || 32} color={ringStroke} />
+      </View>
+    </View>
+  );
+});
+
+// ============================================================================
+// MiniTag — compact colored pill with icon + label.
+// Used inline inside list rows to tag body parts / equipment / status.
+// ============================================================================
+
+export interface MiniTagProps {
+  icon: string;
+  label: string;
+  color: string;
+  /** 'xs' = extra-tight (10px label), 'sm' = standard (11px label). */
+  size?: 'xs' | 'sm';
+  /** Optional layout override (e.g. `marginRight`) applied to the outer pill. */
+  style?: StyleProp<ViewStyle>;
+}
+
+export const MiniTag = memo(function MiniTag({
+  icon,
+  label,
+  color,
+  size = 'sm',
+  style,
+}: MiniTagProps) {
+  const isXs = size === 'xs';
+  const mt = useMemo(() => StyleSheet.create({
+    wrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingHorizontal: isXs ? spacing.xs + 2 : spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: 999,
+      borderWidth: 1,
+    },
+    label: {
+      fontSize: isXs ? 10 : 11,
+      lineHeight: 14,
+      fontWeight: '800',
+      letterSpacing: 0.2,
+      maxWidth: 120,
+    },
+  }), [isXs]);
+  return (
+    <View style={[mt.wrap, style, { backgroundColor: color + '12', borderColor: color + '30' }]}>
+      <Icon name={icon} size={isXs ? 10 : 11} color={color} />
+      <Text style={[mt.label, { color }]} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+});
+
+// ============================================================================
+// HybridImage — show real image from local (file:///android_asset/...) or any
+// valid URI, with a muscle-tinted <LocalImageCover> as the ALWAYS-visible
+// base layer.  Rendering semantics:
+//
+//   ┌────────────────────────────────┐  ← <View style /> container owns size
+//   │  <LocalImageCover   absoluteFill>  ← ALWAYS drawn underneath (no flicker)
+//   │  <ExpoImage         absoluteFill>  ← drawn on TOP only while !failed
+//   └────────────────────────────────┘
+//
+// Result:
+//   • Before the bitmap is decoded → the placeholder underneath shows,
+//     so users never see a white / transparent / spinner rectangle.
+//   • Image loads successfully → paints over the placeholder (opaque JPGs
+//     cover it completely; for corrupted / missing URIs the next rule wins)
+//   • ExpoImage.onError fires → `failed=true`, the overlay image is
+//     unmounted, and the clean placeholder underneath is revealed.
+//
+// This is the exact "image component + onError fallback" pattern suggested
+// by experience 545715, wrapped into a reusable unit so 5+ call sites don't
+// duplicate the event / state / layering logic.
+// ============================================================================
+
+export interface HybridImageProps {
+  /** Any image URI expo-image can decode.  Usually file:///android_asset/... */
+  uri?: string | null;
+  /** Muscle-group tint used for the placeholder underneath and on failure. */
+  tint: string;
+  /** MaterialCommunityIcon glyph for the placeholder underneath. */
+  iconName?: string;
+  /** Size/shape/border of the whole hybrid tile. */
+  style?: StyleProp<ViewStyle>;
+  /** How the bitmap should fit.  Default 'cover'. */
+  contentFit?: 'cover' | 'contain' | 'fill';
+  /** Icon ratio forwarded to <LocalImageCover>. */
+  iconRatio?: number;
+  /**
+   * Body-part slug (e.g. `chest`, `upper legs`) used to auto-derive icon
+   * and tint when the poster itself fails to load.  When present, tint
+   * and iconName both fall back using this slug — so callers don't need
+   * to pre-compute them.
+   */
+  fallbackBodyPart?: string;
+  /** Override tint for the ring background. */
+  fallbackTint?: string;
+  /** Override icon for the fallback when body-part slug is missing. */
+  fallbackIconName?: string;
+}
+
+export const HybridImage = memo(function HybridImage({
+  uri,
+  tint,
+  iconName = 'dumbbell',
+  style,
+  contentFit = 'cover',
+  iconRatio = 0.45,
+  fallbackBodyPart,
+  fallbackTint,
+  fallbackIconName,
+}: HybridImageProps) {
+  const colors = useThemeColors();
+  const [failed, setFailed] = useState<boolean>(false);
+
+  const handleError = useCallback(() => setFailed(true), []);
+
+  // ★ 修复 FlashList 复用 bug：uri 变化时重置 failed 状态，否则上一张失败的卡片
+  //   复用到新 uri 时永远显示占位图（shouldRenderImage 永远 false）
+  useEffect(() => {
+    setFailed(false);
+  }, [uri]);
+
+  // Resolve the fallback tint.  Priority:
+  //   1. explicit fallbackTint prop  2. original tint  3. colors.muscle[slug]  4. primary
+  const resolvedTint: string =
+    fallbackTint ||
+    tint ||
+    (fallbackBodyPart
+      ? (colors.muscle as Record<string, string>)[fallbackBodyPart]
+      : undefined) ||
+    colors.primary;
+
+  // Resolve the fallback icon similarly.
+  let resolvedIcon = fallbackIconName ?? iconName ?? 'dumbbell';
+  if (!fallbackIconName && fallbackBodyPart && (!iconName || iconName === 'dumbbell' || iconName === 'help-circle-outline')) {
+    // Derive from constants via BODY_PART_LABELS if possible.
+    // We don't want a circular import so we inline a tiny slug→icon map
+    // that is guaranteed to match constants' canonical mapping.
+    const BP_ICONS: Record<string, string> = {
+      back: 'arm-flex-outline',
+      cardio: 'run-fast',
+      chest: 'heart-pulse',
+      'lower arms': 'dumbbell',
+      'lower legs': 'leg',
+      neck: 'account-cowboy-hat-outline',
+      shoulders: 'arm-flex-outline',
+      'upper arms': 'dumbbell',
+      'upper legs': 'leg',
+      waist: 'weight-lifter',
+    };
+    resolvedIcon = BP_ICONS[fallbackBodyPart] || 'dumbbell';
+  }
+
+  const shouldRenderImage = !!uri && !failed;
+
+  return (
+    <View style={style}>
+      <LocalImageCover
+        tint={resolvedTint}
+        iconName={resolvedIcon}
+        style={StyleSheet.absoluteFill}
+        iconRatio={iconRatio}
+        circular
+      />
+      {shouldRenderImage && (
+        <ExpoImage
+          source={{ uri }}
+          style={StyleSheet.absoluteFill}
+          contentFit={contentFit}
+          onError={handleError}
+          recyclingKey={uri ?? undefined}
+        />
+      )}
+    </View>
+  );
+});
+
+// ============================================================================
+// M1 gluestack-ui v2 MVP primitives — re-export from the ui/ barrel so
+// every `import { Badge, useToast, HapticButton } from '@/components/UIKit'`
+// keeps working transparently.
+//
+// NOTE: re-export must live AT THE BOTTOM so TSC sees type declarations
+// (Badge, MiniTag, OptionPicker, etc.) from above before wildcard-import
+// collides with the namespace.  ES2022 semantics: duplicate names from
+// `export *` are silently dropped, so the legacy `Badge` / `MiniTag`
+// signatures above take precedence and are NOT shadowed.
+// ============================================================================
+export * from './ui';

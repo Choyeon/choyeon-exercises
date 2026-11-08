@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { Exercise } from '@/types';
-import { useThemeColors, spacing, radius, layout } from '@/theme';
+import { useThemeColors, spacing, radius, layout, muscleColor as muscleColorOf } from '@/theme';
 import {
   getImageUrl,
   getAnimationUrl,
@@ -17,6 +17,7 @@ import {
   EQUIPMENT_LABELS,
   displayNameZh,
 } from '@/constants';
+import { dateShort } from '@/utils/format';
 import { getAllExercisesSync } from '@/data/queries';
 import { useAppStore } from '@/store/useAppStore';
 import { safeHaptic } from '@/utils/haptic';
@@ -25,6 +26,7 @@ import {
   Icon,
   Badge,
   SlabDivider,
+  Skeleton,
 } from '@/components/UIKit';
 import { GifPlayer } from '@/components/GifPlayer';
 
@@ -58,6 +60,7 @@ export default function ExerciseDetailScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const colors = useThemeColors();
+  const insets = useSafeAreaInsets();
 
   // ====== Theme-aware styles ======
   const styles = useMemo(() => StyleSheet.create({
@@ -72,6 +75,7 @@ export default function ExerciseDetailScreen() {
     },
     emptyTitle: {
       fontSize: 20,
+      lineHeight: 26,
       fontWeight: '900',
       letterSpacing: -0.2,
       color: colors.textPrimary,
@@ -94,6 +98,7 @@ export default function ExerciseDetailScreen() {
     },
     backBtnText: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       color: colors.textInverse,
     },
@@ -105,6 +110,7 @@ export default function ExerciseDetailScreen() {
       borderBottomWidth: 1,
       borderBottomColor: colors.surfaceDivider,
       backgroundColor: colors.bg,
+      overflow: 'hidden',
     },
     navBtn: {
       width: 38,
@@ -118,10 +124,12 @@ export default function ExerciseDetailScreen() {
     },
     navTitle: {
       fontSize: 15,
+      lineHeight: 20,
       fontWeight: '800',
       color: colors.textPrimary,
       textAlign: 'center',
       letterSpacing: -0.1,
+      paddingLeft: spacing.xs,
     },
     heroWrap: {
       marginBottom: spacing.lg,
@@ -129,7 +137,7 @@ export default function ExerciseDetailScreen() {
     },
     heroImage: {
       width: '100%',
-      aspectRatio: 4 / 3,
+      aspectRatio: 1 / 1,
       borderRadius: radius.lg,
       overflow: 'hidden',
       borderWidth: 1,
@@ -176,16 +184,18 @@ export default function ExerciseDetailScreen() {
     animLabelRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      marginBottom: 2,
+      gap: spacing.sm,
+      marginBottom: spacing.xs,
     },
     animLabel: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
     },
     animSub: {
-      fontSize: 12,
+      fontSize: 11,
+      lineHeight: 14,
       fontWeight: '500',
       color: colors.textSecondary,
     },
@@ -193,31 +203,32 @@ export default function ExerciseDetailScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      backgroundColor: colors.muscle.shoulders + '18',
-      paddingHorizontal: spacing.sm + 4,
+      backgroundColor: colors.primary,
+      paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: 999,
       borderWidth: 1,
-      borderColor: colors.muscle.shoulders + '40',
+      borderColor: colors.primary,
     },
     animPlayInner: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      backgroundColor: colors.muscle.shoulders,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: colors.textInverse + '20',
       alignItems: 'center',
       justifyContent: 'center',
     },
     animPlayText: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
-      color: colors.muscle.shoulders,
+      color: colors.textInverse,
     },
     titleBlock: {
       marginBottom: spacing.lg,
     },
     zhRow: {
-      marginBottom: 4,
+      marginBottom: spacing.xs,
     },
     zhName: {
       fontSize: 22,
@@ -225,6 +236,7 @@ export default function ExerciseDetailScreen() {
       letterSpacing: -0.4,
       lineHeight: 28,
       color: colors.textPrimary,
+      paddingLeft: spacing.xs,
     },
     enRow: {
       marginBottom: spacing.sm,
@@ -240,6 +252,38 @@ export default function ExerciseDetailScreen() {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
+    },
+    prBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      marginBottom: spacing.md,
+    },
+    prBadgeIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: radius.md,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    prBadgeBody: { flex: 1, minWidth: 0 },
+    prBadgeLabel: {
+      fontSize: 10,
+      lineHeight: 14,
+      fontWeight: '800',
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+      marginBottom: spacing.xs,
+    },
+    prBadgeValue: {
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '900',
+      letterSpacing: -0.1,
     },
     metaGrid: {
       flexDirection: 'row',
@@ -269,6 +313,7 @@ export default function ExerciseDetailScreen() {
     ctaPrimaryText: {
       flex: 1,
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '900',
       letterSpacing: -0.1,
       color: colors.textInverse,
@@ -278,7 +323,7 @@ export default function ExerciseDetailScreen() {
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.xs,
-      paddingVertical: spacing.sm + 2,
+      paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
@@ -287,10 +332,18 @@ export default function ExerciseDetailScreen() {
     },
     ctaSecondaryText: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
     },
-  }), [colors]);
+    // 底部占位 — 防止"加入训练"双CTA被底部Tab/手势区遮挡
+    bottomSpacer: {
+      height:
+        Math.max(insets.bottom, spacing.xs)
+        + (Platform.OS === 'ios' ? 58 : 56)
+        + spacing.xxl,
+    },
+  }), [colors, insets.bottom]);
   const params = useLocalSearchParams<{ id: string }>();
   // useLocalSearchParams can return `string | string[]` depending on whether
   // the dynamic route segment was visited via deep link with duplicate params.
@@ -312,40 +365,21 @@ export default function ExerciseDetailScreen() {
   const addExerciseToActive = useAppStore((s) => s.addExerciseToActive);
   const startWorkout = useAppStore((s) => s.startWorkout);
   const activeWorkout = useAppStore((s) => s.activeWorkout);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bestPR = useAppStore((s: any) => s.getBestPR(id));
 
+  // 注意：early return 必须放在所有 hooks 之后（Rules of Hooks）
+  // 当 exercise 为 null 时（加载中/ID 无效），下方计算用可选链兜底不崩溃
+  const muscleColor = muscleColorOf(colors, exercise?.body_part);
 
-  if (!exercise) {
-    return (
-      <SafeAreaView style={styles.screen} edges={['top']}>
-        <View style={styles.emptyWrap}>
-          <Icon name="alert-circle-outline" size={42} color={colors.danger} />
-          <Text style={styles.emptyTitle}>{t('common.noData')}</Text>
-          <Text style={styles.emptyDesc}>
-            {t('home.emptyDesc')}
-          </Text>
-          <PressableScale
-            onPress={() => router.back()}
-            style={styles.backBtn}
-          >
-            <Icon name="arrow-left" size={14} color={colors.textInverse} />
-            <Text style={styles.backBtnText}>{t('common.back')}</Text>
-          </PressableScale>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const zhIns = exercise ? instructionsFor(exercise, 'zh') : [];
+  const enIns = exercise ? instructionsFor(exercise, 'en') : [];
 
-  const muscleColor =
-    colors.muscle[exercise.body_part as keyof typeof colors.muscle] ||
-    colors.primary;
-
-  const zhIns = instructionsFor(exercise, 'zh');
-  const enIns = instructionsFor(exercise, 'en');
-
-  const bodyMeta = BODY_PART_LABELS[exercise.body_part];
-  const equipMeta = EQUIPMENT_LABELS[exercise.equipment];
+  const bodyMeta = exercise ? BODY_PART_LABELS[exercise.body_part] : undefined;
+  const equipMeta = exercise ? EQUIPMENT_LABELS[exercise.equipment] : undefined;
 
   const handleAddToWorkout = useCallback(() => {
+    if (!exercise) return;
     safeHaptic('medium');
     if (!activeWorkout) startWorkout();
     addExerciseToActive(exercise.id);
@@ -365,9 +399,10 @@ export default function ExerciseDetailScreen() {
   }, [activeWorkout, startWorkout, addExerciseToActive, exercise, t, router]);
 
   const handleToggleFav = useCallback(() => {
+    if (!exercise) return;
     safeHaptic('medium');
     toggleFavorite(exercise.id);
-  }, [toggleFavorite, exercise.id]);
+  }, [toggleFavorite, exercise?.id]);
 
   const handleNavBack = useCallback(() => {
     safeHaptic('light');
@@ -379,6 +414,64 @@ export default function ExerciseDetailScreen() {
     setShowAnim((v) => !v);
   }, []);
 
+  // ★ 所有 hooks 声明完毕后，最后做 early return（遵守 Rules of Hooks）
+  if (!exercise) {
+    return (
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        {/* NAV BAR — keep visual shell consistent */}
+        <View style={styles.navBar}>
+          <PressableScale
+            onPress={() => router.back()}
+            style={styles.navBtn}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.goBack')}
+          >
+            <Icon name="arrow-left" size={18} color={colors.textPrimary} />
+          </PressableScale>
+          <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
+            <Skeleton height={16} width="65%" borderRadius={8} />
+          </View>
+          <View style={styles.navBtn} />
+        </View>
+
+        <ScrollView
+          style={styles.screen}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero + animation placeholder */}
+          <Skeleton height={240} width="100%" borderRadius={18} />
+          <View style={{ height: spacing.md }} />
+
+          {/* InfoRow skeletons */}
+          <View style={{ height: spacing.md }} />
+          <Skeleton height={22} width="70%" borderRadius={8} />
+          <View style={{ height: spacing.sm }} />
+          <Skeleton height={14} width="40%" borderRadius={6} />
+          <View style={{ height: spacing.md }} />
+
+          {/* Meta grid skeletons */}
+          <View style={{ flexDirection: 'row', gap: spacing.md }}>
+            <Skeleton height={84} borderRadius={14} style={{ flex: 1 }} />
+            <Skeleton height={84} borderRadius={14} style={{ flex: 1 }} />
+          </View>
+
+          <View style={{ height: spacing.xl }} />
+
+          {/* Instruction skeletons */}
+          <Skeleton height={16} width="45%" borderRadius={8} />
+          <View style={{ height: spacing.md }} />
+          <Skeleton height={56} width="100%" borderRadius={12} />
+          <View style={{ height: spacing.sm }} />
+          <Skeleton height={56} width="100%" borderRadius={12} />
+          <View style={{ height: spacing.sm }} />
+          <Skeleton height={56} width="100%" borderRadius={12} />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       {/* NAV BAR */}
@@ -387,10 +480,12 @@ export default function ExerciseDetailScreen() {
           onPress={handleNavBack}
           style={styles.navBtn}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.goBack')}
         >
           <Icon name="arrow-left" size={18} color={colors.textPrimary} />
         </PressableScale>
-        <View style={{ flex: 1, minWidth: 0, marginHorizontal: spacing.sm }}>
+        <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
           <Text style={styles.navTitle} numberOfLines={1}>
             {effectiveLang === 'zh' ? displayNameZh(exercise) : exercise.name}
           </Text>
@@ -402,6 +497,8 @@ export default function ExerciseDetailScreen() {
             isFavorite && { borderColor: colors.accent },
           ]}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.toggleFavorite')}
         >
           <Icon
             name={isFavorite ? 'heart' : 'heart-outline'}
@@ -424,6 +521,7 @@ export default function ExerciseDetailScreen() {
               posterUri={getImageUrl(exercise.image)}
               active={showAnim}
               tint={muscleColor}
+              contentFit="contain"
             />
           </View>
 
@@ -432,27 +530,34 @@ export default function ExerciseDetailScreen() {
               <View style={styles.animLabelRow}>
                 <Icon
                   name={showAnim ? 'pause' : 'play-circle-outline'}
-                  size={13}
-                  color={colors.muscle.shoulders}
+                  size={14}
+                  color={colors.primary}
                 />
                 <Text style={styles.animLabel}>
                   {showAnim ? t('compact.playAnim') : t('exercise.showAnimation')}
                 </Text>
               </View>
               <Text style={styles.animSub}>
-                {showAnim
-                  ? t('exercise.hideAnimation')
-                  : t('app.poweredBy')}
+                {showAnim ? t('exercise.animPlayingHint') : t('exercise.animIdleHint')}
               </Text>
             </View>
             <PressableScale
               onPress={handleToggleAnim}
               style={styles.animPlayBtn}
+              scaleTo={0.96}
+              accessibilityRole="button"
+              accessibilityLabel={t('a11y.toggleAnimation')}
             >
               <View style={styles.animPlayInner}>
-                <Icon name={showAnim ? 'image-outline' : 'play-circle-outline'} size={18} color={colors.textInverse} />
+                <Icon
+                  name={showAnim ? 'pause' : 'play'}
+                  size={16}
+                  color={colors.textInverse}
+                />
               </View>
-              <Text style={styles.animPlayText}>{showAnim ? t('exercise.hideAnimation') : t('exercise.showAnimation')}</Text>
+              <Text style={styles.animPlayText}>
+                {showAnim ? t('exercise.hideAnimation') : t('exercise.showAnimation')}
+              </Text>
             </PressableScale>
           </View>
         </View>
@@ -465,7 +570,7 @@ export default function ExerciseDetailScreen() {
           <View style={styles.targetRow}>
             <Badge
               icon="crosshairs-gps"
-              label={`${t('exercise.target')}: ${labelForTarget(exercise.target)}`}
+              label={`${t('exercise.target')}: ${labelForTarget(exercise.target, effectiveLang)}`}
               color={colors.success}
               size="sm"
             />
@@ -479,6 +584,48 @@ export default function ExerciseDetailScreen() {
             ) : null}
           </View>
         </View>
+
+        {/* PR BADGE */}
+        {bestPR ? (
+          <View style={[
+            styles.prBadge,
+            { backgroundColor: colors.accent + '10', borderColor: colors.accent + '40' },
+          ]}>
+            <View style={[styles.prBadgeIcon, { backgroundColor: colors.accent + '1A' }]}>
+              <Icon name="trophy" size={17} color={colors.accent} />
+            </View>
+            <View style={styles.prBadgeBody}>
+              <Text style={[styles.prBadgeLabel, { color: colors.accent }]}>
+                {t('pr.badgeLabelBest') || 'Personal Best'}
+              </Text>
+              <Text style={[styles.prBadgeValue, { color: colors.accent }]} numberOfLines={1}>
+                {(t('pr.badgeBest', {
+                  weight: bestPR.weight,
+                  units: settings.units,
+                  reps: bestPR.reps,
+                  date: dateShort(bestPR.date),
+                }) || `🏆 ${bestPR.weight ?? 0}${settings.units} × ${bestPR.reps ?? 0} · ${dateShort(bestPR.date)}`)}
+              </Text>
+            </View>
+          </View>
+        ) : (
+          <View style={[
+            styles.prBadge,
+            { backgroundColor: colors.info + '0C', borderColor: colors.info + '30' },
+          ]}>
+            <View style={[styles.prBadgeIcon, { backgroundColor: colors.info + '16' }]}>
+              <Icon name="trophy-outline" size={17} color={colors.info} />
+            </View>
+            <View style={styles.prBadgeBody}>
+              <Text style={[styles.prBadgeLabel, { color: colors.info }]}>
+                {t('pr.badgeLabelNone') || 'No Record Yet'}
+              </Text>
+              <Text style={[styles.prBadgeValue, { color: colors.info }]} numberOfLines={1}>
+                {(t('pr.badgeNone') || 'Start training to hit your first PR!')}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* META ROW */}
         <View style={styles.metaGrid}>
@@ -498,32 +645,30 @@ export default function ExerciseDetailScreen() {
           />
         </View>
 
-        {/* INSTRUCTIONS — single language */}
+        {/* INSTRUCTIONS — 按 effectiveLang 优先；若该语种为空则 fallback 到另一语种 (跨语言兜底) */}
         <SlabDivider accent={muscleColor} />
         <SectionTitle
           icon="text-box-check-outline"
           title={t('exercise.instructions')}
           color={muscleColor}
         />
-        {effectiveLang === 'zh' ? (
-          zhIns.length === 0 ? (
-            <EmptyNote
-              icon="text-remove-outline"
-              title={t('exercise.instructionsEmpty')}
-              desc={t('home.emptyDesc')}
-            />
-          ) : (
-            <StepList items={zhIns} accent={muscleColor} />
-          )
-        ) : enIns.length === 0 ? (
-          <EmptyNote
-            icon="text-remove-outline"
-            title={t('exercise.instructionsEmpty')}
-            desc={t('home.emptyDesc')}
-          />
-        ) : (
-          <StepList items={enIns} accent={muscleColor} />
-        )}
+        {(() => {
+          // 主 + fallback 双路径：对任一语言用户，若主语种为空则尝试另一语种
+          const [primary, fallback] = effectiveLang === 'zh'
+            ? [zhIns, enIns]
+            : [enIns, zhIns];
+          const items = primary.length > 0 ? primary : fallback;
+          if (items.length === 0) {
+            return (
+              <EmptyNote
+                icon="text-box-remove-outline"
+                title={t('exercise.instructionsEmpty')}
+                desc={t('home.emptyDesc')}
+              />
+            );
+          }
+          return <StepList items={items} accent={muscleColor} />;
+        })()}
 
         <View style={{ height: spacing.xl }} />
 
@@ -533,6 +678,8 @@ export default function ExerciseDetailScreen() {
             onPress={handleAddToWorkout}
             style={styles.ctaPrimary}
             scaleTo={0.98}
+            accessibilityRole="button"
+            accessibilityLabel={activeWorkout ? t('compact.addToSession') : t('compact.startPlus')}
           >
             <View style={styles.ctaPrimaryIcon}>
               <Icon name="plus" size={16} color={colors.textInverse} />
@@ -549,6 +696,8 @@ export default function ExerciseDetailScreen() {
               isFavorite && { borderColor: colors.accent + '55' },
             ]}
             scaleTo={0.98}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.toggleFavorite')}
           >
             <Icon
               name={isFavorite ? 'heart' : 'heart-outline'}
@@ -561,7 +710,7 @@ export default function ExerciseDetailScreen() {
           </PressableScale>
         </View>
 
-        <View style={{ height: layout.tabBarHeight + spacing.xxl }} />
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -598,6 +747,7 @@ function SectionTitle({
     },
     title: {
       fontSize: 15,
+      lineHeight: 20,
       fontWeight: '800',
       letterSpacing: -0.1,
     },
@@ -644,9 +794,9 @@ function StepList({
     },
     idxText: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '900',
       color: colors.textInverse,
-      lineHeight: 14,
     },
     step: {
       flex: 1,
@@ -712,14 +862,16 @@ function MetaCell({
     },
     label: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       textTransform: 'uppercase',
       letterSpacing: 0.8,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     value: {
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '900',
       letterSpacing: -0.1,
     },
@@ -796,9 +948,10 @@ function EmptyNote({
     },
     title: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
-      marginBottom: 2,
+      marginBottom: spacing.xs,
     },
     desc: {
       fontSize: 12,

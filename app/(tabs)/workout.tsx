@@ -1,18 +1,17 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { Image } from 'expo-image';
 import type { WorkoutSession } from '@/types';
-import { useThemeColors, spacing, radius, layout } from '@/theme';
+import { useThemeColors, spacing, radius, layout, strokeFromColors, muscleColor } from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { getAllExercisesSync } from '@/data/queries';
 import {
-  getImageUrl,
   iconForBodyPart,
   labelForBodyPart,
   iconForEquipment,
+  getImageUrl,
 } from '@/constants';
 import {
   PressableScale,
@@ -21,13 +20,17 @@ import {
   SlabDivider,
   EmptyState,
   SectionHeader,
+  HybridImage,
+  Skeleton,
 } from '@/components/UIKit';
 import { safeHaptic } from '@/utils/haptic';
 import { formatDurationClock, formatDurationHuman } from '@/utils/format';
+import Svg, { Rect, Text as SvgText, Line } from 'react-native-svg';
 
 export default function WorkoutScreen() {
   const colors = useThemeColors();
-  const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   // Subscribe to stable slices — avoid calling expensive stats getters from
   // inside selectors. Methods like streakDays() / totalVolumeKg() iterate
@@ -35,9 +38,12 @@ export default function WorkoutScreen() {
   const workouts = useAppStore((s) => s.workouts);
   const activeWorkout = useAppStore((s) => s.activeWorkout);
   const startWorkout = useAppStore((s) => s.startWorkout);
+  const listPresetTemplates = useAppStore((s) => s.listPresetTemplates);
+  const startWorkoutFromTemplate = useAppStore((s) => s.startWorkoutFromTemplate);
   const deleteWorkout = useAppStore((s) => s.deleteWorkout);
   const units = useAppStore((s) => s.settings.units);
-  const settings = useAppStore((s) => s.settings);
+
+  const effectiveLang: 'zh' | 'en' = i18n.language?.startsWith('en') ? 'en' : 'zh';
 
   // Stats are derived once per `workouts` reference change.
   //
@@ -51,31 +57,36 @@ export default function WorkoutScreen() {
   const { streak, total, volume } = useMemo(() => {
     const store = useAppStore.getState();
     let totalVol = 0;
-    for (const w of workouts) {
+    // 深度防御：workouts / exercises / sets 任一层都可能为 undefined（旧 vault），
+    // 逐层归一化，避免历史数据缺字段时统计栏直接闪退。
+    const safeWorkouts = Array.isArray(workouts) ? workouts.filter(Boolean) : [];
+    for (const w of safeWorkouts) {
+      if (!Array.isArray(w.exercises)) continue;
       for (const e of w.exercises) {
+        if (!e || !Array.isArray(e.sets)) continue;
         for (const set of e.sets) {
-          if (set.completed) totalVol += (set.weight || 0) * (set.reps || 0);
+          if (set && set.completed) {
+            totalVol += (Number(set.weight) || 0) * (Number(set.reps) || 0);
+          }
         }
       }
     }
     return {
       streak: store.streakDays(),
-      total: workouts.length,
+      total: safeWorkouts.length,
       volume: Math.round(totalVol),
     };
   }, [workouts]);
 
   const exercises = useMemo(() => getAllExercisesSync(), []);
   const exMap = useMemo(() => {
-    const m = new Map(exercises.map((e) => [e.id, e]));
+    // 双保险 String 强制统一：详见 start.tsx exMap 注释（exercises.json id=STRING，历史 vault 存 NUMBER）
+    const m = new Map(exercises.map((e) => [String(e.id), e]));
     return m;
   }, [exercises]);
 
   const handleStart = useCallback(() => {
     safeHaptic('medium');
-    // `as const` provides literal string widening for expo-router typedRoutes
-    // without fully bypassing type system via `as any`.  Known static route
-    // `app/workout/start.tsx` will always exist in this build.
     const route = '/workout/start' as const;
     if (activeWorkout) {
       router.push(route as Parameters<typeof router.push>[0]);
@@ -84,6 +95,23 @@ export default function WorkoutScreen() {
       router.push(route as Parameters<typeof router.push>[0]);
     }
   }, [activeWorkout, router, startWorkout]);
+
+  const openTemplates = useCallback(() => {
+    safeHaptic('light');
+    router.push('/templates' as any);
+  }, [router]);
+
+  const handleStartFromTemplate = useCallback(
+    (tplId: string) => {
+      safeHaptic('medium');
+      startWorkoutFromTemplate(tplId, 0);
+      router.push('/workout/start' as any);
+    },
+    [router, startWorkoutFromTemplate]
+  );
+
+  // —— 6 预置模板（只读，横滑）
+  const presetTemplates = useMemo(() => listPresetTemplates().slice(0, 6), [listPresetTemplates]);
 
   const handleDelete = useCallback(
     (id: string) => {
@@ -117,7 +145,10 @@ export default function WorkoutScreen() {
     const week = new Array(7).fill(0) as number[];
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    for (const w of workouts) {
+    // 深度防御：workouts 在旧 vault / 异常 merge 下可能不是数组。
+    const safeWorkouts = Array.isArray(workouts) ? workouts.filter(Boolean) : [];
+    for (const w of safeWorkouts) {
+      if (!w || !w.date) continue;
       const d = new Date(w.date);
       d.setHours(0, 0, 0, 0);
       const diff = Math.floor((today.getTime() - d.getTime()) / 86400000);
@@ -147,7 +178,41 @@ export default function WorkoutScreen() {
     return arr;
   }, [t]);
 
-  const styles = useMemo(() => StyleSheet.create({
+  // Weekly Volume (7-day) — Σ completed (weight × reps) per day.
+  // Index convention matches last7Days: arr[0] = 6 days ago, arr[6] = today.
+  const { weeklyVol, totalVol7, maxVol7 } = useMemo(() => {
+    const vols = new Array(7).fill(0) as number[];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const safeWorkouts = Array.isArray(workouts) ? workouts.filter(Boolean) : [];
+    for (const w of safeWorkouts) {
+      if (!w || !Array.isArray(w.exercises)) continue;
+      if (!w.date) continue;
+      const d = new Date(w.date);
+      d.setHours(0, 0, 0, 0);
+      const diff = Math.floor((today.getTime() - d.getTime()) / 86400000);
+      if (diff >= 0 && diff < 7) {
+        let dayVol = 0;
+        for (const e of w.exercises) {
+          if (!e || !Array.isArray(e.sets)) continue;
+          for (const set of e.sets) {
+            if (set && set.completed) {
+              dayVol += (Number(set.weight) || 0) * (Number(set.reps) || 0);
+            }
+          }
+        }
+        vols[6 - diff] += dayVol;
+      }
+    }
+    const total = vols.reduce((a, b) => a + b, 0);
+    const maxV = Math.max(0, ...vols);
+    return { weeklyVol: vols, totalVol7: Math.round(total), maxVol7: maxV };
+  }, [workouts]);
+
+  const styles = useMemo(() => {
+    // —— 统一走 theme 令牌，不再本文件手写 rgba ——
+    const { isDark, frameStroke, accentStroke, softShadow } = strokeFromColors(colors);
+    return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     content: { paddingHorizontal: layout.paddingHorizontal, paddingTop: spacing.sm },
     header: {
@@ -162,8 +227,10 @@ export default function WorkoutScreen() {
       letterSpacing: 1.4,
       textTransform: 'uppercase',
       fontSize: 11,
+      lineHeight: 14,
       fontWeight: '800',
-      marginBottom: 2,
+      marginBottom: spacing.xs,
+      paddingLeft: spacing.xs,
     },
     title: {
       fontSize: 28,
@@ -171,14 +238,15 @@ export default function WorkoutScreen() {
       letterSpacing: -0.6,
       lineHeight: 34,
       color: colors.textPrimary,
+      paddingLeft: spacing.xs,
     },
     primaryCTA: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: spacing.sm,
       backgroundColor: colors.primary,
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.sm + 2,
+      paddingVertical: spacing.md,
       borderRadius: 999,
       flexShrink: 0,
     },
@@ -188,6 +256,7 @@ export default function WorkoutScreen() {
     headerLeft: {
       flex: 1,
       minWidth: 0,
+      paddingHorizontal: spacing.md,
     },
     ctaIconTray: {
       width: 20,
@@ -202,6 +271,7 @@ export default function WorkoutScreen() {
     },
     ctaText: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       color: colors.textInverse,
       letterSpacing: 0.3,
@@ -238,10 +308,10 @@ export default function WorkoutScreen() {
     activeBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: spacing.sm,
       backgroundColor: colors.accent + '22',
       paddingHorizontal: spacing.sm,
-      paddingVertical: 4,
+      paddingVertical: spacing.xs,
       borderRadius: 999,
     },
     activePulse: {
@@ -252,6 +322,7 @@ export default function WorkoutScreen() {
     },
     activeBadgeText: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.accent,
       letterSpacing: 0.8,
@@ -259,6 +330,7 @@ export default function WorkoutScreen() {
     },
     activeName: {
       fontSize: 15,
+      lineHeight: 20,
       fontWeight: '800',
       color: colors.textPrimary,
       marginLeft: spacing.sm,
@@ -266,6 +338,7 @@ export default function WorkoutScreen() {
     },
     activeMeta: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '500',
       color: colors.textSecondary,
     },
@@ -279,7 +352,7 @@ export default function WorkoutScreen() {
     },
     statsStrip: {
       flexDirection: 'row',
-      paddingVertical: spacing.md + 2,
+      paddingVertical: spacing.lg,
       paddingHorizontal: spacing.sm,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
@@ -303,6 +376,7 @@ export default function WorkoutScreen() {
     },
     weekTitle: {
       fontSize: 12,
+      lineHeight: 16,
       fontWeight: '800',
       color: colors.textSecondary,
       textTransform: 'uppercase',
@@ -336,16 +410,196 @@ export default function WorkoutScreen() {
     },
     barLabel: {
       fontSize: 11,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0.4,
     },
-    historyHeader: {
-      marginBottom: spacing.md,
-    },
     gapSm: { height: spacing.sm },
-    bottomInset: { height: layout.tabBarHeight + spacing.xxl },
-  }), [colors]);
+    headerBtnCol: {
+      gap: spacing.xs,
+      alignItems: 'flex-end',
+    },
+    openTemplatesBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      backgroundColor: colors.surfaceElevated,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs + 1,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+    },
+    openTemplatesBtnText: {
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '800',
+      color: colors.textSecondary,
+    },
+    tplSectionHead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.sm,
+      marginTop: spacing.xs,
+      gap: spacing.sm,
+    },
+    historyHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.sm,
+      marginTop: spacing.sm,
+      gap: spacing.sm,
+    },
+    tplSectionTitle: {
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '900',
+      color: colors.textPrimary,
+    },
+    tplSectionCount: {
+      fontSize: 10,
+      lineHeight: 14,
+      fontWeight: '800',
+      color: colors.textTertiary,
+      letterSpacing: 0.4,
+      textTransform: 'uppercase',
+    },
+    tplSwiperWrap: {
+      marginHorizontal: -layout.paddingHorizontal,
+      marginBottom: spacing.lg,
+    },
+    tplSwiperContent: {
+      paddingHorizontal: layout.paddingHorizontal,
+      paddingVertical: spacing.xs,
+      gap: spacing.md,
+    },
+    tplCard: {
+      width: 240,
+      borderRadius: radius.lg,
+      borderWidth: 1.5,
+      borderColor: frameStroke,
+      backgroundColor: colors.surface,
+      padding: spacing.md,
+      ...softShadow,
+      elevation: 2,
+      gap: spacing.sm,
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    tplLevelStripe: {
+      position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+    },
+    tplTitle: {
+      marginLeft: spacing.xs,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '900',
+      color: colors.textPrimary,
+      letterSpacing: -0.1,
+    },
+    tplDesc: {
+      marginLeft: spacing.xs,
+      fontSize: 11,
+      fontWeight: '500',
+      color: colors.textSecondary,
+      lineHeight: 15,
+    },
+    tplBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginLeft: spacing.xs },
+    tplBadge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+      borderRadius: 999,
+      backgroundColor: colors.surfaceElevated,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+    },
+    tplBadgeText: {
+      fontSize: 9,
+      lineHeight: 12,
+      fontWeight: '800',
+      color: colors.textSecondary,
+      letterSpacing: 0.2,
+    },
+    tplStartBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+      marginTop: spacing.xs,
+      marginLeft: spacing.xs,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: colors.primary,
+      borderWidth: 1.5,
+      borderColor: accentStroke,
+    },
+    tplStartText: {
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '900',
+      color: isDark ? '#07090C' : '#FFFFFF',
+      letterSpacing: 0.3,
+    },
+    // Weekly Volume SVG card
+    volCard: {
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      ...softShadow,
+      elevation: 2,
+    },
+    volHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.sm,
+      gap: spacing.sm,
+    },
+    volTitleCol: {
+      flex: 1,
+      minWidth: 0,
+    },
+    volTitle: {
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '900',
+      color: colors.textPrimary,
+      letterSpacing: -0.1,
+    },
+    volSubtitle: {
+      fontSize: 11,
+      fontWeight: '500',
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+      lineHeight: 15,
+    },
+    volEmpty: {
+      height: 160,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    volEmptyText: {
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
+      color: colors.textTertiary,
+      textAlign: 'center',
+    },
+    // 底部占位：动态 safe area + 真实 tab 内容高度 + xxl 呼吸
+    bottomInset: {
+      height:
+        Math.max(insets.bottom, spacing.xs)
+        + (Platform.OS === 'ios' ? 58 : 56)
+        + spacing.xxl,
+    },
+  });
+  }, [colors, insets.bottom]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -357,30 +611,40 @@ export default function WorkoutScreen() {
         {/* HEADER */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.brandLine}>TRAINING LOG</Text>
+            <Text style={styles.brandLine}>{t('ui.brandTrainingLog')}</Text>
             <Text style={styles.title}>{t('workout.title')}</Text>
           </View>
-          <PressableScale
-            onPress={handleStart}
-            style={[
-              styles.primaryCTA,
-              activeWorkout && styles.primaryCTAHot,
-            ]}
-          >
-            <View style={[
-              styles.ctaIconTray,
-              activeWorkout && styles.ctaIconTrayActive,
-            ]}>
-              <Icon
-                name={activeWorkout ? 'lightning-bolt' : 'plus'}
-                size={14}
-                color={colors.textInverse}
-              />
-            </View>
-            <Text style={styles.ctaText}>
-              {activeWorkout ? t('home.resumeWorkout') : t('home.startWorkout')}
-            </Text>
-          </PressableScale>
+          <View style={styles.headerBtnCol}>
+            <PressableScale
+              onPress={handleStart}
+              style={[
+                styles.primaryCTA,
+                activeWorkout && styles.primaryCTAHot,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={activeWorkout ? t('home.resumeWorkout') : t('home.startWorkout')}
+            >
+              <View style={[
+                styles.ctaIconTray,
+                activeWorkout && styles.ctaIconTrayActive,
+              ]}>
+                <Icon
+                  name={activeWorkout ? 'lightning-bolt' : 'plus'}
+                  size={14}
+                  color={colors.textInverse}
+                />
+              </View>
+              <Text style={styles.ctaText}>
+                {activeWorkout ? t('home.resumeWorkout') : t('home.startWorkout')}
+              </Text>
+            </PressableScale>
+            <PressableScale onPress={openTemplates} style={styles.openTemplatesBtn} accessibilityRole="button" accessibilityLabel={t('a11y.openTemplates')}>
+              <Icon name="clipboard-list-outline" size={11} color={colors.textSecondary} />
+              <Text style={styles.openTemplatesBtnText} numberOfLines={1}>
+                {t('templates.title')}
+              </Text>
+            </PressableScale>
+          </View>
         </View>
 
         {/* ACTIVE WORKOUT CARD — uses stable handleOpenActive so the
@@ -389,6 +653,8 @@ export default function WorkoutScreen() {
           <PressableScale
             onPress={handleOpenActive}
             style={styles.activeCard}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.openActiveSession')}
           >
             <View style={styles.activeAccent} />
             <View style={styles.activeBody}>
@@ -403,7 +669,11 @@ export default function WorkoutScreen() {
               </View>
               <View style={styles.gapSm} />
               <Text style={styles.activeMeta}>
-                {t('workout.activeCardMeta', { count: activeWorkout.exercises.length })}
+                {t('workout.activeCardMeta', {
+                  count: Array.isArray(activeWorkout.exercises)
+                    ? activeWorkout.exercises.filter(Boolean).length
+                    : 0,
+                })}
               </Text>
             </View>
             <View style={styles.activeChevron}>
@@ -435,6 +705,77 @@ export default function WorkoutScreen() {
             icon="weight-kilogram"
             iconColor={colors.info}
           />
+        </View>
+
+        {/* PRESET TEMPLATES SWIPER (v1.1.0 MVP) */}
+        <View style={styles.tplSectionHead}>
+          <Text style={styles.tplSectionTitle}>{t('profile.sectionTemplates')}</Text>
+          <Text style={styles.tplSectionCount}>
+            {t('workout.sessionCount', { n: presetTemplates.length })}
+          </Text>
+        </View>
+        <View style={styles.tplSwiperWrap}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tplSwiperContent}
+            decelerationRate="fast"
+            snapToAlignment="start"
+            snapToInterval={240 + spacing.md}
+            disableIntervalMomentum={Platform.OS !== 'web'}
+          >
+            {presetTemplates.map((tpl, idx) => {
+              const levelColor =
+                tpl.level === 'beginner' ? colors.info :
+                tpl.level === 'intermediate' ? colors.primary : colors.accent;
+              const goalLabel =
+                t('workout.goal' + tpl.goal.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(''));
+              const levelLabel =
+                t('workout.level' + tpl.level.charAt(0).toUpperCase() + tpl.level.slice(1));
+              return (
+                <PressableScale
+                  key={tpl.id}
+                  onPress={() => handleStartFromTemplate(tpl.id)}
+                  style={styles.tplCard}
+                  scaleTo={0.97}
+                  accessibilityRole="button"
+                  accessibilityLabel={tpl.name[effectiveLang]}
+                >
+                  <View style={[styles.tplLevelStripe, { backgroundColor: levelColor }]} />
+                  <Text style={styles.tplTitle} numberOfLines={1}>
+                    {`0${idx + 1}  ${tpl.name[effectiveLang]}`}
+                  </Text>
+                  <Text style={styles.tplDesc} numberOfLines={2}>
+                    {tpl.description[effectiveLang]}
+                  </Text>
+                  <View style={styles.tplBadgeRow}>
+                    <View style={styles.tplBadge}>
+                      <Text style={styles.tplBadgeText}>{levelLabel}</Text>
+                    </View>
+                    <View style={styles.tplBadge}>
+                      <Text style={styles.tplBadgeText}>{goalLabel}</Text>
+                    </View>
+                    <View style={styles.tplBadge}>
+                      <Text style={styles.tplBadgeText}>
+                        {t('workout.perWeek', { n: tpl.daysPerWeek })}
+                      </Text>
+                    </View>
+                    <View style={styles.tplBadge}>
+                      <Text style={styles.tplBadgeText}>
+                        {t('workout.minPerSession', { n: tpl.durationMinPerSession })}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.tplStartBtn}>
+                    <Icon name="play" size={12} color={colors.bg === '#07090C' ? '#07090C' : '#FFFFFF'} />
+                    <Text style={styles.tplStartText}>
+                      {t('templates.start')}
+                    </Text>
+                  </View>
+                </PressableScale>
+              );
+            })}
+          </ScrollView>
         </View>
 
         {/* 7-DAY BARS */}
@@ -492,21 +833,135 @@ export default function WorkoutScreen() {
           />
         </View>
 
+        {/* =================== Weekly Volume SVG Bar Chart =================== */}
+        {(() => {
+          const CHART_W = 1000;
+          const CHART_H = 160;
+          const padL = 24;
+          const padR = 24;
+          const padT = 16;
+          const padB = 40;
+          const innerW = CHART_W - padL - padR;
+          const innerH = CHART_H - padT - padB;
+          const barWidth = Math.max(8, (innerW - 24) / 7 - 4);
+          const totalSpan = barWidth * 7 + 4 * 6; // 7 bars + 6 gaps
+          const startX = padL + (innerW - totalSpan) / 2;
+          const baseY = padT + innerH; // baseline Y (bottom of bars)
+          const gridYs = [
+            padT,
+            padT + innerH * 0.5,
+            baseY,
+          ];
+          const hasVolume = maxVol7 > 0;
+          const unitLabel = units;
+          return (
+            <View style={styles.volCard}>
+              <View style={styles.volHeaderRow}>
+                <View style={styles.volTitleCol}>
+                  <Text style={styles.volTitle} numberOfLines={1}>
+                    {t('stats.weeklyVolume', { defaultValue: 'Weekly Volume' })}
+                  </Text>
+                  <Text style={styles.volSubtitle} numberOfLines={1}>
+                    {t('stats.weeklyVolSub', {
+                      units: unitLabel,
+                      defaultValue: `Last 7 days · total ${totalVol7} ${unitLabel}`,
+                    })}
+                  </Text>
+                </View>
+                <Icon name="chart-bar" size={18} color={colors.textTertiary} />
+              </View>
+              {!hasVolume ? (
+                <View style={styles.volEmpty}>
+                  <Icon name="chart-line" size={26} color={colors.textTertiary} />
+                  <Text style={[styles.volEmptyText, { marginTop: spacing.sm }]}>
+                    {t('stats.emptyBar', {
+                      defaultValue:
+                        'Complete your first set to visualize weekly volume trends.',
+                    })}
+                  </Text>
+                </View>
+              ) : (
+                <Svg
+                  width="100%"
+                  height={CHART_H}
+                  viewBox={`0 0 ${CHART_W} ${CHART_H}`}
+                  preserveAspectRatio="none"
+                >
+                  {/* 3 horizontal grid baselines (dashed) */}
+                  {gridYs.map((gy, gi) => (
+                    <Line
+                      key={`g${gi}`}
+                      x1={padL}
+                      y1={gy}
+                      x2={CHART_W - padR}
+                      y2={gy}
+                      stroke={colors.surfaceBorder}
+                      strokeWidth={1.5}
+                      strokeDasharray="3,3"
+                    />
+                  ))}
+                  {/* Bars */}
+                  {weeklyVol.map((vol, i) => {
+                    const ratio = maxVol7 === 0 ? 0 : vol / maxVol7;
+                    const barH = innerH * ratio;
+                    const x = startX + i * (barWidth + 4);
+                    const y = baseY - barH;
+                    const isToday = i === 6;
+                    const fill = isToday
+                      ? colors.primary
+                      : (colors.info ?? colors.primary) + '99';
+                    const labelX = x + barWidth / 2;
+                    return (
+                      <React.Fragment key={`bar${i}`}>
+                        <Rect
+                          x={x}
+                          y={barH <= 0 ? baseY - 1 : y}
+                          width={barWidth}
+                          height={barH <= 0 ? 1 : barH}
+                          rx={barWidth * 0.2}
+                          ry={barWidth * 0.2}
+                          fill={fill}
+                        />
+                        <SvgText
+                          x={labelX}
+                          y={CHART_H - 12}
+                          textAnchor="middle"
+                          fontSize={22}
+                          fontWeight="700"
+                          fill={isToday ? colors.primary : colors.textTertiary}
+                        >
+                          {dayLabels[i]}
+                        </SvgText>
+                      </React.Fragment>
+                    );
+                  })}
+                </Svg>
+              )}
+            </View>
+          );
+        })()}
+
         {workouts.length === 0 ? (
-          <EmptyState
-            icon="weight-lifter"
-            title={t('workout.historyEmpty')}
-            desc={t('workout.historyEmptyDesc')}
-            actionLabel={t('home.startWorkout')}
-            onAction={handleStart}
-          />
+          <View>
+            <Skeleton height={110} width="100%" borderRadius={16} />
+            <View style={{ height: spacing.md }} />
+            <Skeleton height={110} width="100%" borderRadius={16} />
+            <View style={{ height: spacing.lg }} />
+            <EmptyState
+              icon="weight-lifter"
+              title={t('workout.historyEmpty')}
+              desc={t('workout.historyEmptyDesc')}
+              actionLabel={t('home.startWorkout')}
+              onAction={handleStart}
+            />
+          </View>
         ) : (
           workouts.map((w) => (
             <WorkoutCard
               key={w.id}
               session={w}
               exMap={exMap}
-              units={settings.units}
+              units={units}
               onDelete={() => handleDelete(w.id)}
             />
           ))
@@ -544,23 +999,50 @@ function WorkoutCard({
   const d = new Date(session.date);
   const date = t('workout.dateMonthDay', { month: d.getMonth() + 1, day: d.getDate() });
   const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  const totalSets = session.exercises.reduce((acc, e) => acc + e.sets.length, 0);
-  const completedSets = session.exercises.reduce(
-    (acc, e) => acc + e.sets.filter((s) => s.completed).length,
-    0
+  // 深度防御（闪退修复）：历史 session 的 exercises / sets 可能缺失或非数组
+  // （旧 vault 迁移、部分写入）。原实现直接 reduce + `.sets.length` / `.filter`
+  // 会在渲染 WorkoutCard 时抛 undefined → 整个历史列表白屏/闪退。
+  const safeSessionExercises = useMemo(
+    () => (Array.isArray(session.exercises) ? session.exercises.filter(Boolean) : []),
+    [session.exercises]
   );
-  const volume = session.exercises.reduce(
-    (acc, e) =>
-      acc +
-      e.sets
-        .filter((s) => s.completed)
-        .reduce((a, s) => a + (s.weight || 0) * (s.reps || 0), 0),
-    0
+  const totalSets = useMemo(
+    () =>
+      safeSessionExercises.reduce(
+        (acc, e) => acc + (Array.isArray(e?.sets) ? e.sets.filter(Boolean).length : 0),
+        0
+      ),
+    [safeSessionExercises]
+  );
+  const completedSets = useMemo(
+    () =>
+      safeSessionExercises.reduce(
+        (acc, e) =>
+          acc +
+          (Array.isArray(e?.sets)
+            ? e.sets.filter((s) => s && s.completed).length
+            : 0),
+        0
+      ),
+    [safeSessionExercises]
+  );
+  const volume = useMemo(
+    () =>
+      safeSessionExercises.reduce((acc, e) => {
+        if (!Array.isArray(e?.sets)) return acc;
+        return (
+          acc +
+          e.sets
+            .filter((s) => s && s.completed)
+            .reduce((a, s) => a + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0)
+        );
+      }, 0),
+    [safeSessionExercises]
   );
 
   const previewExercises = useMemo(
-    () => session.exercises.slice(0, 4),
-    [session.exercises]
+    () => safeSessionExercises.slice(0, 4),
+    [safeSessionExercises]
   );
 
   const cardStyles = useMemo(() => StyleSheet.create({
@@ -585,8 +1067,8 @@ function WorkoutCard({
     dateRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 4,
-      marginBottom: 2,
+      gap: spacing.xs,
+      marginBottom: spacing.xs,
     },
     date: {
       fontSize: 17,
@@ -613,6 +1095,7 @@ function WorkoutCard({
     },
     sessionName: {
       fontSize: 14,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.primary,
       marginBottom: spacing.md,
@@ -629,7 +1112,7 @@ function WorkoutCard({
     statCol: {
       flex: 1,
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
     },
     statIconTray: {
       width: 24,
@@ -640,12 +1123,14 @@ function WorkoutCard({
     },
     statValue: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
       letterSpacing: -0.1,
     },
     statLabel: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0.8,
@@ -660,11 +1145,11 @@ function WorkoutCard({
     previewItem: {
       alignItems: 'center',
       width: 58,
-      gap: 4,
+      gap: spacing.xs,
     },
     previewImgWrap: {
       borderRadius: radius.md,
-      borderWidth: 2,
+      borderWidth: 1.5,
       overflow: 'hidden',
     },
     previewImg: {
@@ -674,6 +1159,7 @@ function WorkoutCard({
     },
     previewSets: {
       fontSize: 11,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textSecondary,
       letterSpacing: 0.2,
@@ -712,6 +1198,8 @@ function WorkoutCard({
           style={cardStyles.deleteBtn}
           hitSlop={8}
           scaleTo={0.9}
+          accessibilityRole="button"
+          accessibilityLabel={t('a11y.deleteSession')}
         >
           <Icon name="trash-can-outline" size={14} color={colors.danger} />
         </PressableScale>
@@ -738,38 +1226,33 @@ function WorkoutCard({
         />
         <Stat
           label={t('compact.headerOverview')}
-          value={`${session.exercises.length} ${t('compact.exercises')}`}
+          value={`${safeSessionExercises.length} ${t('compact.exercises')}`}
           icon="format-list-numbered"
           color={colors.info}
         />
       </View>
 
       <View style={cardStyles.previewRow}>
-        {previewExercises.map((e) => {
-          const ex = exMap.get(e.exerciseId);
-          const color = ex
-            ? colors.muscle[ex.body_part as keyof typeof colors.muscle] ||
-              colors.primary
-            : colors.primary;
+        {previewExercises.map((e, pi) => {
+          const ex = exMap.get(String(e.exerciseId));
+          const color = ex ? muscleColor(colors, ex.body_part) : colors.primary;
+          const setCount = Array.isArray(e?.sets) ? e.sets.filter(Boolean).length : 0;
           return (
-            <View key={e.exerciseId} style={cardStyles.previewItem}>
-              <View
+            <View key={`${String(e.exerciseId)}-${pi}`} style={cardStyles.previewItem}>
+              <HybridImage
+                uri={ex ? getImageUrl(ex.image) : undefined}
+                tint={color}
+                iconName={ex ? iconForBodyPart(ex.body_part) : 'dumbbell'}
+                fallbackBodyPart={ex?.body_part}
+                fallbackTint={color}
                 style={[
+                  cardStyles.previewImg,
                   cardStyles.previewImgWrap,
                   { borderColor: color + '66' },
                 ]}
-              >
-                {ex ? (
-                  <Image
-                    source={getImageUrl(ex.image)}
-                    style={cardStyles.previewImg}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View style={cardStyles.previewImg} />
-                )}
-              </View>
-              <Text style={cardStyles.previewSets}>{e.sets.length}{t('compact.setsHeader')}</Text>
+                iconRatio={0.45}
+              />
+              <Text style={cardStyles.previewSets}>{setCount}{t('compact.setsHeader')}</Text>
             </View>
           );
         })}
@@ -804,7 +1287,7 @@ function Stat({
     col: {
       flex: 1,
       alignItems: 'center',
-      gap: 4,
+      gap: spacing.xs,
     },
     iconTray: {
       width: 24,
@@ -815,12 +1298,14 @@ function Stat({
     },
     value: {
       fontSize: 13,
+      lineHeight: 18,
       fontWeight: '800',
       color: colors.textPrimary,
       letterSpacing: -0.1,
     },
     label: {
       fontSize: 10,
+      lineHeight: 14,
       fontWeight: '800',
       color: colors.textTertiary,
       letterSpacing: 0.8,
