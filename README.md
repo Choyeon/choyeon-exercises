@@ -20,13 +20,13 @@
 
 ## 应用图标
 
-新图标采用 **squircle（方圆形）** 形态与暖色渐变（橙 → 珊瑚粉 → 品红紫），中央是白色抽象奔跑人形与环绕的「C」形弧线（呼应 Choyeon 的 C），扁平矢量、无厚重阴影，符合现代 Android 自适应图标规范。
+新图标采用 **squircle（方圆形）** 浅色近白底，中央是 **暖色渐变（橙 → 珊瑚粉 → 品红紫）** 的抽象奔跑人形与环绕「C」形弧线（呼应 Choyeon 的 C），扁平矢量、无厚重阴影，符合现代 Android 自适应图标规范。
 
 <p align="center">
   <img src="assets/icon.png" width="200" alt="Choyeon Exercises 应用图标"/>
 </p>
 
-- **Android 自适应图标**：前景为奔跑人形 + C 弧（透明），背景为同款暖色渐变，由系统遮罩统一裁切为 squircle。
+- **Android 自适应图标**：前景为奔跑人形 + C 弧（暖色渐变、透明背景），背景为浅色层，由系统遮罩统一裁切为 squircle。
 - **Play Store / 旧版 Android**：使用带圆角的完整图标（512 × 512）。
 - **设计原则**：扁平、克制、辨识度高；无文字、无 3D 浮雕。
 
@@ -34,12 +34,12 @@
 
 ## 界面预览
 
-全部页面均在高保真还原下截图，真实数据、真实文案，深色「工业健身房」主题（霓虹青柠 `#BFF23D` + 锈橙 `#FF6A3D`）。
+下面 9 张均为 **Android 模拟器真机截图**（1080 × 1920），真实数据、真实文案，深色「工业健身房」主题（霓虹青柠 `#BFF23D` + 锈橙 `#FF6A3D`）。数据面板 / 我的 等页面在无训练记录时显示为空状态，属正常表现。
 
 | | | |
 |---|---|---|
-| <img src="docs/screenshots/01-home.png" width="200" alt="首页"/> | <img src="docs/screenshots/02-library.png" width="200" alt="动作库"/> | <img src="docs/screenshots/03-workout.png" width="200" alt="训练执行"/> |
-| **首页** · 今日推荐 / 周目标 / 快捷入口 | **动作库** · 1,324 动作两级筛选 | **训练执行** · 组次 / 休息计时 / PR |
+| <img src="docs/screenshots/01-home.png" width="200" alt="首页"/> | <img src="docs/screenshots/02-library.png" width="200" alt="动作库"/> | <img src="docs/screenshots/03-workout.png" width="200" alt="训练日志"/> |
+| **首页** · 今日推荐 / 周目标 / 快捷入口 | **动作库** · 1,324 动作两级筛选 | **训练日志** · 计划模板 / 历史 / 连续天数 |
 | <img src="docs/screenshots/04-stats.png" width="200" alt="数据面板"/> | <img src="docs/screenshots/05-body.png" width="200" alt="身体数据"/> | <img src="docs/screenshots/06-templates.png" width="200" alt="训练模板"/> |
 | **数据面板** · 容量趋势 / 日历热力图 | **身体数据** · 围度 / 体重追踪 | **训练模板** · 可复用计划 |
 | <img src="docs/screenshots/07-warmup.png" width="200" alt="热身"/> | <img src="docs/screenshots/08-exercise.png" width="200" alt="动作详情"/> | <img src="docs/screenshots/09-profile.png" width="200" alt="我的"/> |
@@ -83,7 +83,7 @@
 ## 下载与安装
 
 - **GitHub Release（推荐）**：[v1.0.0 下载页](https://github.com/Choyeon/choyeon-exercises/releases)
-  - 安装包：`app-release-arm64-v8a.apk`（约 173 MB，仅含 `arm64-v8a` 架构，适用于绝大多数现代 Android 手机）
+  - 安装包：`app-release-arm64-v8a.apk`（约 181 MB，仅含 `arm64-v8a` 架构，适用于绝大多数现代 Android 手机）
   - 安装前请在系统设置中允许「未知来源」安装；若提示签名，确认来自本仓库发布。
 - **自行构建**：见下方「构建 Release APK」。
 
