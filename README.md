@@ -20,15 +20,16 @@
 
 ## 应用图标
 
-新图标采用 **squircle（方圆形）** 浅色近白底，中央是 **暖色渐变（橙 → 珊瑚粉 → 品红紫）** 的抽象奔跑人形与环绕「C」形弧线（呼应 Choyeon 的 C），扁平矢量、无厚重阴影，符合现代 Android 自适应图标规范。
+沿用项目**原有 logo**（橙 → 珊瑚粉 → 品红紫渐变的「C」弧 + 奔跑人形），只在其外补一层 **squircle（方圆形）浅色近白底** 与细边框，并留出合适的留白。这样既保留原设计的辨识度，也解决了此前 logo 被启动器拉伸变形的问题。
 
 <p align="center">
   <img src="assets/icon.png" width="200" alt="Choyeon Exercises 应用图标"/>
 </p>
 
-- **Android 自适应图标**：前景为奔跑人形 + C 弧（暖色渐变、透明背景），背景为浅色层，由系统遮罩统一裁切为 squircle。
-- **Play Store / 旧版 Android**：使用带圆角的完整图标（512 × 512）。
-- **设计原则**：扁平、克制、辨识度高；无文字、无 3D 浮雕。
+- **不重绘 logo**：中央图形直接取自原有透明 PNG（`docs/screenshots/original-logo.png`），未做任何 AI 重绘。
+- **Android 自适应图标**：前景为原 logo（透明底，收在 66dp 安全区内），背景为浅色层；前景/背景资源按 **108dp** 规范生成（mdpi 108 → xxxhdpi 432），避免系统二次缩放导致拉伸。
+- **Play Store / 旧版 Android**：浅色圆角方阵 + 原 logo 的完整图标（512 × 512），四角透明。
+- **复更方式**：`docs/screenshots/_icon3.mjs` 用浏览器 canvas 合成全部密度，保留 alpha，可直接重跑。
 
 ---
 
@@ -165,7 +166,9 @@ cd android
 
 构建产物：`android/app/build/outputs/apk/release/app-release.apk`
 
-> 更换图标后务必重新执行 `expo prebuild`，否则 Android 资源目录里的旧 webp 不会更新。
+> **更换图标**：运行 `ego-browser nodejs < docs/screenshots/_icon3.mjs`，它会同时刷新 `assets/` 与
+> `android/app/src/main/res/mipmap-*` 的全部密度（含 108dp 自适应前景/背景），随后直接重新构建即可。
+> 不必执行 `expo prebuild`——那会重建 `android/app/build.gradle` 并覆盖本项目自定义的 release 签名配置。
 
 ## 项目结构
 
