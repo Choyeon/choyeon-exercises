@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  html,body{margin:0;background:transparent;}
+  #wrap{display:inline-block;}
+  svg{display:block;}
+</style>
+</head>
+<body>
+<div id="wrap">
+<svg id="icon" xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#FFB24D"/>
+      <stop offset="34%" stop-color="#FF7A3D"/>
+      <stop offset="64%" stop-color="#FF4D6D"/>
+      <stop offset="100%" stop-color="#9B3FE0"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="32%" cy="26%" r="75%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.40"/>
+      <stop offset="45%" stop-color="#ffffff" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- background group (gradient + sheen + border) -->
+  <g id="bggroup">
+    <!-- squircle base -->
+    <rect x="6" y="6" width="1012" height="1012" rx="236" ry="236" fill="url(#warm)"/>
+    <!-- soft top-left sheen -->
+    <rect x="6" y="6" width="1012" height="1012" rx="236" ry="236" fill="url(#sheen)"/>
+    <!-- subtle inner border -->
+    <rect x="14" y="14" width="996" height="996" rx="228" ry="228" fill="none"
+          stroke="#ffffff" stroke-opacity="0.28" stroke-width="6"/>
+  </g>
+
+  <!-- C-arc (implied C, opening to the right) -->
+  <path id="carc" d="M 712 268 A 300 300 0 1 0 712 776"
+        fill="none" stroke="#ffffff" stroke-opacity="0.92"
+        stroke-width="56" stroke-linecap="round"/>
+
+  <!-- running figure (line-art, white) -->
+  <g id="fig" transform="translate(-34,4)" fill="none" stroke="#ffffff" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
+    <!-- head -->
+    <circle cx="512" cy="346" r="38" fill="#ffffff" stroke="none"/>
+    <!-- torso -->
+    <path d="M 512 388 L 542 502"/>
+    <!-- front arm (bent, forward/up) -->
+    <path d="M 514 404 L 596 404 L 636 342"/>
+    <!-- back arm (swung back/down) -->
+    <path d="M 514 404 L 444 456 L 398 520"/>
+    <!-- front leg (knee up, forward) -->
+    <path d="M 542 502 L 612 578 L 652 546"/>
+    <!-- back leg (extended back/down) -->
+    <path d="M 542 502 L 496 616 L 452 692"/>
+  </g>
+</svg>
+</div>
+</body>
+</html>

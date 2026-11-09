@@ -4,7 +4,7 @@
     "slug": "ChoyeonExercises",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/play-store/icon-512.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "scheme": "choyeon-exercises",
     "ios": {
@@ -14,7 +14,7 @@
     "android": {
       "package": "com.choyeon.exercises",
       "adaptiveIcon": {
-        "backgroundColor": "#AA3179",
+        "backgroundColor": "#FF4D6D",
         "foregroundImage": "./assets/adaptive/ic_launcher_foreground.png",
         "backgroundImage": "./assets/adaptive/ic_launcher_background.png"
       },

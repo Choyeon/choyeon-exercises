@@ -1,0 +1,104 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_design.css"></head>
+<body><div class="screen">
+  <div class="statusbar"><span>9:41</span><span class="right">📶 &nbsp; 🔋 100%</span></div>
+  <div class="scroll"><div class="scroll-inner">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <span class="chip act" style="align-self:flex-start;">● 训练进行中</span>
+        <div class="h2" style="font-size:30px;letter-spacing:-1px;">今天，<span class="green">练点什么？</span></div>
+        <div class="row gap8" style="margin-top:4px;">
+          <span class="green" style="font-weight:900;font-size:12px;">1324</span>
+          <span style="width:22px;height:2px;background:rgba(138,146,166,.4);"></span>
+          <span class="muted" style="font-size:12px;font-weight:700;">个训练动作</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="background:var(--primary);border:1.5px solid var(--accent-stroke);border-radius:18px;padding:18px;display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:20px;font-weight:900;color:#07090C;">继续训练</div>
+        <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(7,9,12,.72);">上次 · 胸 + 三头</div>
+      </div>
+      <div style="width:46px;height:46px;border-radius:999px;border:2px solid var(--accent-stroke);background:#fff;display:flex;align-items:center;justify-content:center;color:#07090C;font-size:18px;">▶</div>
+    </div>
+
+    <div class="card row between" style="padding:12px;border-radius:14px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:rgba(59,209,124,.12);display:flex;align-items:center;justify-content:center;color:var(--success);font-size:18px;">✓</div>
+      <div style="flex:1;margin-left:12px;">
+        <div style="font-size:13px;font-weight:800;color:var(--t1);">本周 3 / 4 次 · 已达标</div>
+        <div style="height:6px;border-radius:3px;background:var(--surface-2);margin-top:6px;overflow:hidden;"><div style="height:100%;width:75%;background:var(--success);border-radius:3px;"></div></div>
+        <div style="font-size:11px;color:var(--t2);margin-top:4px;">连续训练 12 天</div>
+      </div>
+      <span style="color:var(--t3);font-size:18px;">›</span>
+    </div>
+
+    <div class="card" style="border-radius:14px;display:flex;align-items:center;gap:10px;padding:0 14px;height:48px;border:1.5px solid rgba(255,255,255,.28);">
+      <span style="color:var(--t2);font-size:18px;">🔍</span>
+      <span class="muted" style="font-size:15px;font-weight:500;">搜索动作、器械或肌群</span>
+    </div>
+
+    <div class="sec-head"><span class="sec-idx">01</span><span class="sec-title">快捷入口</span><span class="rule"></span></div>
+    <div style="display:flex;gap:12px;">
+      <div class="card" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;border:1.5px solid rgba(255,255,255,.28);">
+        <div style="width:40px;height:40px;border-radius:12px;border:1.5px solid var(--primary);background:var(--primary-dim);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:18px;">🏋</div>
+        <div style="font-size:13px;font-weight:900;color:var(--t1);">肌群图谱</div>
+        <div style="font-size:10px;font-weight:700;color:var(--t2);">10 个部位</div>
+      </div>
+      <div class="card" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;border:1.5px solid rgba(255,255,255,.28);">
+        <div style="width:40px;height:40px;border-radius:12px;border:1.5px solid var(--accent);background:var(--accent-dim);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:18px;">❤</div>
+        <div style="font-size:13px;font-weight:900;color:var(--t1);">我的收藏</div>
+        <div style="font-size:10px;font-weight:700;color:var(--t2);">8 个已收藏</div>
+      </div>
+      <div class="card" style="flex:1;padding:12px;display:flex;flex-direction:column;gap:8px;border:1.5px solid rgba(255,255,255,.28);">
+        <div style="width:40px;height:40px;border-radius:12px;border:1.5px solid var(--info);background:rgba(72,198,255,.12);display:flex;align-items:center;justify-content:center;color:var(--info);font-size:18px;">📊</div>
+        <div style="font-size:13px;font-weight:900;color:var(--t1);">数据面板</div>
+        <div style="font-size:10px;font-weight:700;color:var(--t2);">86 次 · 12 天</div>
+      </div>
+    </div>
+
+    <div class="sec-head"><span class="sec-idx">02</span><span class="sec-title">肌群图谱</span><span class="rule"></span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      <!-- 10 肌群 tile -->
+      <div class="card row between" style="width:calc(50% - 5px);padding:10px;border:1.5px solid rgba(255,255,255,.28);"><div class="mring" style="width:32px;height:32px;border-radius:8px;font-size:15px;background:var(--m-chest);">🏋</div><div style="flex:1;margin-left:8px;"><div style="font-size:13px;font-weight:800;color:var(--t1);">胸部</div><div style="font-size:10px;font-weight:800;color:var(--t2);">312</div></div><span class="muted2" style="font-size:9px;font-weight:900;">#01</span></div>
+      <div class="card row between" style="width:calc(50% - 5px);padding:10px;border:1.5px solid rgba(255,255,255,.28);"><div class="mring" style="width:32px;height:32px;border-radius:8px;font-size:15px;background:var(--m-back);">🏃</div><div style="flex:1;margin-left:8px;"><div style="font-size:13px;font-weight:800;color:var(--t1);">背部</div><div style="font-size:10px;font-weight:800;color:var(--t2);">268</div></div><span class="muted2" style="font-size:9px;font-weight:900;">#02</span></div>
+      <div class="card row between" style="width:calc(50% - 5px);padding:10px;border:1.5px solid rgba(255,255,255,.28);"><div class="mring" style="width:32px;height:32px;border-radius:8px;font-size:15px;background:var(--m-upperLegs);">🦵</div><div style="flex:1;margin-left:8px;"><div style="font-size:13px;font-weight:800;color:var(--t1);">大腿</div><div style="font-size:10px;font-weight:800;color:var(--t2);">241</div></div><span class="muted2" style="font-size:9px;font-weight:900;">#03</span></div>
+      <div class="card row between" style="width:calc(50% - 5px);padding:10px;border:1.5px solid rgba(255,255,255,.28);"><div class="mring" style="width:32px;height:32px;border-radius:8px;font-size:15px;background:var(--m-shoulders);">💪</div><div style="flex:1;margin-left:8px;"><div style="font-size:13px;font-weight:800;color:var(--t1);">肩部</div><div style="font-size:10px;font-weight:800;color:var(--t2);">186</div></div><span class="muted2" style="font-size:9px;font-weight:900;">#04</span></div>
+    </div>
+
+    <div class="sec-head"><span class="sec-idx">03</span><span class="sec-title">今日精选</span><span class="rule"></span><span class="chip" style="border:1.5px solid var(--border);">🔀 换一批</span></div>
+    <div style="display:flex;gap:12px;">
+      <div class="card" style="width:200px;flex:0 0 auto;overflow:hidden;border:2px solid rgba(255,255,255,.28);">
+        <div style="height:130px;background:linear-gradient(135deg,rgba(255,106,61,.22),rgba(191,242,61,.12));display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--accent);border-bottom:1.5px solid rgba(255,255,255,.28);">🏋</div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:14px;font-weight:900;color:var(--t1);">Archer Push Up</div>
+          <div style="font-size:10px;font-weight:700;color:var(--t2);">胸部 · 自重</div>
+          <div class="row gap8"><span class="mtag">胸部</span><span class="mtag" style="background:rgba(72,198,255,.14);color:var(--info);">三头</span></div>
+        </div>
+      </div>
+      <div class="card" style="width:200px;flex:0 0 auto;overflow:hidden;border:2px solid rgba(255,255,255,.28);">
+        <div style="height:130px;background:linear-gradient(135deg,rgba(72,198,255,.22),rgba(191,242,61,.10));display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--info);border-bottom:1.5px solid rgba(255,255,255,.28);">🏃</div>
+        <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+          <div style="font-size:14px;font-weight:900;color:var(--t1);">Astride Jumps</div>
+          <div style="font-size:10px;font-weight:700;color:var(--t2);">有氧 · 自重</div>
+          <div class="row gap8"><span class="mtag" style="background:rgba(72,198,255,.14);color:var(--info);">有氧</span><span class="mtag" style="background:rgba(93,156,255,.14);color:var(--m-upperLegs);">股四头</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-head"><span class="sec-idx">04</span><span class="sec-title">浏览完整动作库</span><span class="rule"></span></div>
+    <div class="card row between" style="padding:16px;border:2px solid rgba(255,255,255,.28);">
+      <div style="width:62px;height:62px;border-radius:18px;border:1.5px solid var(--accent-stroke);background:var(--primary-dim);display:flex;align-items:center;justify-content:center;color:var(--primary);font-size:26px;">📚</div>
+      <div style="flex:1;margin-left:12px;"><div style="font-size:17px;font-weight:900;color:var(--t1);">动作库</div><div style="font-size:11px;font-weight:700;color:var(--t2);">1324 个动作 · 10 肌群 · 13 器械</div></div>
+      <div class="btn-primary" style="border:1.5px solid var(--accent-stroke);padding:12px 14px;font-size:11px;letter-spacing:.6px;">进入 ›</div>
+    </div>
+
+  </div></div>
+
+  <div class="tabbar">
+    <div class="tab on"><span class="ic">🏠</span><span class="lb">首页</span><span class="pill"></span></div>
+    <div class="tab"><span class="ic">📚</span><span class="lb">动作库</span></div>
+    <div class="tab"><span class="ic">📋</span><span class="lb">训练</span></div>
+    <div class="tab"><span class="ic">👤</span><span class="lb">我的</span></div>
+  </div>
+</div></body></html>

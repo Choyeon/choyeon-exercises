@@ -56,6 +56,9 @@ Thumbs.db
 # Keys / Certificates
 *.jks
 *.keystore
+# 签名配置文件含明文密码，绝不能进仓库
+keystore.properties
+android/keystore.properties
 *.p8
 *.p12
 *.key

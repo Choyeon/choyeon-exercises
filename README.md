@@ -1,8 +1,51 @@
-# Choyeon Exercises
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="Choyeon Exercises 图标"/>
+</p>
 
-基于 [exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) 的动作训练应用，收录 1,324 个标准健身动作，支持按部位 / 器械筛选、收藏、动画预览与训练计划。
+<h1 align="center">Choyeon Exercises</h1>
 
-**定位：纯离线工具。** 没有商业化内容、没有账号、没有联网请求、没有社区/社交。所有数据只存在本机，导出与恢复也只走「一段纯文本」，不申请任何存储 / 分享权限。
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="version"/>
+  <img src="https://img.shields.io/badge/platform-Android-green" alt="platform"/>
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="license"/>
+  <img src="https://img.shields.io/badge/typecheck-passing-success" alt="typecheck"/>
+</p>
+
+<p align="center">
+  一款纯离线、无账号、无联网的健身动作训练应用。<br/>
+  收录 <b>1,324</b> 个标准健身动作，支持按部位 / 器械筛选、收藏、动画预览与科学训练计划。
+</p>
+
+---
+
+## 应用图标
+
+新图标采用 **squircle（方圆形）** 形态与暖色渐变（橙 → 珊瑚粉 → 品红紫），中央是白色抽象奔跑人形与环绕的「C」形弧线（呼应 Choyeon 的 C），扁平矢量、无厚重阴影，符合现代 Android 自适应图标规范。
+
+<p align="center">
+  <img src="assets/icon.png" width="200" alt="Choyeon Exercises 应用图标"/>
+</p>
+
+- **Android 自适应图标**：前景为奔跑人形 + C 弧（透明），背景为同款暖色渐变，由系统遮罩统一裁切为 squircle。
+- **Play Store / 旧版 Android**：使用带圆角的完整图标（512 × 512）。
+- **设计原则**：扁平、克制、辨识度高；无文字、无 3D 浮雕。
+
+---
+
+## 界面预览
+
+全部页面均在高保真还原下截图，真实数据、真实文案，深色「工业健身房」主题（霓虹青柠 `#BFF23D` + 锈橙 `#FF6A3D`）。
+
+| | | |
+|---|---|---|
+| <img src="docs/screenshots/01-home.png" width="200" alt="首页"/> | <img src="docs/screenshots/02-library.png" width="200" alt="动作库"/> | <img src="docs/screenshots/03-workout.png" width="200" alt="训练执行"/> |
+| **首页** · 今日推荐 / 周目标 / 快捷入口 | **动作库** · 1,324 动作两级筛选 | **训练执行** · 组次 / 休息计时 / PR |
+| <img src="docs/screenshots/04-stats.png" width="200" alt="数据面板"/> | <img src="docs/screenshots/05-body.png" width="200" alt="身体数据"/> | <img src="docs/screenshots/06-templates.png" width="200" alt="训练模板"/> |
+| **数据面板** · 容量趋势 / 日历热力图 | **身体数据** · 围度 / 体重追踪 | **训练模板** · 可复用计划 |
+| <img src="docs/screenshots/07-warmup.png" width="200" alt="热身"/> | <img src="docs/screenshots/08-exercise.png" width="200" alt="动作详情"/> | <img src="docs/screenshots/09-profile.png" width="200" alt="我的"/> |
+| **热身** · 动态拉伸流程 | **动作详情** · 动画 / 要点 / 变式 | **我的** · 统计 / 偏好 / 备份 |
+
+---
 
 ## 功能
 
@@ -35,6 +78,19 @@
 - **多语言** — 中文 / English 全量；ja / es / ko / fr / ru 基础覆盖（缺失键回退英文）
 - **主题** — 深色 / 浅色 / 跟随系统
 
+---
+
+## 下载与安装
+
+- **GitHub Release（推荐）**：[v1.0.0 下载页](https://github.com/Choyeon/choyeon-exercises/releases)
+  - 安装包：`app-release-arm64-v8a.apk`（约 173 MB，仅含 `arm64-v8a` 架构，适用于绝大多数现代 Android 手机）
+  - 安装前请在系统设置中允许「未知来源」安装；若提示签名，确认来自本仓库发布。
+- **自行构建**：见下方「构建 Release APK」。
+
+> 定位：纯离线工具。没有商业化内容、没有账号、没有联网请求、没有社区 / 社交。所有数据只存在本机，导出与恢复也只走「一段纯文本」，不申请任何存储 / 分享权限。
+
+---
+
 ## 技术栈
 
 | 层 | 技术 |
@@ -51,6 +107,8 @@
 | 测试 | 自研零依赖 runner（用项目自带 `typescript` 做内存转译） |
 | 构建 | Gradle (compileSdk 36, targetSdk 36) |
 
+---
+
 ## 开发
 
 ### 前置要求
@@ -60,21 +118,17 @@
 - Android SDK 36 + Build Tools 36.0.0
 - Android SDK Platform 36
 
-### 安装
+### 安装与运行
 
 ```bash
 git clone https://github.com/Choyeon/choyeon-exercises.git
 cd choyeon-exercises
 npm install
-```
 
-### 运行
-
-```bash
 # 启动 Metro bundler
 npm start
 
-# Android (需要先执行 npx expo prebuild)
+# Android（首次需先执行 npx expo prebuild）
 npm run android
 ```
 
@@ -95,24 +149,23 @@ npm run verify      # typecheck + test，提交前跑这个
 ### 构建 Release APK
 
 ```bash
-# 1. 生成原生项目（首次或依赖变更后）
+# 1. 生成原生项目（首次或依赖 / 资源变更后，例如更换图标）
 npx expo prebuild --platform android
 
-# 2. 配置签名（gradle.properties）
-# android.useAndroidX=true
-# android.requireJetifier=false
-# expo.useProguard=false
-# MYAPP_RELEASE_KEYSTORE=C:/path/to/release.keystore
-# MYAPP_RELEASE_KEYSTORE_PASSWORD=your_password
-# MYAPP_RELEASE_KEY_ALIAS=your_alias
-# MYAPP_RELEASE_KEY_PASSWORD=your_key_password
+# 2. 配置签名（android/gradle.properties 或 ~/.gradle/gradle.properties）
+# MYAPP_RELEASE_KEYSTORE=.../release.keystore
+# MYAPP_RELEASE_KEYSTORE_PASSWORD=...
+# MYAPP_RELEASE_KEY_ALIAS=...
+# MYAPP_RELEASE_KEY_PASSWORD=...
 
-# 3. 构建
+# 3. 构建（单架构 arm64-v8a，体积更小、构建更快）
 cd android
-./gradlew assembleRelease
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
 ```
 
 构建产物：`android/app/build/outputs/apk/release/app-release.apk`
+
+> 更换图标后务必重新执行 `expo prebuild`，否则 Android 资源目录里的旧 webp 不会更新。
 
 ## 项目结构
 
@@ -137,11 +190,14 @@ cd android
 │   ├── theme/             # 主题系统
 │   ├── types/             # TypeScript 类型
 │   └── utils/             # strength / analytics / backup / format ...
-├── app.json               # Expo 配置
+├── assets/                # 图标 / 字体 / 数据集
+├── app.json               # Expo 配置（含图标与自适应图标）
 ├── babel.config.js
 ├── metro.config.js
 └── package.json
 ```
+
+---
 
 ## 数据与迁移约定
 
@@ -162,6 +218,8 @@ cd android
 6. **纯逻辑模块零 RN 依赖**（`utils/`、`store/sanitize.ts`、`constants/settings.ts`），
    这样单测能直接加载它们，不用拉起整个 RN 运行时。
 
+---
+
 ## 签名说明
 
 Release APK 使用 V1 (JAR) + V2 (APK Signature Scheme v2) 双签名：
@@ -178,6 +236,8 @@ apksigner verify --verbose --min-sdk-version 21 app-release.apk
 # 计算 SHA256
 shasum -a 256 app-release.apk
 ```
+
+---
 
 ## 许可证
 

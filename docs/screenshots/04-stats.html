@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="_design.css"></head>
+<body><div class="screen">
+  <div class="statusbar"><span>9:41</span><span class="right">📶 &nbsp; 🔋 100%</span></div>
+  <div class="scroll"><div class="scroll-inner" style="padding-top:10px;">
+
+    <div class="title">数据面板</div>
+
+    <div style="display:flex;gap:12px;">
+      <div class="card" style="flex:1;padding:14px;"><div class="muted2" style="font-size:10px;font-weight:800;">总训练</div><div style="font-size:26px;font-weight:900;color:var(--t1);">86<span style="font-size:12px;color:var(--t2);"> 次</span></div></div>
+      <div class="card" style="flex:1;padding:14px;"><div class="muted2" style="font-size:10px;font-weight:800;">连续</div><div style="font-size:26px;font-weight:900;color:var(--primary);">12<span style="font-size:12px;color:var(--t2);"> 天</span></div></div>
+    </div>
+
+    <!-- 周容量柱状图 -->
+    <div class="card" style="padding:16px;border:1.5px solid rgba(255,255,255,.28);">
+      <div class="row between" style="margin-bottom:12px;"><span class="sec-title" style="font-size:15px;">近 8 周容量 (t)</span><span class="mtag">总计 11.2t</span></div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:120px;">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:40%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W1</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:55%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W2</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:48%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W3</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:70%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W4</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:60%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W5</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:82%;background:var(--surface-2);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W6</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:90%;background:var(--primary);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W7</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:100%;background:var(--primary);border-radius:6px 6px 0 0;"></div><span class="muted2" style="font-size:9px;">W8</span></div>
+      </div>
+    </div>
+
+    <!-- 个人纪录 -->
+    <div class="sec-head"><span class="sec-idx">★</span><span class="sec-title">个人纪录</span><span class="rule"></span></div>
+    <div class="card" style="padding:4px 14px;border:1.5px solid rgba(255,255,255,.28);">
+      <div class="row between" style="padding:10px 0;border-bottom:1px solid var(--divider);"><span class="row gap8"><span class="mring" style="width:32px;height:32px;font-size:14px;background:var(--m-chest);">🏋</span><span style="color:var(--t1);font-weight:800;font-size:14px;">杠铃卧推</span></span><span style="color:var(--primary);font-weight:900;">60 kg × 8</span></div>
+      <div class="row between" style="padding:10px 0;border-bottom:1px solid var(--divider);"><span class="row gap8"><span class="mring" style="width:32px;height:32px;font-size:14px;background:var(--m-upperLegs);">🦵</span><span style="color:var(--t1);font-weight:800;font-size:14px;">深蹲</span></span><span style="color:var(--primary);font-weight:900;">100 kg × 5</span></div>
+      <div class="row between" style="padding:10px 0;"><span class="row gap8"><span class="mring" style="width:32px;height:32px;font-size:14px;background:var(--m-back);">🏃</span><span style="color:var(--t1);font-weight:800;font-size:14px;">硬拉</span></span><span style="color:var(--primary);font-weight:900;">140 kg × 3</span></div>
+    </div>
+
+    <div class="card" style="padding:14px;border:1.5px solid rgba(255,255,255,.28);">
+      <div class="row between"><span class="sec-title" style="font-size:15px;">本周达成</span><span class="green" style="font-weight:900;">3 / 4 次</span></div>
+      <div style="height:6px;border-radius:3px;background:var(--surface-2);margin-top:10px;overflow:hidden;"><div style="height:100%;width:75%;background:var(--success);border-radius:3px;"></div></div>
+    </div>
+
+  </div></div>
+
+  <div class="tabbar">
+    <div class="tab on"><span class="ic">🏠</span><span class="lb">首页</span><span class="pill"></span></div>
+    <div class="tab"><span class="ic">📚</span><span class="lb">动作库</span></div>
+    <div class="tab"><span class="ic">📋</span><span class="lb">训练</span></div>
+    <div class="tab"><span class="ic">👤</span><span class="lb">我的</span></div>
+  </div>
+</div></body></html>
