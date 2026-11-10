@@ -73,6 +73,7 @@ android/keystore.properties
 *.exe
 *.blockmap
 latest.yml
+/release/
 
 # Test / Coverage
 coverage/
