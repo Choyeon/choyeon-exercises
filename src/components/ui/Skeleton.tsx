@@ -106,7 +106,7 @@ export const Skeleton: React.FC<SkeletonProps> = function Skeleton({
   // "blinding flash" that 15%+ contrast skeletons produce on dark themes.
   const { cA, cB, cC } = useMemo(() => {
     const base = colors.surfaceElevated;
-    const isDark = colors.bg === '#07090C';
+    const isDark = colors.bg === '#000000';
     // shimmer highlight = base + 8% opacity white (dark) / + 8% opacity black (light)
     // on top of base.  We approximate with the nearest theme token that is
     // at most ~8% delta from surfaceElevated: surfaceDivider is ~4% delta

@@ -1,14 +1,20 @@
 import React, { useCallback, useMemo } from 'react';
-import { Pressable, StyleSheet, View, I18nManager } from 'react-native';
+import {
+  Pressable,
+  StyleSheet,
+  I18nManager,
+  View,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withTiming,
   withSpring,
-  WithSpringConfig,
-} from 'react-native-reanimated';
+  WithSpringConfig } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import { useThemeColors, radius } from '@/theme';
+import {
+  useThemeColors,
+  radius,
+} from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
 
 // ============================================================================
@@ -33,15 +39,14 @@ const SPRING_CFG: WithSpringConfig = {
   mass: 0.5,
   stiffness: 420,
   damping: 26,
-  overshootClamping: true,
-};
+  overshootClamping: true };
 
-// Measured dimensions — shared with styles and translate math.
-const TRACK_W = 50;
-const TRACK_H = 30;
-const PADDING = 3;
-const THUMB_SIZE = TRACK_H - PADDING * 2;  // 24
-const THUMB_TRANSLATE_ON = TRACK_W - THUMB_SIZE - PADDING; // 50 - 24 - 3 = 23
+// Measured dimensions — iOS 26 switch geometry (51 × 31 pt, 27 pt thumb).
+const TRACK_W = 51;
+const TRACK_H = 31;
+const PADDING = 2;
+const THUMB_SIZE = TRACK_H - PADDING * 2;  // 27
+const THUMB_TRANSLATE_ON = TRACK_W - THUMB_SIZE - PADDING; // 51 - 27 - 2 = 22
 
 export const Switch: React.FC<SwitchProps> = function Switch({
   value,
@@ -49,8 +54,7 @@ export const Switch: React.FC<SwitchProps> = function Switch({
   disabled = false,
   activeTrackColor,
   activeThumbColor,
-  accessibilityLabel,
-}) {
+  accessibilityLabel }) {
   const colors = useThemeColors();
   // 视觉一致性：激活轨道色统一走 theme.primary（原硬编码 #BAFF2E 与主题 #BFF23D 有色差）
   const accent = activeTrackColor ?? colors.primary;
@@ -76,8 +80,16 @@ export const Switch: React.FC<SwitchProps> = function Switch({
       borderRadius: radius.pill,
       justifyContent: 'center',
       padding: PADDING,
-      borderWidth: 1.5,
-    },
+      borderWidth: StyleSheet.hairlineWidth },
+    // iOS 26: the switch body is a glass capsule with a specular sweep on top.
+    trackGloss: {
+      position: 'absolute',
+      left: 6,
+      right: 6,
+      top: 1,
+      height: 1,
+      borderRadius: 1,
+      backgroundColor: 'rgba(255,255,255,0.55)' },
     thumb: {
       width: THUMB_SIZE,
       height: THUMB_SIZE,
@@ -87,9 +99,7 @@ export const Switch: React.FC<SwitchProps> = function Switch({
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.3,
       shadowRadius: 2,
-      elevation: 2,
-    },
-  }), [colors]);
+      elevation: 2 } }), [colors]);
 
   const trackAnimated = useAnimatedStyle(() => {
     // Interpolate background color smoothly between off and on.
@@ -101,16 +111,14 @@ export const Switch: React.FC<SwitchProps> = function Switch({
     return {
       backgroundColor: progress > 0.5 ? accent : colors.surfaceElevated,
       borderColor:       progress > 0.5 ? accent : colors.surfaceBorder,
-      opacity: disabled ? 0.45 : 1,
-    };
+      opacity: disabled ? 0.45 : 1 };
   });
 
   const thumbAnimated = useAnimatedStyle(() => {
     const progress = (position.value - PADDING) / (THUMB_TRANSLATE_ON - PADDING);
     return {
       transform: [{ translateX: position.value - PADDING }],
-      backgroundColor: progress > 0.5 ? thumbOn : colors.textPrimary,
-    };
+      backgroundColor: progress > 0.5 ? thumbOn : colors.textPrimary };
   });
 
   const isRTL = I18nManager.isRTL;
@@ -127,6 +135,7 @@ export const Switch: React.FC<SwitchProps> = function Switch({
       hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }}
     >
       <Animated.View style={[s.track, trackAnimated, isRTL && styles_rtl.flipX]}>
+        <View style={s.trackGloss} pointerEvents="none" />
         <Animated.View style={[s.thumb, thumbAnimated]} />
       </Animated.View>
     </Pressable>
@@ -134,5 +143,4 @@ export const Switch: React.FC<SwitchProps> = function Switch({
 };
 
 const styles_rtl = StyleSheet.create({
-  flipX: { transform: [{ scaleX: -1 }] },
-});
+  flipX: { transform: [{ scaleX: -1 }] } });

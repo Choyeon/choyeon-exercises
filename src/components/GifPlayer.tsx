@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, View, Image as RNImage, StyleSheet } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  View,
+  Image as RNImage,
+  StyleSheet,
+} from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
 import { useThemeColors } from '@/theme';
 import type { Colors } from '@/theme';
@@ -34,8 +39,7 @@ const GIF_STATIC_STYLES = StyleSheet.create({
   container: { width: '100%', height: '100%' },
   img: { width: '100%', height: '100%' },
   loadingOverlay: { ...FILL, alignItems: 'center', justifyContent: 'center' },
-  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-});
+  placeholder: { flex: 1, alignItems: 'center', justifyContent: 'center' } });
 
 const gifStylesCache = new WeakMap<Colors, ReturnType<typeof createGifStyles>>();
 
@@ -43,18 +47,14 @@ function createGifStyles(colors: Colors) {
   return StyleSheet.create({
     container: {
       ...GIF_STATIC_STYLES.container,
-      backgroundColor: colors.surfaceElevated,
-    },
+      backgroundColor: colors.surfaceElevated },
     img: {
       ...GIF_STATIC_STYLES.img,
-      backgroundColor: colors.surfaceElevated,
-    },
+      backgroundColor: colors.surfaceElevated },
     loadingOverlay: {
       ...GIF_STATIC_STYLES.loadingOverlay,
-      backgroundColor: colors.surfaceElevated,
-    },
-    placeholder: GIF_STATIC_STYLES.placeholder,
-  });
+      backgroundColor: colors.surfaceElevated },
+    placeholder: GIF_STATIC_STYLES.placeholder });
 }
 
 function getGifStyles(colors: Colors) {
@@ -89,8 +89,7 @@ export function GifPlayer({
   tint,
   onFallbackToPoster,
   placeholderIcon = 'dumbbell',
-  contentFit = 'cover',
-}: GifPlayerProps) {
+  contentFit = 'cover' }: GifPlayerProps) {
   const colors = useThemeColors();
   // ★ 修复内存泄漏：组件卸载后异步回调（onLoadEnd/onError）不再 setState
   const mountedRef = useRef(true);

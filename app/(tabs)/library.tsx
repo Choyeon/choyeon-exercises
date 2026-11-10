@@ -1,10 +1,27 @@
 // v1.0.1-REDESIGNED — LibraryScreen v2 [4HorizontalRails][112dpCards]
-import { useState, useMemo, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+} from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Platform,
+} from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import {
+  useLocalSearchParams,
+  useRouter,
+} from 'expo-router';
 
 import type { BodyPart, Exercise } from '@/types';
 import {
@@ -27,6 +44,7 @@ import {
   Skeleton,
   HybridImage,
 } from '@/components/UIKit';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { useAppStore } from '@/store/useAppStore';
 import { safeHaptic } from '@/utils/haptic';
 import {
@@ -36,8 +54,6 @@ import {
   translateTargetPhrase,
   BODY_REGIONS,
   EQUIPMENT_GROUPS,
-  EQUIPMENT_LABELS,
-  BODY_PART_LABELS,
   type BodyRegion,
   type EquipmentGroup,
   iconForBodyPart,
@@ -233,8 +249,7 @@ export default function LibraryScreen() {
     const base = store.filter({
       bodyPart: bodyPartFilter,
       equipment: equipmentFilter,
-      searchQuery: debouncedSearch,
-    });
+      searchQuery: debouncedSearch });
     if (activeTab === 'favorites') {
       const set = new Set(favoriteIds);
       return base.filter((ex) => set.has(ex.id));
@@ -348,14 +363,13 @@ export default function LibraryScreen() {
       tap(() => {
         router.push({
           pathname: '/exercise/[id]',
-          params: { id },
-        } as Parameters<typeof router.push>[0]);
+          params: { id } } as Parameters<typeof router.push>[0]);
       }),
     [tap, router],
   );
 
   // ===== Theme tokens + styles =====
-  const isDark = colors.bg === '#07090C';
+  const isDark = colors.bg === '#000000';
   const frameStroke = getFrameStroke(isDark);
   const accentStroke = getAccentStroke(colors.primary);
   const softShadow = getSoftShadow(isDark);
@@ -363,85 +377,57 @@ export default function LibraryScreen() {
   const bottomPad = useMemo(
     () =>
       Math.max(insets.bottom, spacing.xs) +
-      (Platform.OS === 'ios' ? 58 : 56) +
-      spacing.xl,
+      layout.floatingTabBar.bottomGap +
+      layout.floatingTabBar.height +
+      layout.floatingTabBar.contentGap,
     [insets.bottom],
   );
 
   const s = useMemo(
     () =>
       StyleSheet.create({
-        container: { flex: 1, backgroundColor: colors.bg },
+        container: { flex: 1, backgroundColor: colors.bg, alignItems: 'center' },
 
-        // Top bar area
+        // Apple HIG：iPad / 宽屏下限制可读列宽，避免超长行距损害可读性。
+        readable: {
+          width: '100%',
+          maxWidth: layout.maxContentWidth,
+          alignSelf: 'center' },
+
+        // Top bar area — Apple HIG large title + search + segmented tabs
         topBar: {
           paddingHorizontal: layout.paddingHorizontal,
-          paddingTop: spacing.md,
+          paddingTop: spacing.sm,
           paddingBottom: spacing.sm,
-          gap: spacing.md,
-        },
+          gap: spacing.md },
         titleRow: {
           flexDirection: 'row',
-          alignItems: 'flex-start',
+          alignItems: 'flex-end',
           justifyContent: 'space-between',
-          gap: spacing.md,
-        },
-        titleLeft: { flex: 1, minWidth: 0, gap: spacing.xs, paddingHorizontal: spacing.md },
+          gap: spacing.md },
+        titleLeft: { flex: 1, minWidth: 0, gap: 2, paddingHorizontal: spacing.xs },
         pageTitle: {
-          ...typography.h2,
+          ...typography.display,
           color: colors.textPrimary,
-          letterSpacing: -0.8,
-          paddingLeft: spacing.xs,
-        },
+          letterSpacing: -0.5 },
         titleCount: {
-          fontSize: 11,
-          lineHeight: 14,
-          fontWeight: '800',
-          letterSpacing: 0.3,
-          color: colors.textTertiary,
-          flexShrink: 1,
-          minWidth: 0,
-        },
-        searchWrap: { width: 260, maxWidth: '58%', flexShrink: 0 },
-        tabsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
-        tab: {
-          flex: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: spacing.sm,
-          paddingVertical: spacing.sm,
-          paddingHorizontal: spacing.sm,
-          borderRadius: radius.lg,
-          borderWidth: 1.5,
-          borderColor: colors.surfaceBorder,
-          backgroundColor: colors.surface,
-          shadowColor: '#000',
-          shadowOpacity: isDark ? 0.55 : 0.18,
-          shadowRadius: 6,
-          shadowOffset: { width: 0, height: 2 },
-          elevation: isDark ? 4 : 2,
-        },
-        tabActive: { backgroundColor: colors.primary, borderColor: colors.primary + '66' },
-        tabText: {
-          color: colors.textSecondary,
           fontSize: 13,
           lineHeight: 18,
-          fontWeight: '800',
-          letterSpacing: 0.3,
-        },
-        tabTextActive: { color: colors.textInverse },
+          fontWeight: '400',
+          letterSpacing: -0.1,
+          color: colors.textSecondary,
+          flexShrink: 1,
+          minWidth: 0 },
+        searchWrap: { flex: 1, maxWidth: 320, flexShrink: 1 },
 
         // ===== 4 Rails area =====
         railsWrap: {
           gap: spacing.sm,
           paddingTop: spacing.xs,
-          paddingBottom: spacing.xs,
-        },
+          paddingBottom: spacing.xs },
         railContent: {
           paddingHorizontal: layout.paddingHorizontal,
-          gap: spacing.sm,
-        },
+          gap: spacing.sm },
 
         // Region chip (Rail A): 36dp height
         regionChip: {
@@ -451,24 +437,20 @@ export default function LibraryScreen() {
           gap: spacing.xs,
           paddingHorizontal: spacing.md,
           borderRadius: radius.pill,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
-          backgroundColor: colors.surface,
-        },
+          backgroundColor: colors.surface },
         regionChipActive: {
           backgroundColor: colors.primary + '29',
-          borderColor: colors.primary,
-        },
+          borderColor: colors.primary },
         regionChipText: {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: '700',
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
         regionChipTextActive: {
           color: colors.primary,
-          fontWeight: '800',
-        },
+          fontWeight: '700' },
 
         // BodyPart chip (Rail B): 40dp height, #XX index + icon + name + count
         bpChip: {
@@ -479,65 +461,53 @@ export default function LibraryScreen() {
           paddingHorizontal: spacing.sm,
           paddingRight: spacing.sm,
           borderRadius: radius.pill,
-          borderWidth: 1.5,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           backgroundColor: colors.surface,
           ...softShadow,
-          elevation: isDark ? 4 : 2,
-        },
+          elevation: isDark ? 4 : 2 },
         bpChipActive: {
-          borderColor: accentStroke,
-        },
+          borderColor: accentStroke },
         bpIndexPill: {
           paddingHorizontal: 6,
           paddingVertical: 3,
           borderRadius: 999,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
-          backgroundColor: colors.surfaceElevated,
-        },
+          backgroundColor: colors.surfaceElevated },
         bpIndexText: {
           fontSize: 9,
           lineHeight: 12,
-          fontWeight: '900',
+          fontWeight: '700',
           letterSpacing: 0.4,
-          color: colors.textTertiary,
-        },
+          color: colors.textTertiary },
         bpIndexPillActive: {
           backgroundColor: colors.primary,
-          borderColor: colors.primary,
-        },
+          borderColor: colors.primary },
         bpIndexTextActive: {
-          color: isDark ? '#07090C' : '#FFFFFF',
-        },
+          color: colors.textInverse },
         bpText: {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: '700',
-          color: colors.textPrimary,
-        },
+          color: colors.textPrimary },
         bpTextActive: {
-          fontWeight: '900',
-        },
+          fontWeight: '700' },
         bpCountBadge: {
           paddingHorizontal: spacing.sm,
           paddingVertical: 2,
           borderRadius: 999,
-          backgroundColor: colors.surfaceElevated,
-        },
+          backgroundColor: colors.surfaceElevated },
         bpCountBadgeActive: {
-          backgroundColor: colors.primary + '1F',
-        },
+          backgroundColor: colors.primary + '1F' },
         bpCountText: {
           fontSize: 10,
           lineHeight: 14,
-          fontWeight: '800',
+          fontWeight: '700',
           color: colors.textTertiary,
-          letterSpacing: 0.2,
-        },
+          letterSpacing: 0.2 },
         bpCountTextActive: {
-          color: colors.primary,
-        },
+          color: colors.primary },
 
         // Equipment group chip (Rail C): 36dp height
         eqgChip: {
@@ -547,24 +517,20 @@ export default function LibraryScreen() {
           gap: spacing.xs,
           paddingHorizontal: spacing.md,
           borderRadius: radius.pill,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
-          backgroundColor: colors.surface,
-        },
+          backgroundColor: colors.surface },
         eqgChipActive: {
           backgroundColor: colors.info + '1F',
-          borderColor: colors.info,
-        },
+          borderColor: colors.info },
         eqgChipText: {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: '700',
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
         eqgChipTextActive: {
           color: colors.info,
-          fontWeight: '800',
-        },
+          fontWeight: '700' },
 
         // Equipment chip (Rail D): 40dp height
         eqChip: {
@@ -574,44 +540,36 @@ export default function LibraryScreen() {
           gap: spacing.sm,
           paddingHorizontal: spacing.sm,
           borderRadius: radius.pill,
-          borderWidth: 1.5,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           backgroundColor: colors.surface,
           ...softShadow,
-          elevation: isDark ? 4 : 2,
-        },
+          elevation: isDark ? 4 : 2 },
         eqChipActive: {
           backgroundColor: colors.info + '1F',
-          borderColor: colors.info,
-        },
+          borderColor: colors.info },
         eqText: {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: '700',
-          color: colors.textPrimary,
-        },
+          color: colors.textPrimary },
         eqTextActive: {
           color: colors.info,
-          fontWeight: '900',
-        },
+          fontWeight: '700' },
         eqCountBadge: {
           paddingHorizontal: spacing.sm,
           paddingVertical: 2,
           borderRadius: 999,
-          backgroundColor: colors.surfaceElevated,
-        },
+          backgroundColor: colors.surfaceElevated },
         eqCountBadgeActive: {
-          backgroundColor: colors.info + '14',
-        },
+          backgroundColor: colors.info + '14' },
         eqCountText: {
           fontSize: 10,
           lineHeight: 14,
-          fontWeight: '800',
-          color: colors.textTertiary,
-        },
+          fontWeight: '700',
+          color: colors.textTertiary },
         eqCountTextActive: {
-          color: colors.info,
-        },
+          color: colors.info },
 
         // ===== Summary + badges row =====
         summaryRow: {
@@ -621,49 +579,41 @@ export default function LibraryScreen() {
           paddingHorizontal: layout.paddingHorizontal,
           paddingVertical: spacing.sm,
           gap: spacing.sm,
-          flexWrap: 'nowrap',
-        },
+          flexWrap: 'nowrap' },
         summaryLeftWrap: {
           flex: 1,
           minWidth: 0,
-          gap: spacing.xs,
-        },
+          gap: spacing.xs },
         summaryLabelLine: {
           flexDirection: 'row',
           alignItems: 'baseline',
           gap: spacing.xs,
           flexShrink: 1,
-          minWidth: 0,
-        },
+          minWidth: 0 },
         summaryLabel: {
           color: colors.textPrimary,
           fontSize: 14,
           lineHeight: 18,
-          fontWeight: '900',
+          fontWeight: '700',
           letterSpacing: 0.1,
           flexShrink: 1,
-          minWidth: 0,
-        },
+          minWidth: 0 },
         summaryCount: {
           color: colors.primary,
           fontSize: 14,
           lineHeight: 18,
-          fontWeight: '900',
-        },
+          fontWeight: '700' },
         badgesRow: {
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.xs,
           flexWrap: 'nowrap',
-          minWidth: 0,
-        },
+          minWidth: 0 },
         badgesScroll: {
-          flexGrow: 0,
-        },
+          flexGrow: 0 },
         badgesScrollContent: {
           gap: spacing.xs,
-          paddingRight: spacing.xs,
-        },
+          paddingRight: spacing.xs },
         filterBadge: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -671,17 +621,15 @@ export default function LibraryScreen() {
           paddingHorizontal: spacing.sm,
           paddingVertical: 3,
           borderRadius: radius.pill,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
           backgroundColor: colors.surfaceElevated,
-          height: 24,
-        },
+          height: 24 },
         filterBadgeText: {
           fontSize: 10,
           lineHeight: 14,
-          fontWeight: '800',
-          color: colors.textSecondary,
-        },
+          fontWeight: '700',
+          color: colors.textSecondary },
         resetCapsule: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -689,30 +637,26 @@ export default function LibraryScreen() {
           paddingHorizontal: spacing.sm,
           paddingVertical: 5,
           borderRadius: radius.pill,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
           backgroundColor: colors.surface,
           height: 28,
-          flexShrink: 0,
-        },
+          flexShrink: 0 },
         resetText: {
           fontSize: 10,
           lineHeight: 14,
-          fontWeight: '800',
+          fontWeight: '700',
           letterSpacing: 0.2,
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
 
         // ===== List container =====
         listWrap: { flex: 1, minHeight: 1, overflow: 'visible' },
         listContent: {
           paddingHorizontal: layout.paddingHorizontal,
-          paddingTop: spacing.md,
-        },
+          paddingTop: spacing.md },
         bottomInset: {
           height: 0,
-          flexShrink: 0,
-        },
+          flexShrink: 0 },
         skeletonGap: { height: spacing.md },
 
         // ===== 144dp card (v3 — adds 2-line description row) =====
@@ -724,90 +668,78 @@ export default function LibraryScreen() {
           alignItems: 'center',
           gap: spacing.md,
           paddingHorizontal: spacing.md,
-          borderWidth: 1.5,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           backgroundColor: colors.surface,
           shadowColor: softShadow.shadowColor,
           shadowOpacity: softShadow.shadowOpacity,
           shadowOffset: softShadow.shadowOffset,
           shadowRadius: softShadow.shadowRadius,
-          elevation: softShadow.elevation,
-        },
+          elevation: softShadow.elevation },
         muscleRing: {
           width: 72,
           height: 72,
           borderRadius: radius.md,
           flexShrink: 0,
           overflow: 'hidden',
-          backgroundColor: colors.surfaceElevated,
-        },
+          backgroundColor: colors.surfaceElevated },
         centerCol: {
           flex: 1,
           minWidth: 0,
           gap: spacing.xs,
           height: 124,
           justifyContent: 'space-between',
-          paddingVertical: 4,
-        },
+          paddingVertical: 4 },
         cardTitle: {
           fontSize: 14,
           lineHeight: 20,
-          fontWeight: '800',
-          color: colors.textPrimary,
-        },
+          fontWeight: '700',
+          color: colors.textPrimary },
         cardSub: {
           fontSize: 12,
           lineHeight: 15,
           fontWeight: '400',
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
         cardDesc: {
           fontSize: 12,
           lineHeight: 16,
           fontWeight: '400',
-          color: colors.textTertiary,
-        },
+          color: colors.textTertiary },
         muscleTagsRow: {
           flexDirection: 'row',
           flexWrap: 'nowrap',
           gap: 4,
           alignItems: 'center',
-          minWidth: 0,
-        },
+          minWidth: 0 },
         muscleTag: {
           paddingHorizontal: 6,
           paddingVertical: 2,
           borderRadius: 999,
           backgroundColor: colors.primary + '1A',
-          flexShrink: 0,
-        },
+          flexShrink: 0 },
         muscleTagText: {
           fontSize: 10,
           lineHeight: 12,
-          fontWeight: '800',
-          color: colors.primary,
-        },
+          fontWeight: '700',
+          color: colors.primary },
         moreTag: {
           paddingHorizontal: 6,
           paddingVertical: 2,
           borderRadius: 999,
           backgroundColor: colors.surfaceElevated,
-          flexShrink: 0,
-        },
+          flexShrink: 0 },
         moreTagText: {
           fontSize: 10,
           lineHeight: 12,
-          fontWeight: '800',
-          color: colors.textTertiary,
-        },
+          fontWeight: '700',
+          color: colors.textTertiary },
         rightCol: {
           width: 56,
           alignItems: 'flex-end',
           justifyContent: 'space-between',
           height: 124,
           flexShrink: 0,
-          paddingVertical: 2,
-        },
+          paddingVertical: 2 },
         equipBadge: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -818,23 +750,20 @@ export default function LibraryScreen() {
           backgroundColor: colors.surfaceBorder + '3D',
           maxWidth: 56,
           minWidth: 0,
-          flexShrink: 1,
-        },
+          flexShrink: 1 },
         equipBadgeText: {
           fontSize: 9,
           lineHeight: 12,
           fontWeight: '400',
           color: colors.textSecondary,
           flexShrink: 1,
-          minWidth: 0,
-        },
+          minWidth: 0 },
         iconBtn28: {
           width: 28,
           height: 28,
           borderRadius: 14,
           alignItems: 'center',
-          justifyContent: 'center',
-        },
+          justifyContent: 'center' },
         favBtn: {
           width: 28,
           height: 28,
@@ -842,18 +771,15 @@ export default function LibraryScreen() {
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: colors.surfaceElevated,
-          borderWidth: 1,
-          borderColor: frameStroke,
-        },
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: frameStroke },
         addBtn: {
           width: 28,
           height: 28,
           borderRadius: 14,
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: colors.primary + '1A',
-        },
-      }),
+          backgroundColor: colors.primary + '1A' } }),
     [colors, insets.bottom, frameStroke, accentStroke, softShadow, isDark],
   );
 
@@ -889,7 +815,7 @@ export default function LibraryScreen() {
         <View style={s.cardWrap}>
           <PressableScale
             onPress={() => goDetail(ex.id)}
-            hitSlop={4}
+            hitSlop={8}
             scaleTo={0.97}
             accessibilityRole="button"
             accessibilityLabel={currentLang === 'zh' ? displayNameZh(ex) : ex.name}
@@ -902,7 +828,7 @@ export default function LibraryScreen() {
                 iconName={ringIcon}
                 fallbackBodyPart={ex.body_part}
                 fallbackTint={ringColor}
-                style={[s.muscleRing, { borderWidth: 2, borderColor: ringColor + '66' }]}
+                style={[s.muscleRing, { borderWidth: 1, borderColor: ringColor + '66' }]}
                 contentFit="cover"
                 iconRatio={0.45}
               />
@@ -1020,16 +946,14 @@ export default function LibraryScreen() {
           key: 'region',
           label: currentLang === 'en' ? region.en : region.zh,
           clear: () => setSelectedRegion('all'),
-          tint: colors.primary,
-        });
+          tint: colors.primary });
     }
     if (selectedBodyPart) {
       badges.push({
         key: 'bp',
         label: labelForBodyPart(selectedBodyPart, currentLang),
         clear: () => setSelectedBodyPart(null),
-        tint: colors.primary,
-      });
+        tint: colors.primary });
     }
     if (selectedEquipGroup !== 'all') {
       const g = EQUIPMENT_GROUPS.find((x) => x.key === selectedEquipGroup);
@@ -1038,16 +962,14 @@ export default function LibraryScreen() {
           key: 'eqg',
           label: currentLang === 'en' ? g.en : g.zh,
           clear: () => setSelectedEquipGroup('all'),
-          tint: colors.info,
-        });
+          tint: colors.info });
     }
     if (selectedEquipment) {
       badges.push({
         key: 'eq',
         label: labelForEquipment(selectedEquipment, currentLang),
         clear: () => setSelectedEquipment(null),
-        tint: colors.info,
-      });
+        tint: colors.info });
     }
     return badges;
   }, [
@@ -1101,8 +1023,7 @@ export default function LibraryScreen() {
     selectedBodyPart,
     selectedEquipGroup,
     selectedEquipment,
-    currentLang,
-  });
+    currentLang });
 
   // ==========================================================================
   // RENDER
@@ -1110,7 +1031,7 @@ export default function LibraryScreen() {
   return (
     <SafeAreaView style={s.container} edges={['top']}>
       {/* ===== TitleHeader + SearchBar + TopTabs ===== */}
-      <View style={s.topBar}>
+      <View style={[s.topBar, s.readable]}>
         <View style={s.titleRow}>
           <View style={s.titleLeft}>
             <Text style={s.pageTitle}>{t('library.title')}</Text>
@@ -1118,8 +1039,7 @@ export default function LibraryScreen() {
               {t('library.totalCount', {
                 n: filteredExercises.length,
                 total: store.total(),
-                defaultValue: '',
-              }) || `${t('common.total')} ${filteredExercises.length} / ${store.total()}`}
+                defaultValue: '' }) || `${t('common.total')} ${filteredExercises.length} / ${store.total()}`}
             </Text>
           </View>
           <View style={s.searchWrap}>
@@ -1135,35 +1055,19 @@ export default function LibraryScreen() {
           </View>
         </View>
 
-        <View style={s.tabsRow}>
-          {TOP_TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <PressableScale
-                key={tab.key}
-                onPress={() => handleTabPress(tab.key)}
-                style={[s.tab, isActive && s.tabActive]}
-                scaleTo={0.97}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isActive }}
-                accessibilityLabel={t(tab.labelKey)}
-              >
-                <Icon
-                  name={tab.icon}
-                  size={16}
-                  color={isActive ? colors.textInverse : colors.textSecondary}
-                />
-                <Text style={[s.tabText, isActive && s.tabTextActive]} numberOfLines={1}>
-                  {t(tab.labelKey)}
-                </Text>
-              </PressableScale>
-            );
-          })}
-        </View>
+        <SegmentedControl
+          options={TOP_TABS.map((tab) => ({
+            label: t(tab.labelKey),
+            value: tab.key,
+            icon: tab.icon }))}
+          value={activeTab}
+          onChange={(next) => handleTabPress(next as TopTab)}
+          highlightColor={colors.primary}
+        />
       </View>
 
       {/* ===== 4 Horizontal Rails (always visible, constant height ≈ 232dp) ===== */}
-      <View style={s.railsWrap}>
+      <View style={[s.railsWrap, s.readable]}>
         {/* Rail A: Region (36dp chip) */}
         <ScrollView
           horizontal
@@ -1345,7 +1249,7 @@ export default function LibraryScreen() {
                     tap(() => b.clear(), 'light')
                   }
                   scaleTo={0.93}
-                  hitSlop={4}
+                  hitSlop={8}
                   accessibilityRole="button"
                   accessibilityLabel={`${t('common.clear')} ${b.label}`}
                   style={[s.filterBadge, b.tint ? { borderColor: b.tint + '55' } : null]}
@@ -1367,7 +1271,7 @@ export default function LibraryScreen() {
             !hasAnyFilter && { opacity: 0.5 },
           ]}
           scaleTo={hasAnyFilter ? 0.94 : 1}
-          hitSlop={4}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={t('common.reset')}
           accessibilityState={{ disabled: !hasAnyFilter }}
@@ -1380,7 +1284,7 @@ export default function LibraryScreen() {
       </View>
 
       {/* ===== FlashList ===== */}
-      <View style={s.listWrap}>
+      <View style={[s.listWrap, s.readable]}>
         {!store.ready ? (
           loadingNodes
         ) : (
@@ -1423,8 +1327,7 @@ function buildResultLabel(args: {
     selectedBodyPart,
     selectedEquipGroup,
     selectedEquipment,
-    currentLang,
-  } = args;
+    currentLang } = args;
 
   if (activeTab === 'favorites') return t('library.tabFavorites');
 

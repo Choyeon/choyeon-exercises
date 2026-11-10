@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useThemeColors, spacing, radius, typography } from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
+import { GlassSurface } from './LiquidGlass';
 
 // ============================================================================
 // SegmentedControl — iOS-style N-option pill selector.
@@ -77,10 +78,11 @@ function SegmentedControlImpl<T extends string | number>(
   } = props;
 
   const colors = useThemeColors();
-  // 视觉一致性：默认强调色统一走 theme.primary，不再硬编码 #BAFF2E
+  const isDark = colors.bg === '#000000';
+  // iOS 26: the track is a liquid-glass capsule and the selected segment is
+  // a floating glass block that lifts out of it — no flat colour fill.
   const accent = highlightColor ?? colors.primary;
-  const activeText = highlightTextColor ?? colors.textInverse;
-  const track = trackColor ?? colors.surfaceElevated;
+  const activeText = highlightTextColor ?? accent;
 
   const selectedIndex = options.findIndex((o) => o.value === value);
 
@@ -132,12 +134,10 @@ function SegmentedControlImpl<T extends string | number>(
     track: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: track,
       borderRadius: radius.pill,
       padding: spacing.xs,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.surfaceDivider,
       alignSelf: 'flex-start',
+      backgroundColor: trackColor ?? colors.surfaceElevated,
     },
     highlight: {
       position: 'absolute',
@@ -145,12 +145,15 @@ function SegmentedControlImpl<T extends string | number>(
       bottom: spacing.xs,
       left: spacing.xs,
       borderRadius: radius.pill - 2,
-      backgroundColor: accent,
+      // iOS 26 selected segment = floating glass block, not a solid fill.
+      backgroundColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.92)',
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: (colors.bg === '#07090C') ? 0.55 : 0.18,
-      shadowRadius: 6,
-      elevation: (colors.bg === '#07090C') ? 4 : 2,
+      shadowOpacity: isDark ? 0.4 : 0.12,
+      shadowRadius: 10,
+      elevation: isDark ? 4 : 3,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.9)',
     },
     segment: {
       paddingHorizontal: spacing.md,
@@ -168,15 +171,17 @@ function SegmentedControlImpl<T extends string | number>(
       lineHeight: 18,
       letterSpacing: 0,
     },
-  }), [accent, colors, track]);
+  }), [accent, colors, trackColor, isDark]);
 
   return (
-    <View
+    <GlassSurface
+      borderRadius={radius.pill}
+      intensity={45}
       style={[s.track, style]}
       role="tablist"
       accessibilityRole="tablist"
     >
-      {/* Highlight pill sits UNDER the segments. */}
+      {/* Highlight block sits UNDER the segments. */}
       <Animated.View
         pointerEvents="none"
         style={[s.highlight, highlightAnimated]}
@@ -207,7 +212,7 @@ function SegmentedControlImpl<T extends string | number>(
           </Pressable>
         );
       })}
-    </View>
+    </GlassSurface>
   );
 }
 

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* =========================================================================
-   ChoyeonExercises — 设计令牌 CSS 变量
+   Choyeon Gym — Apple Human Interface 设计令牌 CSS 变量
    与 src/theme/index.tsx 中的 lightColors / darkColors 完全同步。
    NativeWind 通过根节点 className="light" / "dark" 自动切换变量。
    ========================================================================= */
@@ -11,60 +11,60 @@
 /* ---------- Dark Theme (默认) ---------- */
 :root,
 .dark {
-  --color-bg: 7 9 12;                 /* #07090C */
-  --color-surface: 14 18 22;          /* #0E1216 */
-  --color-surface-2: 18 23 29;        /* #12171D */
-  --color-surface-3: 25 31 38;        /* #191F26 */
-  --color-surface-border: 33 40 49;   /* #212831 */
-  --color-surface-divider: 26 32 40;  /* #1A2028 */
-  --color-surface-elevated: 23 29 36; /* #171D24 */
-  --color-surface-hover: 26 32 40;    /* #1A2028 */
-  --color-surface-pressed: 31 38 48;  /* #1F2630 */
-  --color-surface-focus: 33 40 49;    /* #212831 */
+  --color-bg: 0 0 0;                    /* #000000 — iOS black */
+  --color-surface: 28 28 30;             /* #1C1C1E */
+  --color-surface-2: 44 44 46;           /* #2C2C2E */
+  --color-surface-3: 44 44 46;           /* #2C2C2E */
+  --color-surface-border: 84 84 88;      /* separator rgb (alpha 0.6 at use) */
+  --color-surface-divider: 84 84 88;     /* #545458 */
+  --color-surface-elevated: 44 44 46;    /* #2C2C2E */
+  --color-surface-hover: 44 44 46;
+  --color-surface-pressed: 58 58 60;
+  --color-surface-focus: 84 84 88;
 
-  --color-text: 245 247 250;          /* #F5F7FA */
-  --color-text-secondary: 177 186 200;/* #B1BAC8 */
-  --color-text-tertiary: 145 154 169; /* #919AA9 */
-  --color-text-inverse: 255 255 255;  /* #FFFFFF */
+  --color-text: 255 255 255;             /* label */
+  --color-text-secondary: 142 142 147;   /* secondary ~white@0.6 */
+  --color-text-tertiary: 99 99 104;      /* tertiary ~white@0.3 */
+  --color-text-inverse: 255 255 255;
 
-  --color-primary: 138 192 26;        /* #8AC01A */
-  --color-primary-hover: 122 170 21;  /* #7AAA15 */
-  --color-primary-dim: 138 192 26;    /* rgba 由 alpha 控制 */
-  --color-primary-stroke: 138 192 26;
-  --color-accent: 229 76 32;          /* #E54C20 */
-  --color-accent-dim: 229 76 32;
-  --color-accent-stroke: 229 76 32;
+  --color-primary: 10 132 255;           /* #0A84FF systemBlue */
+  --color-primary-hover: 64 156 255;     /* #409CFF */
+  --color-primary-dim: 10 132 255;       /* rgba 由 alpha 控制 */
+  --color-primary-stroke: 10 132 255;
+  --color-accent: 255 159 10;            /* #FF9F0A systemOrange */
+  --color-accent-dim: 255 159 10;
+  --color-accent-stroke: 255 159 10;
 
-  --color-info: 46 158 221;           /* #2E9EDD */
-  --color-info-dim: 46 158 221;
+  --color-info: 100 210 255;             /* #64D2FF systemTeal */
+  --color-info-dim: 100 210 255;
 }
 
 /* ---------- Light Theme ---------- */
 .light {
-  --color-bg: 246 247 248;            /* #F6F7F8 */
-  --color-surface: 255 255 255;       /* #FFFFFF */
-  --color-surface-2: 242 244 247;     /* #F2F4F7 */
-  --color-surface-3: 234 237 241;     /* #EAEDF1 */
-  --color-surface-border: 228 231 237;/* #E4E7ED */
-  --color-surface-divider: 233 236 241;/* #E9ECF1 */
+  --color-bg: 242 242 247;               /* #F2F2F7 grouped background */
+  --color-surface: 255 255 255;          /* #FFFFFF */
+  --color-surface-2: 242 242 247;        /* #F2F2F7 */
+  --color-surface-3: 255 255 255;
+  --color-surface-border: 60 60 67;      /* separator rgb (alpha 0.29 at use) */
+  --color-surface-divider: 60 60 67;     /* #3C3C43 */
   --color-surface-elevated: 255 255 255;
-  --color-surface-hover: 242 244 247;
-  --color-surface-pressed: 234 237 241;
-  --color-surface-focus: 228 231 237;
+  --color-surface-hover: 242 242 247;
+  --color-surface-pressed: 234 234 238;
+  --color-surface-focus: 60 60 67;
 
-  --color-text: 17 21 26;             /* #11151A */
-  --color-text-secondary: 93 102 118; /* #5D6676 */
-  --color-text-tertiary: 140 148 161; /* #8C94A1 */
+  --color-text: 0 0 0;                   /* label */
+  --color-text-secondary: 138 138 143;   /* secondary ~black@0.6 */
+  --color-text-tertiary: 188 188 192;    /* tertiary ~black@0.3 */
   --color-text-inverse: 255 255 255;
 
-  --color-primary: 138 192 26;
-  --color-primary-hover: 122 170 21;
-  --color-primary-dim: 138 192 26;
-  --color-primary-stroke: 138 192 26;
-  --color-accent: 229 76 32;
-  --color-accent-dim: 229 76 32;
-  --color-accent-stroke: 229 76 32;
+  --color-primary: 0 122 255;            /* #007AFF systemBlue */
+  --color-primary-hover: 51 153 255;      /* #3399FF */
+  --color-primary-dim: 0 122 255;
+  --color-primary-stroke: 0 122 255;
+  --color-accent: 255 149 0;             /* #FF9500 systemOrange */
+  --color-accent-dim: 255 149 0;
+  --color-accent-stroke: 255 149 0;
 
-  --color-info: 46 158 221;
-  --color-info-dim: 46 158 221;
+  --color-info: 90 200 250;              /* #5AC8FA systemTeal */
+  --color-info-dim: 90 200 250;
 }

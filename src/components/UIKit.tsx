@@ -21,6 +21,9 @@ import { Image as ExpoImage } from 'expo-image';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useThemeColors, typography, spacing, radius, layout, getScrim, strokeFromColors } from '@/theme';
 import { useTranslation } from 'react-i18next';
+// Direct import (not the ui/ barrel) to avoid a circular dependency:
+// LiquidGlass only depends on the theme.
+import { GlassSurface } from '@/components/ui/LiquidGlass';
 
 // ==========================================================================
 // Icon — single gateway for MaterialCommunityIcons.  Everything goes through
@@ -128,7 +131,7 @@ export function SectionHeader({
   const styles = useMemo(() => StyleSheet.create({
     sectionHeader: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: spacing.sm,
       marginBottom: spacing.md,
       paddingTop: spacing.xs,
@@ -137,16 +140,11 @@ export function SectionHeader({
       marginBottom: 0,
       flex: 1,
     },
-    rule: {
-      width: 3,
-      height: 16,
-      borderRadius: 2,
-      marginTop: spacing.xs,
-    },
+    // iOS 17 / Settings 风格图标托盘：圆角方形 + 柔和色底。
     iconTray: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
+      width: 26,
+      height: 26,
+      borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -158,8 +156,8 @@ export function SectionHeader({
     sectionNote: {
       ...typography.caption,
       color: colors.textTertiary,
-      marginTop: spacing.xs,
-      lineHeight: 16,
+      marginTop: 2,
+      lineHeight: 17,
     },
   }), [colors]);
 
@@ -170,10 +168,9 @@ export function SectionHeader({
         inline && styles.sectionHeaderInline,
       ]}
     >
-      <View style={[styles.rule, { backgroundColor: resolvedAccent }]} />
       {icon ? (
-        <View style={[styles.iconTray, { backgroundColor: resolvedAccent + '18' }]}>
-          <Icon name={icon} size={14} color={resolvedAccent} />
+        <View style={[styles.iconTray, { backgroundColor: resolvedAccent + '1A' }]}>
+          <Icon name={icon} size={15} color={resolvedAccent} />
         </View>
       ) : null}
       <View style={{ flex: 1, minWidth: 0 }}>
@@ -191,30 +188,22 @@ export function SectionHeader({
 }
 
 // ==========================================================================
-// SlabDivider — a heavy 1px divider with a faint left accent notch. Used
-// between major sections so the hierarchy reads like folded metal plates.
+// SlabDivider — iOS 风格标准 hairline 分隔线。
+// HIG：分组列表内的分隔线应为 uniform hairline（0.5pt），不使用「金属折板
+// 缺口」这类工业装饰，避免与 iOS 视觉语言冲突。
 // ==========================================================================
 
 export function SlabDivider({ accent }: { accent?: string }) {
   const colors = useThemeColors();
-  const resolvedAccent = accent ?? colors.primary;
   const slabStyles = useMemo(() => StyleSheet.create({
     wrap: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      height: 1,
+      height: StyleSheet.hairlineWidth,
       marginVertical: spacing.md,
+      backgroundColor: colors.surfaceDivider,
     },
-    notch: { width: 32, height: 1 },
-    line: { flex: 1, height: 1, backgroundColor: colors.surfaceDivider },
   }), [colors]);
 
-  return (
-    <View style={slabStyles.wrap}>
-      <View style={[slabStyles.notch, { backgroundColor: resolvedAccent }]} />
-      <View style={slabStyles.line} />
-    </View>
-  );
+  return <View style={slabStyles.wrap} />;
 }
 
 // ==========================================================================
@@ -237,24 +226,21 @@ function SearchBarImpl({
   const colors = useThemeColors();
   const { t } = useTranslation();
   const searchStyles = useMemo(() => StyleSheet.create({
+    // iOS 26 search field: liquid-glass capsule, 40pt tall, no hard border.
     wrap: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.surface,
-      borderRadius: radius.pill,
-      paddingHorizontal: spacing.lg,
-      height: 48,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
+      paddingHorizontal: spacing.md,
+      height: 40,
       gap: spacing.sm,
     },
     input: {
       flex: 1,
       color: colors.textPrimary,
-      fontSize: 15,
-      lineHeight: 20,
-      fontWeight: '500',
-      letterSpacing: -0.1,
+      fontSize: 17,
+      lineHeight: 22,
+      fontWeight: '400',
+      letterSpacing: -0.2,
       height: '100%',
       paddingVertical: 0,
     },
@@ -262,17 +248,22 @@ function SearchBarImpl({
       width: 22,
       height: 22,
       borderRadius: 11,
-      backgroundColor: colors.surfaceElevated,
+      backgroundColor: colors.textTertiary + '33',
       alignItems: 'center',
       justifyContent: 'center',
     },
   }), [colors]);
 
   return (
-    <View style={searchStyles.wrap}>
+    <GlassSurface
+      borderRadius={20}
+      intensity={45}
+      style={searchStyles.wrap}
+      accessibilityRole="search"
+    >
       <Icon
         name="magnify"
-        size={20}
+        size={19}
         color={colors.textSecondary}
       />
       <TextInput
@@ -298,7 +289,7 @@ function SearchBarImpl({
           />
         </PressableScale>
       )}
-    </View>
+    </GlassSurface>
   );
 }
 
@@ -392,7 +383,7 @@ export function StatsHero({
     statSuffix: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0,
     },
@@ -588,40 +579,58 @@ export function MiniStat({
 }: MiniStatProps) {
   const colors = useThemeColors();
   const resolvedIconColor = iconColor ?? colors.textSecondary;
+  const { frameStroke } = strokeFromColors(colors);
   const miniStyles = useMemo(() => StyleSheet.create({
-    col: { alignItems: 'center', flex: 1, gap: spacing.xs },
+    // Apple HIG：统计块为 inset grouped 卡片（surface + hairline 描边）。
+    col: {
+      alignItems: 'center',
+      flex: 1,
+      gap: 2,
+      backgroundColor: colors.surface,
+      borderRadius: radius.lg,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: frameStroke,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.sm,
+    },
     iconTray: {
-      width: 26,
-      height: 26,
-      borderRadius: 13,
+      width: 28,
+      height: 28,
+      borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: spacing.xs,
     },
     value: {
-      ...typography.display,
-      fontSize: 20,
-      lineHeight: 26,
+      ...typography.h2,
+      fontSize: 22,
+      lineHeight: 28,
       color: colors.textPrimary,
-      letterSpacing: -0.3,
+      letterSpacing: -0.4,
     },
     unit: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '700',
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
       color: colors.textTertiary,
     },
     label: {
-      ...typography.small,
+      ...typography.caption,
       color: colors.textSecondary,
-      marginTop: spacing.xs,
+      marginTop: 2,
+      textAlign: 'center',
     },
-  }), [colors]);
+  }), [colors, frameStroke]);
 
   return (
-    <View style={miniStyles.col}>
-      <View style={[miniStyles.iconTray, { backgroundColor: resolvedIconColor + '15' }]}>
-        <Icon name={icon} size={14} color={resolvedIconColor} />
+    <View
+      style={miniStyles.col}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${label}: ${value}${unit ? ' ' + unit : ''}`}
+    >
+      <View style={[miniStyles.iconTray, { backgroundColor: resolvedIconColor + '1A' }]}>
+        <Icon name={icon} size={15} color={resolvedIconColor} />
       </View>
       <Text style={miniStyles.value}>
         {value}
@@ -669,7 +678,7 @@ export function Badge({
     },
     text: {
       ...typography.small,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.1,
     },
     textSm: {
@@ -822,7 +831,7 @@ function OptionPickerImpl<T extends string | number>(
       width: 24,
       height: 24,
       borderRadius: 12,
-      borderWidth: 2,
+      borderWidth: 1,
       borderColor: colors.surfaceBorder,
       alignItems: 'center',
       justifyContent: 'center',
@@ -1003,7 +1012,7 @@ export function OptionPickerToggle({
     label: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       maxWidth: 140,
     },
   }), [colors]);
@@ -1107,7 +1116,7 @@ export const LocalImageCover = memo(function LocalImageCover({
           width: ringDiameter || '88%',
           aspectRatio: 1,
           borderRadius: ringDiameter / 2 || 9999,
-          borderWidth: 2,
+          borderWidth: 1,
           borderColor: ringStroke,
           backgroundColor: ringBg,
           alignItems: 'center',
@@ -1156,7 +1165,7 @@ export const MiniTag = memo(function MiniTag({
     label: {
       fontSize: isXs ? 10 : 11,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.2,
       maxWidth: 120,
     },

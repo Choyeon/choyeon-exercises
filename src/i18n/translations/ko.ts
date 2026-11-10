@@ -1,7 +1,7 @@
 export const ko = {
   app: {
-    brand: 'CHOYEON · EXERCISES',
-    title: 'Choyeon Exercises',
+    brand: 'CHOYEON · GYM',
+    title: 'Choyeon Gym',
     poweredBy: '1,324 개 표준 동작 · 완전 오프라인',
     heroCount: '개 동작 · 100% 오프라인',
   },
@@ -244,7 +244,7 @@ export const ko = {
       '공장 초기 상태로 되돌릴까요? 세션·즐겨찾기·설정이 모두 지워집니다.',
     about: '정보',
     aboutBody:
-      'Choyeon Exercises 는 비상업적인 오프라인 우선 훈련 도구입니다: 동작 가이드 열람 · 북마크 · 무게×횟수 기록 · 훈련 기록 통계.',
+      'Choyeon Gym 는 비상업적인 오프라인 우선 훈련 도구입니다: 동작 가이드 열람 · 북마크 · 무게×횟수 기록 · 훈련 기록 통계.',
     version: '버전',
     themeDark: '다크 모드',
     themeLight: '라이트 모드',

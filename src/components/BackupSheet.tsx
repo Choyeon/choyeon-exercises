@@ -46,7 +46,7 @@ const ERROR_TEXT: Record<BackupErrorCode, { zh: string; en: string }> = {
   empty: { zh: '内容为空，请先粘贴备份文本。', en: 'Nothing to import yet.' },
   notJson: { zh: '不是合法的 JSON 文本，可能复制时缺了头尾。', en: 'Not valid JSON.' },
   notObject: { zh: 'JSON 顶层不是对象，可能不是本 App 的备份。', en: 'Top level is not an object.' },
-  wrongApp: { zh: '这不是 Choyeon Exercises 的备份文件。', en: 'Not a Choyeon Exercises backup.' },
+  wrongApp: { zh: '这不是 Choyeon Gym 的备份文件。', en: 'Not a Choyeon Gym backup.' },
   unsupportedVersion: { zh: '备份版本过高，请升级 App 后再导入。', en: 'Backup version is newer than this app.' },
   noData: { zh: '备份里没有任何可导入的数据。', en: 'Backup contains no data.' },
 };

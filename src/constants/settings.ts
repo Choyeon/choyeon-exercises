@@ -1,4 +1,4 @@
-import type { AppSettings, OneRmFormula, PlateConfig } from '@/types';
+import type { AppSettings, OneRmFormula } from '@/types';
 import { DEFAULT_PLATE_CONFIG } from '@/types';
 
 // ============================================================================

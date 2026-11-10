@@ -1,15 +1,39 @@
 import React, { useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import type { BodyPart } from '@/types';
-import { useThemeColors, spacing, radius, typography, muscleColor } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  typography,
+  muscleColor,
+  layout,
+} from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { getAllExercisesSync } from '@/data/queries';
 import { labelForBodyPart } from '@/constants';
-import { Icon, MiniStat, EmptyState, SectionHeader } from '@/components/UIKit';
-import { formatDurationHuman, dateShort } from '@/utils/format';
+import {
+  Icon,
+  MiniStat,
+  EmptyState,
+  SectionHeader,
+} from '@/components/UIKit';
+import {
+  formatDurationHuman,
+  dateShort,
+} from '@/utils/format';
 import {
   computeOverview,
   recentDailyVolumes,
@@ -17,7 +41,11 @@ import {
   muscleSetStats,
   toDateKey,
 } from '@/utils/analytics';
-import { formatVolumeShort, formatDurationParts, displayWeight } from '@/utils/strength';
+import {
+  formatVolumeShort,
+  formatDurationParts,
+  displayWeight,
+} from '@/utils/strength';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
 
 // ============================================================================
@@ -264,7 +292,7 @@ export default function StatsScreen() {
         card: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
           padding: spacing.lg,
           marginBottom: spacing.lg,
@@ -339,10 +367,10 @@ export default function StatsScreen() {
           width: 18,
           ...typography.caption,
           color: colors.textTertiary,
-          fontWeight: '800',
+          fontWeight: '700',
         },
         prName: { flex: 1, ...typography.body, color: colors.textPrimary },
-        prValue: { ...typography.body, fontWeight: '800', color: colors.primary },
+        prValue: { ...typography.body, fontWeight: '700', color: colors.primary },
         prDate: { ...typography.caption, color: colors.textTertiary },
         hint: {
           ...typography.caption,
@@ -375,7 +403,8 @@ export default function StatsScreen() {
         options={{ headerTitle: t('statsPage.title', { defaultValue: '数据面板' }) }}
       />
       <ScrollView
-        style={{ flex: 1 }}
+        // Apple HIG：iPad / 宽屏下限制可读列宽，避免超长行距损害可读性。
+        style={{ flex: 1, width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' }}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
@@ -508,14 +537,21 @@ export default function StatsScreen() {
                   </Text>
                 ) : null}
               </View>
-              <VolumeTrend
-                data={trend}
-                max={trendMax}
-                colorEmpty={colors.surfaceElevated}
-                colorBar={colors.primary}
-                axisColor={colors.textTertiary}
-                width={width - spacing.lg * 4}
-              />
+              <View
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel={t('statsPage.volumeTrend', { defaultValue: '容量趋势' }) +
+                  `，${formatVolumeShort(toDisplay(trendTotal))} ${units}${deltaText ? '，' + deltaText + t('statsPage.vsLastWeek', { defaultValue: '较上周' }) : ''}`}
+              >
+                <VolumeTrend
+                  data={trend}
+                  max={trendMax}
+                  colorEmpty={colors.surfaceElevated}
+                  colorBar={colors.primary}
+                  axisColor={colors.textTertiary}
+                  width={width - spacing.lg * 4}
+                />
+              </View>
             </View>
 
             {/* ===== 04 · 训练日历 ===== */}
@@ -525,13 +561,20 @@ export default function StatsScreen() {
                 icon="calendar-outline"
                 note={t('statsPage.calendarNote', { defaultValue: '近 13 周' })}
               />
-              <TrainingHeatmap
-                cells={heat}
-                base={colors.surfaceElevated}
-                tint={colors.primary}
-                cellSize={heatCellSize}
-                gap={3}
-              />
+              <View
+                accessible
+                accessibilityRole="image"
+                accessibilityLabel={t('statsPage.calendar', { defaultValue: '训练日历' }) +
+                  '，' + t('statsPage.calendarNote', { defaultValue: '近 13 周' })}
+              >
+                <TrainingHeatmap
+                  cells={heat}
+                  base={colors.surfaceElevated}
+                  tint={colors.primary}
+                  cellSize={heatCellSize}
+                  gap={3}
+                />
+              </View>
               <View style={styles.heatLegend}>
                 <Text style={styles.legendText}>
                   {t('statsPage.less', { defaultValue: '少' })}
@@ -592,7 +635,15 @@ export default function StatsScreen() {
                   note={t('statsPage.prNote', { defaultValue: '按达成时间排序' })}
                 />
                 {recentPRs.map((pr, i) => (
-                  <View key={pr.id} style={styles.prRow}>
+                  <View
+                    key={pr.id}
+                    style={styles.prRow}
+                    accessible
+                    accessibilityRole="text"
+                    accessibilityLabel={`${i + 1}. ${
+                      exerciseIndex.names.get(String(pr.exerciseId)) ?? String(pr.exerciseId)
+                    }, ${displayWeight(pr.weight, units)} ${units} × ${pr.reps}, ${pr.date}`}
+                  >
                     <Text style={styles.prIndex}>{i + 1}</Text>
                     <Icon name="dumbbell" size={16} color={colors.textTertiary} />
                     <View style={{ flex: 1 }}>

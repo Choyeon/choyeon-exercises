@@ -10,15 +10,24 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter, Stack } from 'expo-router';
+import {
+  useRouter,
+  Stack,
+} from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { safeHaptic } from '@/utils/haptic';
 import { formatDurationClock } from '@/utils/format';
-import { useThemeColors, typography, spacing, radius, layout, muscleColor as muscleColorOf } from '@/theme';
+import {
+  useThemeColors,
+  typography,
+  spacing,
+  radius,
+  layout,
+  muscleColor as muscleColorOf,
+} from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { getAllExercisesSync } from '@/data/queries';
 import {
-  BODY_PART_LABELS,
   labelForBodyPart,
   labelForEquipment,
   labelForMuscle,
@@ -33,13 +42,25 @@ import type {
   WorkoutSet,
   Exercise,
   ExerciseHistoryEntry,
-  SetType,
-} from '@/types';
+  SetType } from '@/types';
 import { SET_TYPES } from '@/types';
-import { Icon, PressableScale, SearchBar, HybridImage, ProgressRing, useToast, EmptyState, MiniTag } from '@/components/UIKit';
+import {
+  Icon,
+  PressableScale,
+  SearchBar,
+  HybridImage,
+  ProgressRing,
+  useToast,
+  EmptyState,
+  MiniTag,
+} from '@/components/UIKit';
 import { PlateCalculator } from '@/components/PlateCalculator';
 import { useRestTimer } from '@/hooks/useRestTimer';
-import { estimate1RM, toKg, displayWeight } from '@/utils/strength';
+import {
+  estimate1RM,
+  toKg,
+  displayWeight,
+} from '@/utils/strength';
 
 export default function WorkoutStartScreen() {
   const { t, i18n } = useTranslation();
@@ -80,8 +101,7 @@ export default function WorkoutStartScreen() {
     start: startRestGlobal,
     skip: restSkipFromHook,
     plus10: restPlus10,
-    minus10: restMinus10,
-  } = useRestTimer();
+    minus10: restMinus10 } = useRestTimer();
   const restActive = restTimerSt.active;
 
   const [elapsed, setElapsed] = useState(0);
@@ -149,8 +169,7 @@ export default function WorkoutStartScreen() {
     return {
       totalVolume: tv,
       completedSets: cs,
-      totalSets: ts,
-    };
+      totalSets: ts };
   }, [safeExercises]);
 
   // ==========================================================
@@ -202,17 +221,14 @@ export default function WorkoutStartScreen() {
       for (let i = 0; i < last.sets.length && i < finalSets.length; i++) {
         updateSet(exerciseId, finalSets[i].id, {
           weight: Number(last.sets[i].weight) || 0,
-          reps: Number(last.sets[i].reps) || 0,
-        });
+          reps: Number(last.sets[i].reps) || 0 });
       }
       safeHaptic('success');
       try {
         toast.show({
           title: t('session.appliedLast', {
-            defaultValue: '已填入上次的重量与次数',
-          }),
-          variant: 'success',
-        });
+            defaultValue: '已填入上次的重量与次数' }),
+          variant: 'success' });
       } catch {
         /* toast provider 未挂载时忽略 */
       }
@@ -270,8 +286,7 @@ export default function WorkoutStartScreen() {
       return {
         exerciseName: name,
         setIndex: nextSetIdx + 1,
-        totalSets: nextSets.length,
-      };
+        totalSets: nextSets.length };
     },
     [exMap, effectiveLang]
   );
@@ -330,8 +345,7 @@ export default function WorkoutStartScreen() {
           const pr = checkAndRecordPR({
             exerciseId,
             weight: safeWeight,
-            reps: safeReps,
-          });
+            reps: safeReps });
           if (pr) {
             const exInfo = exMap.get(String(exerciseId));
             const dispName =
@@ -347,15 +361,13 @@ export default function WorkoutStartScreen() {
                 exerciseName: dispName,
                 weight: pr.weight,
                 units,
-                reps: pr.reps,
-              });
+                reps: pr.reps });
               toast.show({
                 title:
                   typeof titleRaw === 'string' && !titleRaw.includes('newHit')
                     ? titleRaw
                     : `🏆 NEW PR · ${dispName}: ${pr.weight}${units} × ${pr.reps}`,
-                variant: 'success',
-              });
+                variant: 'success' });
             } catch {
               /* toast 不可用不阻塞训练 */
             }
@@ -409,15 +421,13 @@ export default function WorkoutStartScreen() {
               if (toast && typeof toast.show === 'function') {
                 const titleRaw = t('pr.newHit', {
                   exerciseName: display, weight: pr.weight, units: settings.units, reps: pr.reps,
-                  defaultValue: `🏆 PR: ${display} ${pr.weight}${settings.units} × ${pr.reps}`,
-                } as any);
+                  defaultValue: `🏆 PR: ${display} ${pr.weight}${settings.units} × ${pr.reps}` } as any);
                 toast.show({
                   title:
                     (typeof titleRaw === 'string' && !titleRaw.includes('newHit')
                       ? titleRaw
                       : `🏆 NEW PR · ${display}: ${pr.weight}${settings.units} × ${pr.reps}`),
-                  variant: 'success',
-                });
+                  variant: 'success' });
               }
               safeHaptic('success');
             } catch { /* toast 失败不阻塞 */ }
@@ -433,8 +443,7 @@ export default function WorkoutStartScreen() {
               onPress: () => {
                 // nav guard 已锁，直接 replace
                 router.replace('/(tabs)/workout' as Parameters<typeof router.replace>[0]);
-              },
-            },
+              } },
           ],
           { cancelable: false }
         );
@@ -450,8 +459,7 @@ export default function WorkoutStartScreen() {
               onPress: () => {
                 // cancel guard 已锁，不需要再次 cancel，直接 back
                 router.back();
-              },
-            },
+              } },
           ],
           { cancelable: false }
         );
@@ -483,8 +491,7 @@ export default function WorkoutStartScreen() {
           navPoppedRef.current = true;
           cancelWorkout();
           router.back();
-        },
-      },
+        } },
     ]);
   };
 
@@ -523,10 +530,11 @@ export default function WorkoutStartScreen() {
   // ====== Theme-aware styles ======
   const styles = useMemo(() => StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
+    // Apple HIG：iPad / 宽屏下限制可读列宽。
+    readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
     headerCancel: {
       color: colors.textSecondary,
-      fontWeight: '700',
-    },
+      fontWeight: '700' },
     summaryBar: {
       flexDirection: 'row',
       paddingHorizontal: layout.paddingHorizontal,
@@ -534,7 +542,10 @@ export default function WorkoutStartScreen() {
       gap: spacing.sm,
       backgroundColor: colors.bg,
       overflow: 'hidden',
-    },
+      // Apple HIG：iPad / 宽屏下限制可读列宽。
+      width: '100%',
+      maxWidth: layout.maxContentWidth,
+      alignSelf: 'center' },
     restBar: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -545,23 +556,20 @@ export default function WorkoutStartScreen() {
       paddingVertical: spacing.md,
       backgroundColor: colors.surface,
       borderRadius: radius.md,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     restIconTray: {
       width: 30,
       height: 30,
       borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.info + '18',
-    },
+      backgroundColor: colors.info + '18' },
     restBarText: {
       ...typography.bodyBold,
       color: colors.textSecondary,
-      flex: 1,
-    },
+      flex: 1 },
     restBarActive: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -574,16 +582,14 @@ export default function WorkoutStartScreen() {
       borderWidth: 1,
       borderColor: colors.accent + '55',
       gap: spacing.md,
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     restLabel: {
       ...typography.captionBold,
       color: colors.accent,
       textTransform: 'uppercase',
       letterSpacing: 1,
       // 修复竖排：禁止软换行 + 最小宽度保护，即使父容器在极窄时也不会把1个汉字折成1行
-      includeFontPadding: false,
-    },
+      includeFontPadding: false },
     restTimer: {
       ...typography.display,
       fontSize: 24,
@@ -591,9 +597,8 @@ export default function WorkoutStartScreen() {
       color: colors.accent,
       flex: 1,
       fontVariant: ['tabular-nums'],
-      fontWeight: '900',
-      includeFontPadding: false,
-    },
+      fontWeight: '700',
+      includeFontPadding: false },
     restSkipBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -603,12 +608,10 @@ export default function WorkoutStartScreen() {
       borderRadius: 999,
       backgroundColor: colors.accent + '22',
       borderWidth: 1,
-      borderColor: colors.accent + '33',
-    },
+      borderColor: colors.accent + '33' },
     restSkipText: {
       ...typography.captionBold,
-      color: colors.accent,
-    },
+      color: colors.accent },
     adjust10Btn: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
@@ -617,25 +620,21 @@ export default function WorkoutStartScreen() {
       borderRadius: 999,
       backgroundColor: colors.accent + '18',
       borderWidth: 1,
-      borderColor: colors.accent + '33',
-    },
+      borderColor: colors.accent + '33' },
     adjust10BtnText: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.accent,
-      fontVariant: ['tabular-nums'],
-    },
+      fontVariant: ['tabular-nums'] },
     nextContextText: {
       fontSize: 11,
       lineHeight: 14,
       fontWeight: '500',
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     content: {
       paddingHorizontal: layout.paddingHorizontal,
-      paddingTop: spacing.xs,
-    },
+      paddingTop: spacing.xs },
     emptyWrap: {
       padding: spacing.xxxl,
       alignItems: 'center',
@@ -643,68 +642,57 @@ export default function WorkoutStartScreen() {
       gap: spacing.sm,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      marginTop: spacing.md,
-    },
+      marginTop: spacing.md },
     emptyIconTray: {
       width: 64,
       height: 64,
       borderRadius: radius.lg,
       backgroundColor: colors.primary + '16',
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.primaryStroke,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     emptyTitle: {
       ...typography.h3,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     emptyDesc: {
       ...typography.caption,
       color: colors.textSecondary,
       textAlign: 'center',
-      maxWidth: 260,
-    },
+      maxWidth: 260 },
     noteCard: {
       marginTop: spacing.md,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      padding: spacing.lg,
-    },
+      padding: spacing.lg },
     noteHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     noteIconTray: {
       width: 34,
       height: 34,
       borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.info + '16',
-    },
+      backgroundColor: colors.info + '16' },
     noteHeaderBody: {
-      flex: 1,
-    },
+      flex: 1 },
     bottomContentInset: {
-      height: 180,
-    },
+      height: 180 },
     noteTitle: {
       ...typography.bodyBold,
       color: colors.textPrimary,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     noteSub: {
       ...typography.small,
-      color: colors.textTertiary,
-    },
+      color: colors.textTertiary },
     noteInput: {
       color: colors.textPrimary,
       ...typography.body,
@@ -712,8 +700,7 @@ export default function WorkoutStartScreen() {
       textAlignVertical: 'top',
       padding: spacing.md,
       backgroundColor: colors.surfaceElevated,
-      borderRadius: radius.md,
-    },
+      borderRadius: radius.md },
     bottomBar: {
       flexDirection: 'row',
       gap: spacing.md,
@@ -722,8 +709,7 @@ export default function WorkoutStartScreen() {
       paddingBottom: layout.safeBottom + spacing.md,
       backgroundColor: colors.bg,
       borderTopWidth: 1,
-      borderTopColor: colors.surfaceBorder,
-    },
+      borderTopColor: colors.surfaceBorder },
     addBtn: {
       flex: 1,
       flexDirection: 'row',
@@ -734,21 +720,18 @@ export default function WorkoutStartScreen() {
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
       borderWidth: 1,
-      borderColor: colors.primary + '66',
-    },
+      borderColor: colors.primary + '66' },
     addBtnIconTray: {
       width: 24,
       height: 24,
       borderRadius: 12,
       backgroundColor: colors.primary + '18',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     addBtnText: {
       ...typography.bodyBold,
       color: colors.primary,
-      letterSpacing: 0.2,
-    },
+      letterSpacing: 0.2 },
     finishBtn: {
       flex: 1,
       flexDirection: 'row',
@@ -757,42 +740,34 @@ export default function WorkoutStartScreen() {
       gap: spacing.sm,
       height: 56,
       borderRadius: radius.lg,
-      backgroundColor: colors.primary,
-    },
+      backgroundColor: colors.primary },
     finishBtnDisabled: {
       backgroundColor: colors.surfaceElevated,
-      opacity: 0.5,
-    },
+      opacity: 0.5 },
     finishBtnText: {
       ...typography.bodyBold,
       color: colors.textInverse,
-      letterSpacing: 0.3,
-    },
+      letterSpacing: 0.3 },
     modalScreen: {
       flex: 1,
-      backgroundColor: colors.bg,
-    },
+      backgroundColor: colors.bg },
     modalHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: layout.paddingHorizontal,
-      paddingVertical: spacing.md,
-    },
+      paddingVertical: spacing.md },
     modalCancel: {
       ...typography.bodyBold,
       color: colors.textSecondary,
-      width: 50,
-    },
+      width: 50 },
     modalTitleWrap: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     modalTitle: {
       ...typography.h3,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     pickerItem: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -800,33 +775,28 @@ export default function WorkoutStartScreen() {
       borderRadius: radius.md,
       backgroundColor: colors.surface,
       marginBottom: spacing.sm,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     pickerImgWrap: {
       width: 56,
       height: 56,
       borderRadius: radius.md,
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 2,
-      overflow: 'hidden',
-    },
+      borderWidth: 1,
+      overflow: 'hidden' },
     pickerImg: {
       width: '100%',
-      height: '100%',
-    },
+      height: '100%' },
     pickerName: {
       ...typography.bodyBold,
       color: colors.textPrimary,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     pickerMetaRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       // 原本靠每个 chip 的 marginRight(spacing.sm) + gap(spacing.xs) = 12 拉开间距；
       // 统一到 UIKit 的 MiniTag 后由容器 gap 承担，保持视觉间距一致。
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     pickerAddBtn: {
       width: 36,
       height: 36,
@@ -836,51 +806,41 @@ export default function WorkoutStartScreen() {
       borderColor: colors.primary + '44',
       alignItems: 'center',
       justifyContent: 'center',
-      marginLeft: spacing.sm,
-    },
+      marginLeft: spacing.sm },
     modalHeaderSpacer: { width: 50 },
     modalSearchWrap: {
-      paddingHorizontal: layout.paddingHorizontal,
-    },
+      paddingHorizontal: layout.paddingHorizontal },
     modalList: { flex: 1 },
     modalListContent: {
       paddingHorizontal: layout.paddingHorizontal,
-      paddingVertical: spacing.md,
-    },
+      paddingVertical: spacing.md },
     pickerItemDisabled: { opacity: 0.5 },
     pickerItemBody: {
       flex: 1,
-      marginLeft: spacing.md,
-    },
+      marginLeft: spacing.md },
     pickerAddBtnActive: {
       backgroundColor: colors.success,
-      borderColor: colors.success,
-    },
+      borderColor: colors.success },
     modalEmptyWrap: {
       padding: spacing.xxxl,
       alignItems: 'center',
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     modalEmptyTitle: {
       ...typography.h3,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     modalEmptyDesc: {
       ...typography.caption,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     modalEmptyIcon: {
       width: 58,
       height: 58,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: spacing.sm,
-    },
-  }), [colors]);
+      marginBottom: spacing.sm } }), [colors]);
 
   // ★ 所有 hooks 声明完毕后，最后做 early return（遵守 Rules of Hooks）
   if (!activeWorkout) {
@@ -910,8 +870,7 @@ export default function WorkoutStartScreen() {
                 {t('workoutSession.cancel')}
               </Text>
             </Pressable>
-          ),
-        }}
+          ) }}
       />
 
       <SafeAreaView style={styles.screen} edges={['bottom']}>
@@ -967,8 +926,7 @@ export default function WorkoutStartScreen() {
               scaleTo={0.94}
               accessibilityRole="button"
               accessibilityLabel={t('workout.restTimerMinus10', {
-                defaultValue: '-10 秒',
-              })}
+                defaultValue: '-10 秒' })}
             >
               <Text style={styles.adjust10BtnText}>-10</Text>
             </PressableScale>
@@ -985,8 +943,7 @@ export default function WorkoutStartScreen() {
               scaleTo={0.94}
               accessibilityRole="button"
               accessibilityLabel={t('workout.restTimerPlus10', {
-                defaultValue: '+10 秒',
-              })}
+                defaultValue: '+10 秒' })}
             >
               <Text style={styles.adjust10BtnText}>+10</Text>
             </PressableScale>
@@ -1010,7 +967,7 @@ export default function WorkoutStartScreen() {
         )}
 
         <ScrollView
-          style={styles.screen}
+          style={[styles.screen, styles.readable]}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
@@ -1243,8 +1200,7 @@ function SummaryPillImpl({
   value,
   unit,
   icon,
-  accent,
-}: {
+  accent }: {
   label: string;
   value: string;
   unit?: string;
@@ -1260,41 +1216,34 @@ function SummaryPillImpl({
       padding: spacing.sm,
       backgroundColor: colors.surface,
       borderRadius: radius.md,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     iconTray: {
       width: 30,
       height: 30,
       borderRadius: radius.sm,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     body: {
       marginLeft: spacing.sm,
-      flex: 1,
-    },
+      flex: 1 },
     value: {
       ...typography.mono,
       fontSize: 14,
       lineHeight: 18,
       color: colors.textPrimary,
-      fontWeight: '800',
-    },
+      fontWeight: '700' },
     unit: {
       fontSize: 10,
       lineHeight: 14,
       fontWeight: '700',
-      color: colors.textTertiary,
-    },
+      color: colors.textTertiary },
     label: {
       ...typography.small,
       color: colors.textTertiary,
       textTransform: 'uppercase',
       letterSpacing: 0.6,
-      marginTop: spacing.xs,
-    },
-  }), [colors]);
+      marginTop: spacing.xs } }), [colors]);
   return (
     <View style={pillStyles.wrap}>
       <View style={[pillStyles.iconTray, { backgroundColor: accent + '18' }]}>
@@ -1323,8 +1272,7 @@ function ExerciseBlockImpl({
   onAddSet,
   onRemoveSet,
   onUpdateSet,
-  onRemove,
-}: {
+  onRemove }: {
   exercise: Exercise | undefined;
   workoutExercise: WorkoutExercise;
   units: 'kg' | 'lb';
@@ -1387,61 +1335,53 @@ function ExerciseBlockImpl({
     card: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       padding: spacing.md,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       height: 144,
       marginBottom: spacing.md,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     imgWrap: {
       width: 72,
       height: 72,
       borderRadius: radius.md,
-      borderWidth: 2,
+      borderWidth: 1,
       overflow: 'hidden',
       backgroundColor: colors.surfaceElevated,
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     img: { width: '100%', height: '100%' },
     name: {
       ...typography.bodyBold,
       fontSize: 15,
       lineHeight: 20,
       color: colors.textPrimary,
-      marginBottom: 2,
-    },
+      marginBottom: 2 },
     sub: {
       fontSize: 12,
       lineHeight: 15,
       fontWeight: '400',
       color: colors.textSecondary,
-      marginBottom: 2,
-    },
+      marginBottom: 2 },
     desc: {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '400',
       color: colors.textTertiary,
-      marginBottom: 2,
-    },
+      marginBottom: 2 },
     metaRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.xs,
-      marginTop: 2,
-    },
+      marginTop: 2 },
     infoCol: {
       flex: 1,
       minWidth: 0,
       justifyContent: 'center',
-      paddingVertical: 2,
-    },
+      paddingVertical: 2 },
     removeBtn: {
       width: 34,
       height: 34,
@@ -1451,16 +1391,14 @@ function ExerciseBlockImpl({
       borderColor: colors.danger + '30',
       alignItems: 'center',
       justifyContent: 'center',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     tableHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingBottom: spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: colors.surfaceBorder,
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     th: {
       ...typography.small,
       color: colors.textTertiary,
@@ -1469,8 +1407,7 @@ function ExerciseBlockImpl({
       marginHorizontal: spacing.xs,
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
-    },
+      fontWeight: '700' },
     addSetBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1482,13 +1419,11 @@ function ExerciseBlockImpl({
       borderStyle: 'dashed',
       borderRadius: radius.md,
       borderColor: colors.primary + '44',
-      backgroundColor: colors.primary + '08',
-    },
+      backgroundColor: colors.primary + '08' },
     addSetText: {
       ...typography.captionBold,
       color: colors.primary,
-      letterSpacing: 0.3,
-    },
+      letterSpacing: 0.3 },
     // ---- 上次参考条 ----
     refBar: {
       flexDirection: 'row',
@@ -1498,17 +1433,14 @@ function ExerciseBlockImpl({
       borderRadius: radius.md,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     refLabel: {
       ...typography.micro,
-      color: colors.textTertiary,
-    },
+      color: colors.textTertiary },
     refValue: {
       ...typography.captionBold,
       color: colors.textSecondary,
-      marginTop: 1,
-    },
+      marginTop: 1 },
     refAction: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1519,20 +1451,17 @@ function ExerciseBlockImpl({
       backgroundColor: colors.primary + '14',
       borderWidth: 1,
       borderColor: colors.primary + '3A',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     refActionText: {
       ...typography.micro,
       color: colors.primary,
-      fontWeight: '700',
-    },
+      fontWeight: '700' },
     // ---- 徽标行（1RM / 配重）----
     badgeRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.xs,
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     badge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1541,13 +1470,10 @@ function ExerciseBlockImpl({
       paddingVertical: 4,
       borderRadius: radius.pill,
       borderWidth: 1,
-      backgroundColor: colors.surfaceElevated,
-    },
+      backgroundColor: colors.surfaceElevated },
     badgeText: {
       ...typography.micro,
-      fontWeight: '700',
-    },
-  }), [colors]);
+      fontWeight: '700' } }), [colors]);
 
   const color = exercise ? muscleColorOf(colors, exercise.body_part) : colors.primary;
 
@@ -1598,7 +1524,7 @@ function ExerciseBlockImpl({
         <PressableScale
           onPress={goDetail}
           scaleTo={0.985}
-          hitSlop={4}
+          hitSlop={8}
           style={{ flexDirection: 'row', flex: 1, alignItems: 'center', height: '100%', gap: spacing.md }}
           accessibilityRole="button"
           accessibilityLabel={detailLabel}
@@ -1688,8 +1614,7 @@ function ExerciseBlockImpl({
               {
                 text: t('common.delete'),
                 style: 'destructive',
-                onPress: removeThis,
-              },
+                onPress: removeThis },
             ]);
           }}
           hitSlop={6}
@@ -1853,8 +1778,7 @@ function SetRowImpl({
   onChangeWeight,
   onChangeReps,
   onCycleType,
-  onRemove,
-}: {
+  onRemove }: {
   index: number;
   set: WorkoutSet;
   /** 上一次训练同序号组的数值；null 表示无历史 */
@@ -1890,25 +1814,20 @@ function SetRowImpl({
             ? '力竭组'
             : type === 'amrap'
               ? 'AMRAP'
-              : '正式组',
-  });
+              : '正式组' });
   const setRowStyles = useMemo(() => StyleSheet.create({
     row: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: spacing.xs,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     rowDone: {
-      opacity: 0.75,
-    },
+      opacity: 0.75 },
     index: {
       ...typography.captionBold,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     inputFlex: {
-      flex: 1,
-    },
+      flex: 1 },
     checkBtn: {
       height: 36,
       borderRadius: radius.sm,
@@ -1916,17 +1835,14 @@ function SetRowImpl({
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     checkBtnDone: {
       backgroundColor: colors.success,
-      borderColor: colors.success,
-    },
+      borderColor: colors.success },
     deleteBtn: {
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     // ---- 第二行：组类型徽标 + 上次参考 ----
     metaRow: {
       flexDirection: 'row',
@@ -1935,8 +1851,7 @@ function SetRowImpl({
       // 与上方数字输入框左缘对齐（序号列 36 + 输入框外边距）
       paddingLeft: 36 + spacing.xs,
       marginTop: -2,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     typeChip: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -1944,18 +1859,14 @@ function SetRowImpl({
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderRadius: radius.pill,
-      borderWidth: 1,
-    },
+      borderWidth: 1 },
     typeChipText: {
       ...typography.micro,
-      fontWeight: '700',
-    },
+      fontWeight: '700' },
     prevText: {
       flex: 1,
       ...typography.micro,
-      color: colors.textTertiary,
-    },
-  }), [colors]);
+      color: colors.textTertiary } }), [colors]);
 
   // 第二行只在「有历史」或「非默认组类型」时出现 —— 正式组且无历史时不占额外高度，
   // 保证一趟十几个动作的长列表不会因为每行多一行而变得难以扫读。
@@ -2012,7 +1923,7 @@ function SetRowImpl({
         <PressableScale
           onPress={() => onRemove(set.id)}
           style={[setRowStyles.deleteBtn, { width: 30 }]}
-          hitSlop={4}
+          hitSlop={8}
           scaleTo={0.9}
           accessibilityRole="button"
           accessibilityLabel={t('a11y.remove')}
@@ -2032,8 +1943,7 @@ function SetRowImpl({
               setRowStyles.typeChip,
               {
                 borderColor: (typeColor ?? colors.textTertiary) + '66',
-                backgroundColor: typeColor ? typeColor + '14' : 'transparent',
-              },
+                backgroundColor: typeColor ? typeColor + '14' : 'transparent' },
             ]}
             scaleTo={0.92}
             accessibilityRole="button"
@@ -2074,8 +1984,7 @@ function NumInputImpl({
   value,
   onChange,
   style,
-  highlight,
-}: {
+  highlight }: {
   value: number;
   onChange: (v: number) => void;
   style?: any;
@@ -2091,14 +2000,12 @@ function NumInputImpl({
       borderRadius: radius.sm,
       overflow: 'hidden',
       height: 36,
-      marginHorizontal: spacing.xs,
-    },
+      marginHorizontal: spacing.xs },
     btn: {
       width: 28,
       height: '100%',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     input: {
       flex: 1,
       height: '100%',
@@ -2108,13 +2015,10 @@ function NumInputImpl({
       fontSize: 14,
       lineHeight: 18,
       padding: 0,
-      minWidth: 36,
-    },
+      minWidth: 36 },
     inputDone: {
       color: colors.primary,
-      fontWeight: '800',
-    },
-  }), [colors]);
+      fontWeight: '700' } }), [colors]);
   return (
     <View style={[numInp.wrap, style]}>
       <PressableScale

@@ -1,4 +1,4 @@
-package com.choyeon.exercises
+package com.choyeon.gym
 
 import android.app.Application
 import android.content.res.Configuration

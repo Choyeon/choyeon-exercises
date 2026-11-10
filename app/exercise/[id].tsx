@@ -1,10 +1,29 @@
 import React, { useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  Platform,
+} from 'react-native';
+import {
+  useLocalSearchParams,
+  useRouter,
+} from 'expo-router';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { Exercise } from '@/types';
-import { useThemeColors, spacing, radius, layout, muscleColor as muscleColorOf } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  layout,
+  muscleColor as muscleColorOf,
+} from '@/theme';
 import {
   getImageUrl,
   getAnimationUrl,
@@ -65,6 +84,8 @@ export default function ExerciseDetailScreen() {
   // ====== Theme-aware styles ======
   const styles = useMemo(() => StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
+    // Apple HIG：iPad / 宽屏下限制可读列宽。
+    readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
     content: { paddingHorizontal: layout.paddingHorizontal, paddingTop: spacing.sm },
     emptyWrap: {
       flex: 1,
@@ -76,7 +97,7 @@ export default function ExerciseDetailScreen() {
     emptyTitle: {
       fontSize: 20,
       lineHeight: 26,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.2,
       color: colors.textPrimary,
     },
@@ -99,7 +120,7 @@ export default function ExerciseDetailScreen() {
     backBtnText: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textInverse,
     },
     navBar: {
@@ -113,23 +134,22 @@ export default function ExerciseDetailScreen() {
       overflow: 'hidden',
     },
     navBtn: {
-      width: 38,
-      height: 38,
+      width: 44,
+      height: 44,
       borderRadius: radius.md,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       alignItems: 'center',
       justifyContent: 'center',
     },
     navTitle: {
-      fontSize: 15,
-      lineHeight: 20,
-      fontWeight: '800',
+      fontSize: 17,
+      lineHeight: 22,
+      fontWeight: '600',
       color: colors.textPrimary,
       textAlign: 'center',
-      letterSpacing: -0.1,
-      paddingLeft: spacing.xs,
+      letterSpacing: -0.2,
     },
     heroWrap: {
       marginBottom: spacing.lg,
@@ -160,7 +180,7 @@ export default function ExerciseDetailScreen() {
     },
     heroPlaceholderText: {
       fontSize: 15,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.2,
       textAlign: 'center',
       lineHeight: 20,
@@ -170,7 +190,7 @@ export default function ExerciseDetailScreen() {
       padding: spacing.md,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       flexDirection: 'row',
       alignItems: 'center',
@@ -190,7 +210,7 @@ export default function ExerciseDetailScreen() {
     animLabel: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
     },
     animSub: {
@@ -221,7 +241,7 @@ export default function ExerciseDetailScreen() {
     animPlayText: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textInverse,
     },
     titleBlock: {
@@ -231,21 +251,20 @@ export default function ExerciseDetailScreen() {
       marginBottom: spacing.xs,
     },
     zhName: {
-      fontSize: 22,
-      fontWeight: '900',
+      fontSize: 28,
+      fontWeight: '700',
       letterSpacing: -0.4,
-      lineHeight: 28,
+      lineHeight: 34,
       color: colors.textPrimary,
-      paddingLeft: spacing.xs,
     },
     enRow: {
       marginBottom: spacing.sm,
     },
     enName: {
-      fontSize: 13,
-      fontWeight: '600',
-      letterSpacing: 0.2,
-      lineHeight: 18,
+      fontSize: 15,
+      fontWeight: '400',
+      letterSpacing: -0.1,
+      lineHeight: 20,
       color: colors.textSecondary,
     },
     targetRow: {
@@ -274,7 +293,7 @@ export default function ExerciseDetailScreen() {
     prBadgeLabel: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.8,
       textTransform: 'uppercase',
       marginBottom: spacing.xs,
@@ -282,7 +301,7 @@ export default function ExerciseDetailScreen() {
     prBadgeValue: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.1,
     },
     metaGrid: {
@@ -314,7 +333,7 @@ export default function ExerciseDetailScreen() {
       flex: 1,
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.1,
       color: colors.textInverse,
     },
@@ -327,13 +346,13 @@ export default function ExerciseDetailScreen() {
       paddingHorizontal: spacing.lg,
       borderRadius: radius.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
     },
     ctaSecondaryText: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
     },
     // 底部占位 — 防止"加入训练"双CTA被底部Tab/手势区遮挡
@@ -427,7 +446,7 @@ export default function ExerciseDetailScreen() {
             accessibilityRole="button"
             accessibilityLabel={t('a11y.goBack')}
           >
-            <Icon name="arrow-left" size={18} color={colors.textPrimary} />
+            <Icon name="chevron-left" size={26} color={colors.primary} />
           </PressableScale>
           <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
             <Skeleton height={16} width="65%" borderRadius={8} />
@@ -436,7 +455,7 @@ export default function ExerciseDetailScreen() {
         </View>
 
         <ScrollView
-          style={styles.screen}
+          style={[styles.screen, styles.readable]}
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
@@ -483,7 +502,7 @@ export default function ExerciseDetailScreen() {
           accessibilityRole="button"
           accessibilityLabel={t('a11y.goBack')}
         >
-          <Icon name="arrow-left" size={18} color={colors.textPrimary} />
+          <Icon name="chevron-left" size={26} color={colors.primary} />
         </PressableScale>
         <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
           <Text style={styles.navTitle} numberOfLines={1}>
@@ -509,7 +528,7 @@ export default function ExerciseDetailScreen() {
       </View>
 
       <ScrollView
-        style={styles.screen}
+        style={[styles.screen, styles.readable]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -748,7 +767,7 @@ function SectionTitle({
     title: {
       fontSize: 15,
       lineHeight: 20,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: -0.1,
     },
   }), [colors]);
@@ -780,7 +799,7 @@ function StepList({
       padding: spacing.md,
       backgroundColor: colors.surface,
       borderRadius: radius.md,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       alignItems: 'flex-start',
     },
@@ -795,7 +814,7 @@ function StepList({
     idxText: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textInverse,
     },
     step: {
@@ -840,7 +859,7 @@ function MetaCell({
       minWidth: 0,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       overflow: 'hidden',
     },
@@ -863,7 +882,7 @@ function MetaCell({
     label: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       textTransform: 'uppercase',
       letterSpacing: 0.8,
@@ -872,7 +891,7 @@ function MetaCell({
     value: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.1,
     },
     note: {
@@ -931,7 +950,7 @@ function EmptyNote({
       gap: spacing.sm,
       padding: spacing.md,
       borderRadius: radius.md,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       borderStyle: 'dashed',
       backgroundColor: colors.surface,
@@ -949,7 +968,7 @@ function EmptyNote({
     title: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
       marginBottom: spacing.xs,
     },

@@ -13,12 +13,18 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
-  WithSpringConfig,
-} from 'react-native-reanimated';
+  WithSpringConfig } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
 import { useEffect } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useThemeColors, spacing, radius, typography, layout, getScrim, strokeFromColors } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  typography,
+  getScrim,
+  strokeFromColors,
+} from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
 
 // ============================================================================
@@ -48,8 +54,7 @@ const SPRING_CFG: WithSpringConfig = {
   mass: 0.7,
   stiffness: 340,
   damping: 22,
-  overshootClamping: true,
-};
+  overshootClamping: true };
 
 function AnimatedPressable({
   children,
@@ -60,8 +65,7 @@ function AnimatedPressable({
   accessibilityRole,
   accessibilityState,
   disabled,
-  loading,
-}: React.ComponentProps<typeof Pressable> & { loading?: boolean }) {
+  loading }: React.ComponentProps<typeof Pressable> & { loading?: boolean }) {
   const s = useSharedValue(1);
   const anim = useAnimatedStyle(() => ({ transform: [{ scale: s.value }] }));
   // Narrow accessibilityRole to what the inner Pressable accepts; default to "button".
@@ -134,8 +138,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
   onConfirm,
   onCancel,
   variant = 'destructive',
-  icon,
-}) {
+  icon }) {
   const colors = useThemeColors();
   const isDark = strokeFromColors(colors).isDark;
   const isDestructive = variant === 'destructive';
@@ -158,12 +161,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
   }, [visible, backdropOpacity, sheetScale, sheetOpacity]);
 
   const backdropStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
+    opacity: backdropOpacity.value }));
   const sheetAnimStyle = useAnimatedStyle(() => ({
     transform: [{ scale: sheetScale.value }],
-    opacity: sheetOpacity.value,
-  }));
+    opacity: sheetOpacity.value }));
 
   const s = useMemo(() => StyleSheet.create({
     backdrop: {
@@ -171,28 +172,25 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
       backgroundColor: getScrim(isDark),
       justifyContent: 'center',
       alignItems: 'center',
-      paddingHorizontal: spacing.xl,
-    },
+      paddingHorizontal: spacing.xl },
     sheet: {
       width: '100%',
       maxWidth: 440,
       backgroundColor: colors.surface,
       borderRadius: radius.xl,
-      borderWidth: 1.5,
+      borderWidth: 1,
       borderColor: colors.surfaceBorder,
       padding: spacing.lg,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.55,
       shadowRadius: 26,
-      elevation: 20,
-    },
+      elevation: 20 },
     headerRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     iconTray: {
       width: 36,
       height: 36,
@@ -200,25 +198,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
       backgroundColor: accent + '16',
       alignItems: 'center',
       justifyContent: 'center',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     title: {
       ...typography.h3,
       lineHeight: 22,
       color: colors.textPrimary,
-      flex: 1,
-    },
+      flex: 1 },
     desc: {
       ...typography.body,
       fontSize: 14,
       lineHeight: 20,
       color: colors.textSecondary,
-      marginBottom: spacing.lg,
-    },
+      marginBottom: spacing.lg },
     footerRow: {
       flexDirection: 'row',
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     cancelBtn: {
       flex: 1,
       paddingVertical: spacing.md,
@@ -226,15 +220,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1.5,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder },
     cancelText: {
       ...typography.bodyBold,
       fontSize: 14,
       lineHeight: 20,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     confirmBtn: {
       flex: 1,
       paddingVertical: spacing.md,
@@ -242,16 +234,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = function ConfirmDialo
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: accent,
-      borderWidth: 1.5,
-      borderColor: accent,
-    },
+      borderWidth: 1,
+      borderColor: accent },
     confirmText: {
       ...typography.bodyBold,
       fontSize: 14,
       lineHeight: 20,
-      color: colors.textInverse,
-    },
-  }), [accent, colors, isDestructive]);
+      color: colors.textInverse } }), [accent, colors, isDestructive]);
 
   const handleCancel = () => {
     safeHaptic('light');

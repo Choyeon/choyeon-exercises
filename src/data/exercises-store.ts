@@ -1,9 +1,8 @@
 import { create } from 'zustand';
-import type { Exercise, BodyPart } from '@/types';
+import type { Exercise } from '@/types';
 import {
   countByBodyPart,
   countByEquipment,
-  filterExercises,
   findExerciseById,
   getAllExercisesSync,
 } from './queries';
@@ -111,5 +110,4 @@ export const useExercisesStore = create<ExercisesState>((set, get) => ({
   total: () => {
     get().ensureReady();
     return get().exercises.length;
-  },
-}));
+  } }));

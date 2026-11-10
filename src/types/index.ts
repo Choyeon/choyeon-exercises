@@ -334,7 +334,7 @@ export interface StatsOverview {
 /** 完整备份载荷 —— 导出/导入的唯一结构 */
 export interface BackupPayload {
   /** 备份格式标识，导入时校验 */
-  app: 'choyeon-exercises';
+  app: 'choyeon-gym';
   /** schema 版本 */
   version: number;
   exportedAt: string;

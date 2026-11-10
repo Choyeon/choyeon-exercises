@@ -1,4 +1,4 @@
-package com.choyeon.exercises;
+package com.choyeon.gym;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;

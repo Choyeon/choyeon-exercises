@@ -1,11 +1,24 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Stack, useRouter } from 'expo-router';
+import {
+  Stack,
+  useRouter,
+} from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { ThemeProvider, useThemeColors, typography, spacing, getResolvedTheme } from '@/theme';
+import {
+  ThemeProvider,
+  useThemeColors,
+  typography,
+  spacing,
+  getResolvedTheme,
+} from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { bootstrapI18n } from '@/i18n';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -27,7 +40,7 @@ function InnerRoot() {
   const screenOptions = useMemo(() => ({
     headerStyle: { backgroundColor: colors.bg },
     headerTintColor: colors.textPrimary,
-    headerTitleStyle: { fontWeight: '800' as const, fontSize: 17 },
+    headerTitleStyle: { fontWeight: '700' as const, fontSize: 17 },
     headerShadowVisible: false,
     contentStyle: { backgroundColor: colors.bg },
   }), [colors.bg, colors.textPrimary]);
@@ -41,7 +54,8 @@ function InnerRoot() {
           <Stack.Screen
             name="exercise/[id]"
             options={{
-              headerTitle: t('exercise.overview') + ' ·',
+              // 该页自带导航栏（返回键 + 标题 + 收藏），隐藏原生 header 以免重复。
+              headerShown: false,
               presentation: 'card',
               animation: 'slide_from_right',
             }}
@@ -96,7 +110,7 @@ function BootScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <View style={styles.bootScreen}>
-          <Text style={styles.bootBrand}>CHOYEON · EXERCISES</Text>
+          <Text style={styles.bootBrand}>CHOYEON GYM</Text>
           <ActivityIndicator
             size="small"
             color={colors.primary}

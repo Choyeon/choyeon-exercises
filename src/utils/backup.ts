@@ -25,7 +25,7 @@ import { withDefaultSettings } from '@/constants/settings';
 //     用户手动编辑过文本、或者跨版本导入都是真实场景。
 // ============================================================================
 
-export const BACKUP_APP_ID = 'choyeon-exercises' as const;
+export const BACKUP_APP_ID = 'choyeon-gym' as const;
 export const BACKUP_VERSION = 1;
 
 export type BackupErrorCode =

@@ -41,3 +41,14 @@ export type { UIBadgeProps, BadgeVariant, BadgeSize } from './Badge';
 
 export { HapticButton } from './HapticButton';
 export type { HapticButtonProps, HapticButtonVariant } from './HapticButton';
+
+// iOS 26 Liquid Glass — native material on iOS 26+, layered fallback elsewhere.
+export {
+  GlassSurface,
+  LiquidLens,
+  GlassDivider,
+  glassRadius,
+  nativeLiquidGlassAvailable,
+} from './LiquidGlass';
+
+export { LiquidTabBar } from './LiquidTabBar';

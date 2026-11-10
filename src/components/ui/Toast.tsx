@@ -5,8 +5,7 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
-} from 'react';
+  useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -18,11 +17,13 @@ import Animated, {
   useSharedValue,
   withTiming,
   withSpring,
-  WithSpringConfig,
-  runOnJS,
-} from 'react-native-reanimated';
+  WithSpringConfig } from 'react-native-reanimated';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useThemeColors, spacing, radius } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+} from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
 
 // ============================================================================
@@ -58,8 +59,7 @@ const SPRING_CFG: WithSpringConfig = {
   mass: 0.6,
   stiffness: 380,
   damping: 26,
-  overshootClamping: true,
-};
+  overshootClamping: true };
 
 const SCREEN_W = Dimensions.get('window').width;
 
@@ -79,8 +79,7 @@ function iconFor(variant: ToastVariant): string {
 function ToastTile({
   entry,
   onDone,
-  yOffset,
-}: {
+  yOffset }: {
   entry: ToastEntry;
   onDone: (id: string) => void;
   yOffset: number;
@@ -107,8 +106,7 @@ function ToastTile({
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translate.value + yOffset }],
-    opacity: opacity.value,
-  }));
+    opacity: opacity.value }));
 
   const styles = useMemo(() => {
     const border = entry.variant === 'error'
@@ -129,7 +127,7 @@ function ToastTile({
         borderRadius: radius.lg,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.md,
-        borderWidth: 1.5,
+        borderWidth: 1,
         borderColor: border,
         flexDirection: 'row',
         alignItems: 'center',
@@ -138,8 +136,7 @@ function ToastTile({
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.38,
         shadowRadius: 14,
-        elevation: 12,
-      },
+        elevation: 12 },
       iconTray: {
         width: 32,
         height: 32,
@@ -147,24 +144,20 @@ function ToastTile({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: accent + '18',
-        flexShrink: 0,
-      },
+        flexShrink: 0 },
       textWrap: { flex: 1, minWidth: 0 },
       title: {
         color: colors.textPrimary,
         fontSize: 14,
-        fontWeight: '800',
+        fontWeight: '700',
         letterSpacing: -0.1,
-        lineHeight: 20,
-      },
+        lineHeight: 20 },
       desc: {
         color: colors.textSecondary,
         fontSize: 12,
         fontWeight: '500',
         lineHeight: 18,
-        marginTop: spacing.xs,
-      },
-    });
+        marginTop: spacing.xs } });
   }, [accent, colors, entry.variant]);
 
   return (
@@ -230,8 +223,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       id,
       variant,
       title: normalized.title ?? variant.charAt(0).toUpperCase() + variant.slice(1),
-      description: normalized.description,
-    };
+      description: normalized.description };
 
     // Haptic feedback maps onto each variant type.  Matches native iOS
     // notification semantics (success = success haptic, warning = warning).
@@ -321,8 +313,7 @@ export function useToast() {
     return useMemo<ToastContextValue>(() => ({
       show: (_: any) => 'noop',
       hide: (_: string) => {},
-      hideAll: () => {},
-    }), []);
+      hideAll: () => {} }), []);
   }
   return ctx;
 }

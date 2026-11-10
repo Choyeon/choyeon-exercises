@@ -101,7 +101,7 @@ function FallbackView({ error, onRetry }: { error: Error; onRetry: () => void })
           fontSize: 26,
           lineHeight: 30,
           color: colors.danger,
-          fontWeight: '900',
+          fontWeight: '700',
         },
         title: {
           ...typography.h3,

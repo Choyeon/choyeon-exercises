@@ -1,7 +1,7 @@
 export const ja = {
   app: {
-    brand: 'CHOYEON · EXERCISES',
-    title: 'Choyeon Exercises',
+    brand: 'CHOYEON · GYM',
+    title: 'Choyeon Gym',
     poweredBy: '1,324 種の標準種目 · 完全オフライン対応',
     heroCount: '種目 · 100% オフライン',
   },
@@ -243,7 +243,7 @@ export const ja = {
       '出荷時状態に戻しますか？セッション・お気に入り・設定がすべて削除されます。',
     about: 'このアプリについて',
     aboutBody:
-      'Choyeon Exercises は非営利のオフラインファーストなトレーニングパートナーです。種目ガイドの閲覧・お気に入り登録・重量×レップ数の記録・履歴の確認ができます。',
+      'Choyeon Gym は非営利のオフラインファーストなトレーニングパートナーです。種目ガイドの閲覧・お気に入り登録・重量×レップ数の記録・履歴の確認ができます。',
     version: 'バージョン',
     themeDark: 'ダークモード',
     themeLight: 'ライトモード',

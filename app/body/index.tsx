@@ -7,8 +7,14 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import {
+  Stack,
+  useRouter,
+} from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   useThemeColors,
@@ -18,6 +24,7 @@ import {
   strokeFromColors,
   getSoftShadow,
   darkColors,
+  layout,
 } from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { safeHaptic } from '@/utils/haptic';
@@ -28,6 +35,7 @@ import {
   SectionHeader,
 } from '@/components/UIKit';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { AppleNavBar } from '@/components/apple';
 import { useToast } from '@/components/ui/Toast';
 import Svg, { Polyline, Circle, Line, Text as SvgText } from 'react-native-svg';
 import type { BodyMetricKey, BodyProfileEntry } from '@/types';
@@ -158,7 +166,7 @@ function MetricRow({ keyName, value, onChange }: MetricRowProps) {
           borderRadius: radius.md,
           paddingHorizontal: spacing.md,
           height: 40,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
         },
         input: {
@@ -232,7 +240,7 @@ function HistoryCard({ entry, prev, onDelete }: HistoryCardProps) {
         card: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
           padding: spacing.lg,
           marginBottom: spacing.md,
@@ -501,7 +509,7 @@ function TrendChart({ entries, metricSel }: TrendChartProps) {
         wrap: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
           padding: spacing.lg,
           marginBottom: spacing.md,
@@ -708,6 +716,7 @@ export default function BodyIndexScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const router = useRouter();
 
   const bodyEntries = useAppStore((s) => s.bodyEntries);
   const addBodyEntry = useAppStore((s) => s.addBodyEntry);
@@ -875,17 +884,18 @@ export default function BodyIndexScreen() {
   const s = useMemo(
     () =>
       StyleSheet.create({
-        root: { flex: 1, backgroundColor: colors.bg },
+        root: { flex: 1, backgroundColor: colors.bg, alignItems: 'center' },
+        // Apple HIG：iPad / 宽屏下限制可读列宽。
+        readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
         header: {
           paddingHorizontal: spacing.lg,
-          paddingTop: spacing.md,
+          paddingTop: spacing.sm,
           paddingBottom: spacing.md,
           backgroundColor: colors.bg,
         },
         title: {
-          ...typography.h1,
+          ...typography.display,
           color: colors.textPrimary,
-          paddingLeft: spacing.xs,
         },
         scopeBar: {
           paddingHorizontal: spacing.lg,
@@ -894,7 +904,7 @@ export default function BodyIndexScreen() {
         section: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           marginHorizontal: spacing.lg,
           paddingHorizontal: spacing.md,
@@ -917,7 +927,7 @@ export default function BodyIndexScreen() {
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.sm,
           borderRadius: radius.md,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: colors.surfaceBorder,
         },
         saveBtn: {
@@ -946,15 +956,8 @@ export default function BodyIndexScreen() {
   return (
     <SafeAreaView edges={['top']} style={s.root}>
       <Stack.Screen options={{ headerShown: false, title: headerTitle }} />
-      <View style={s.header}>
-        <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
-          <Text style={s.title} numberOfLines={1}>
-            {headerTitle}
-          </Text>
-        </View>
-      </View>
-
-      <View style={s.scopeBar}>
+      <AppleNavBar title={headerTitle} onBack={() => router.back()} style={s.readable} />
+      <View style={[s.scopeBar, s.readable]}>
         <SegmentedControl
           options={scopeOptions}
           value={scope}
@@ -964,6 +967,7 @@ export default function BodyIndexScreen() {
       </View>
 
       <ScrollView
+        style={s.readable}
         contentContainerStyle={{ paddingBottom: bottomPad }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -1015,7 +1019,7 @@ export default function BodyIndexScreen() {
               style={{
                 ...typography.captionBold,
                 color: colors.textPrimary,
-                fontWeight: '900',
+                fontWeight: '700',
                 fontSize: 14,
                 lineHeight: 18,
               }}

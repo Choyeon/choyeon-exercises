@@ -5,8 +5,14 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Stack } from 'expo-router';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import {
+  Stack,
+  useRouter,
+} from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   useThemeColors,
@@ -15,16 +21,17 @@ import {
   typography,
   strokeFromColors,
   muscleColor,
+  layout,
 } from '@/theme';
 import { safeHaptic } from '@/utils/haptic';
 import { formatMmss } from '@/utils/format';
 import {
   Icon,
   PressableScale,
-  SectionHeader,
   HybridImage,
 } from '@/components/UIKit';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { AppleNavBar } from '@/components/apple';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import { ProgressRing } from '@/components/ui/ProgressRing';
@@ -117,8 +124,7 @@ function WarmupCard({
   onMinus10,
   onSkip,
   ringProgress,
-  ringMmss,
-}: WarmupCardProps) {
+  ringMmss }: WarmupCardProps) {
   const { t, i18n } = useTranslation();
   const colors = useThemeColors();
   const effectiveLang: 'zh' | 'en' = i18n.language?.startsWith('en') ? 'en' : 'zh';
@@ -135,40 +141,34 @@ function WarmupCard({
         card: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1.5,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           marginBottom: spacing.lg,
           overflow: 'hidden',
-          ...softShadow,
-        },
+          ...softShadow },
         accentBar: {
           position: 'absolute',
           top: 0,
           left: 0,
           bottom: 0,
-          width: 5,
-        },
+          width: 5 },
         body: {
           padding: spacing.lg,
-          paddingLeft: spacing.xxl,
-        },
+          paddingLeft: spacing.xxl },
         topRow: {
           flexDirection: 'row',
           alignItems: 'flex-start',
           justifyContent: 'space-between',
-          gap: spacing.sm,
-        },
+          gap: spacing.sm },
         titleRow: {
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.sm,
-          flex: 1,
-        },
+          flex: 1 },
         title: {
           ...typography.h3,
           color: colors.textPrimary,
-          flex: 1,
-        },
+          flex: 1 },
         idxBadge: {
           width: 26,
           height: 26,
@@ -177,45 +177,38 @@ function WarmupCard({
           justifyContent: 'center',
           backgroundColor: colors.surfaceElevated,
           borderWidth: 1,
-          borderColor: accentStroke,
-        },
+          borderColor: accentStroke },
         idxText: {
           fontSize: 11,
           lineHeight: 14,
-          fontWeight: '800',
-          color: colors.textSecondary,
-        },
+          fontWeight: '700',
+          color: colors.textSecondary },
         imgWrap: {
           width: 64,
           height: 64,
           borderRadius: radius.md,
-          borderWidth: 1.5,
+          borderWidth: 1,
           overflow: 'hidden',
-          marginRight: spacing.md,
-        },
+          marginRight: spacing.md },
         contentRow: {
           flexDirection: 'row',
           marginTop: spacing.sm,
-          marginBottom: spacing.md,
-        },
+          marginBottom: spacing.md },
         textCol: {
           flex: 1,
           minWidth: 0,
-          justifyContent: 'center',
-        },
+          justifyContent: 'center' },
         instruction: {
           ...typography.caption,
           color: colors.textSecondary,
           lineHeight: 19,
-          marginTop: spacing.xs + 2,
-        },
+          marginTop: spacing.xs + 2 },
         actionRow: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'flex-end',
           gap: spacing.sm,
-          marginTop: spacing.sm,
-        },
+          marginTop: spacing.sm },
         startBtn: {
           backgroundColor: colors.primary,
           borderRadius: radius.md,
@@ -225,13 +218,11 @@ function WarmupCard({
           justifyContent: 'center',
           flexDirection: 'row',
           gap: spacing.xs,
-          borderWidth: 1.5,
-          borderColor: accentStroke,
-        },
+          borderWidth: 1,
+          borderColor: accentStroke },
         startBtnText: {
           ...typography.captionBold,
-          color: isDark ? '#07090C' : '#FFFFFF',
-        },
+          color: colors.textInverse },
         smBtn: {
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.md,
@@ -240,24 +231,18 @@ function WarmupCard({
           borderColor: accentStroke,
           alignItems: 'center',
           justifyContent: 'center',
-          minWidth: 36,
-        },
+          minWidth: 36 },
         smBtnText: {
           ...typography.captionBold,
-          color: colors.textPrimary,
-        },
+          color: colors.textPrimary },
         skipBtn: {
-          backgroundColor: colors.surfaceElevated,
-        },
+          backgroundColor: colors.surfaceElevated },
         skipBtnText: {
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
         ringWrap: {
           alignItems: 'center',
           justifyContent: 'center',
-          marginLeft: spacing.sm,
-        },
-      }),
+          marginLeft: spacing.sm } }),
     [colors, frameStroke, accentStroke, softShadow, isDark]
   );
 
@@ -354,12 +339,11 @@ function WarmupCard({
               <Icon
                 name="play"
                 size={14}
-                color={isDark ? '#07090C' : '#FFFFFF'}
+                color={colors.textInverse}
               />
               <Text style={s.startBtnText}>
                 {t('warmup.startAction', {
-                  defaultValue: '开始',
-                })}{' '}
+                  defaultValue: '开始' })}{' '}
                 {item.durationSec}s
               </Text>
             </PressableScale>
@@ -379,6 +363,7 @@ export default function WarmupIndexScreen() {
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
   const toast = useToast();
+  const router = useRouter();
 
   const { timer, mmss, progress, start, skip, plus10, minus10 } = useRestTimer();
 
@@ -402,13 +387,11 @@ export default function WarmupIndexScreen() {
       {
         label: t('warmup.tabWarmup', { defaultValue: 'Warmup' }),
         value: 'warmup' as const,
-        icon: 'fire',
-      },
+        icon: 'fire' },
       {
         label: t('warmup.tabStretch', { defaultValue: 'Stretching' }),
         value: 'stretch' as const,
-        icon: 'flower-tulip',
-      },
+        icon: 'flower-tulip' },
     ],
     [t]
   );
@@ -455,8 +438,7 @@ export default function WarmupIndexScreen() {
       start(item.durationSec, { exerciseName: ctxName });
       notify(
         t('warmup.startedToast', {
-          defaultValue: `${ctxName} · ${item.durationSec}s`,
-        }),
+          defaultValue: `${ctxName} · ${item.durationSec}s` }),
         'info'
       );
     },
@@ -492,8 +474,7 @@ export default function WarmupIndexScreen() {
       setCurPlayingId(null);
       notify(
         t('warmup.completedToast', {
-          defaultValue: t('warmup.completedToast'),
-        }),
+          defaultValue: t('warmup.completedToast') }),
         'success'
       );
     }
@@ -502,13 +483,14 @@ export default function WarmupIndexScreen() {
   const s = useMemo(
     () =>
       StyleSheet.create({
-        root: { flex: 1, backgroundColor: colors.bg },
+        root: { flex: 1, backgroundColor: colors.bg, alignItems: 'center' },
+        // Apple HIG：iPad / 宽屏下限制可读列宽。
+        readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
         topBar: {
           paddingHorizontal: spacing.lg,
           paddingTop: spacing.md,
           paddingBottom: spacing.md,
-          backgroundColor: colors.bg,
-        },
+          backgroundColor: colors.bg },
         sectionRow: {
           flexDirection: 'row',
           alignItems: 'center',
@@ -516,61 +498,50 @@ export default function WarmupIndexScreen() {
           paddingHorizontal: spacing.lg,
           paddingBottom: spacing.md,
           gap: spacing.sm,
-          backgroundColor: colors.bg,
-        },
+          backgroundColor: colors.bg },
         sectionTitle: {
           ...typography.h3,
           color: colors.textPrimary,
-          paddingLeft: spacing.xs,
-        },
+          paddingLeft: spacing.xs },
         sectionNote: {
           ...typography.caption,
-          color: colors.textSecondary,
-        },
+          color: colors.textSecondary },
         listWrap: {
-          paddingHorizontal: spacing.lg,
-        },
+          paddingHorizontal: spacing.lg },
         bottomHint: {
           paddingHorizontal: spacing.lg,
           paddingTop: spacing.md,
-          paddingBottom: spacing.md,
-        },
+          paddingBottom: spacing.md },
         hintText: {
           ...typography.caption,
           color: colors.textTertiary,
           lineHeight: 18,
-          textAlign: 'center',
-        },
+          textAlign: 'center' },
         emptyFallbackCard: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           padding: spacing.lg,
           marginHorizontal: spacing.lg,
           marginBottom: spacing.lg,
           alignItems: 'center',
-          ...softShadow,
-        },
+          ...softShadow },
         emptyTitle: {
           ...typography.bodyBold,
           color: colors.textPrimary,
-          marginTop: spacing.sm,
-        },
+          marginTop: spacing.sm },
         emptyDesc: {
           ...typography.caption,
           color: colors.textSecondary,
           marginTop: spacing.xs,
           textAlign: 'center',
-          lineHeight: 18,
-        },
-      }),
+          lineHeight: 18 } }),
     [colors, frameStroke, softShadow]
   );
 
   const headerTitle = t('warmup.title', {
-    defaultValue: t('warmup.title'),
-  });
+    defaultValue: t('warmup.title') });
 
   const sectionNoteText = useMemo(() => {
     const base =
@@ -584,14 +555,24 @@ export default function WarmupIndexScreen() {
   }, [items.length, totalDurationSec, t]);
 
   const emptyHintText = t('warmup.emptyHint', {
-    defaultValue: t('warmup.emptyHint'),
-  });
+    defaultValue: t('warmup.emptyHint') });
 
   return (
     <SafeAreaView edges={['top']} style={s.root}>
       <Stack.Screen options={{ headerShown: false, title: headerTitle }} />
 
-      <View style={s.topBar}>
+      <AppleNavBar
+        style={s.readable}
+        title={headerTitle}
+        onBack={() => router.back()}
+        right={
+          <Text style={s.sectionNote} numberOfLines={1}>
+            {sectionNoteText}
+          </Text>
+        }
+      />
+
+      <View style={[s.topBar, s.readable]}>
         <SegmentedControl
           options={tabOptions}
           value={tab}
@@ -605,24 +586,20 @@ export default function WarmupIndexScreen() {
         />
       </View>
 
-      <View style={s.sectionRow}>
-        <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingRight: spacing.md }}>
+      <View style={[s.sectionRow, s.readable]}>
+        <View style={{ flex: 1, minWidth: 0, paddingRight: spacing.md }}>
           <Text style={s.sectionTitle} numberOfLines={1}>
             {tab === 'warmup'
               ? t('warmup.sectionWarmup', {
-                  defaultValue: t('warmup.sectionWarmup'),
-                })
+                  defaultValue: t('warmup.sectionWarmup') })
               : t('warmup.sectionStretch', {
-                  defaultValue: t('warmup.sectionStretch'),
-                })}
+                  defaultValue: t('warmup.sectionStretch') })}
           </Text>
         </View>
-        <Text style={s.sectionNote} numberOfLines={1}>
-          {sectionNoteText}
-        </Text>
       </View>
 
       <ScrollView
+        style={s.readable}
         contentContainerStyle={{ paddingBottom: bottomPad }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -632,8 +609,7 @@ export default function WarmupIndexScreen() {
             <Icon name="dumbbell" size={28} color={colors.textTertiary} />
             <Text style={s.emptyTitle}>
               {t('warmup.emptyTitle', {
-                defaultValue: t('warmup.emptyTitle'),
-              })}
+                defaultValue: t('warmup.emptyTitle') })}
             </Text>
             <Text style={s.emptyDesc}>{emptyHintText}</Text>
           </View>

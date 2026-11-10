@@ -109,8 +109,8 @@ module.exports = {
         'h3': ['17px', { lineHeight: '22px', letterSpacing: '-0.2px', fontWeight: '700' }],
         'title': ['20px', { lineHeight: '26px', letterSpacing: '-0.3px', fontWeight: '800' }],
         'h2': ['22px', { lineHeight: '28px', letterSpacing: '-0.4px', fontWeight: '800' }],
-        'h1': ['28px', { lineHeight: '34px', letterSpacing: '-0.6px', fontWeight: '900' }],
-        'display': ['36px', { lineHeight: '40px', letterSpacing: '-1.2px', fontWeight: '900' }],
+        'h1': ['28px', { lineHeight: '34px', letterSpacing: '-0.6px', fontWeight: '700' }],
+        'display': ['34px', { lineHeight: '41px', letterSpacing: '-0.5px', fontWeight: '700' }],
         'mono': ['16px', { lineHeight: '20px', letterSpacing: '0.2px', fontWeight: '800' }],
       },
 
@@ -119,9 +119,9 @@ module.exports = {
       // iOS: shadowColor/Offset/Radius/Opacity; Android: elevation
       // ======================================================================
       boxShadow: {
-        'sm': '0px 2px 6px rgba(0,0,0,0.18)',
-        'md': '0px 2px 6px rgba(0,0,0,0.55)',
-        'lg': '0px 2px 8px rgba(0,0,0,0.6)',
+        'sm': '0px 2px 8px rgba(0,0,0,0.10)',
+        'md': '0px 2px 8px rgba(0,0,0,0.35)',
+        'lg': '0px 2px 8px rgba(0,0,0,0.35)',
       },
       elevation: {
         'sm': 2,

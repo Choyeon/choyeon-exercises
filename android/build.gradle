@@ -4,12 +4,23 @@ buildscript {
   repositories {
     google()
     mavenCentral()
+    // 国内镜像：Compose 编译器插件 + 大体积 AAR 直连 Maven Central 会卡死
+    maven { url 'https://maven.aliyun.com/repository/public' }
+    maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+    maven { url 'https://maven.aliyun.com/repository/google' }
   }
   dependencies {
     classpath('com.android.tools.build:gradle')
     classpath('com.facebook.react:react-native-gradle-plugin')
     classpath('org.jetbrains.kotlin:kotlin-gradle-plugin')
   }
+}
+
+plugins {
+    // Compose 编译器插件：原生液态玻璃视图（expo-android-glass-view）在
+    // Compose 模块里渲染，需要它。版本在这里统一定义，子项目直接 apply 即可
+    // （避免各自声明版本冲突）。必须与 RN 0.86 使用的 Kotlin 2.1.20 一致。
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.20" apply false
 }
 
 allprojects {

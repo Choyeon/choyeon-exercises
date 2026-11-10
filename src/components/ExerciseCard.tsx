@@ -124,7 +124,7 @@ function createCardStyles(colors: Colors) {
   secondaryTagText: {
     fontSize: 10,
     lineHeight: 12,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   quickAddBtn: {
     width: 40,
@@ -152,7 +152,7 @@ function createCardStyles(colors: Colors) {
   },
   nameGrid: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
     lineHeight: 16,
     letterSpacing: -0.1,
     marginBottom: 2,

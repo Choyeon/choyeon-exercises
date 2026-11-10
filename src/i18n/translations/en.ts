@@ -1,7 +1,7 @@
 export const en = {
   app: {
-    brand: 'CHOYEON · EXERCISES',
-    title: 'Choyeon Exercises',
+    brand: 'CHOYEON · GYM',
+    title: 'Choyeon Gym',
     poweredBy: '1,324 canonical exercises · fully offline',
     heroCount: 'exercises · 100% offline',
   },
@@ -266,7 +266,7 @@ export const en = {
       'Restore factory state? Sessions, favorites and settings will be wiped.',
     about: 'About',
     aboutBody:
-      'Choyeon Exercises is a non-commercial, offline-first training companion: browse instructional exercises, bookmark movements, log weight × reps, and review your history.',
+      'Choyeon Gym is a non-commercial, offline-first training companion: browse instructional exercises, bookmark movements, log weight × reps, and review your history.',
     version: 'Version',
     themeDark: 'Dark mode',
     themeLight: 'Light mode',

@@ -1,7 +1,7 @@
 export const fr = {
   app: {
-    brand: 'CHOYEON · EXERCISES',
-    title: 'Choyeon Exercises',
+    brand: 'CHOYEON · GYM',
+    title: 'Choyeon Gym',
     poweredBy: '1 324 exercices canoniques · 100% hors ligne',
     heroCount: 'exercices · 100% hors ligne',
   },
@@ -244,7 +244,7 @@ export const fr = {
       'Restaurer l’état d’usine ? Séances, favoris et réglages seront effacés.',
     about: 'À propos',
     aboutBody:
-      'Choyeon Exercises est un compagnon d’entraînement non commercial et orienté hors ligne : parcourez des exercices didactiques, marquez des mouvements favoris, enregistrez poids × répétitions et consultez votre historique.',
+      'Choyeon Gym est un compagnon d’entraînement non commercial et orienté hors ligne : parcourez des exercices didactiques, marquez des mouvements favoris, enregistrez poids × répétitions et consultez votre historique.',
     version: 'Version',
     themeDark: 'Mode sombre',
     themeLight: 'Mode clair',

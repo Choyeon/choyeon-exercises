@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="assets/icon.png" width="128" alt="Choyeon Exercises 图标"/>
+  <img src="assets/icon.png" width="128" alt="Choyeon Gym 图标"/>
 </p>
 
-<h1 align="center">Choyeon Exercises</h1>
+<h1 align="center">Choyeon Gym</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue" alt="version"/>
+  <img src="https://img.shields.io/badge/version-1.1.0-blue" alt="version"/>
   <img src="https://img.shields.io/badge/platform-Android-green" alt="platform"/>
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license"/>
   <img src="https://img.shields.io/badge/typecheck-passing-success" alt="typecheck"/>
@@ -23,7 +23,7 @@
 沿用项目**原有 logo**（橙 → 珊瑚粉 → 品红紫渐变的「C」弧 + 奔跑人形），只在其外补一层 **squircle（方圆形）浅色近白底** 与细边框，并留出合适的留白。这样既保留原设计的辨识度，也解决了此前 logo 被启动器拉伸变形的问题。
 
 <p align="center">
-  <img src="assets/icon.png" width="200" alt="Choyeon Exercises 应用图标"/>
+  <img src="assets/icon.png" width="200" alt="Choyeon Gym 应用图标"/>
 </p>
 
 - **不重绘 logo**：中央图形直接取自原有透明 PNG（`docs/screenshots/original-logo.png`），未做任何 AI 重绘。
@@ -35,7 +35,11 @@
 
 ## 界面预览
 
-下面 9 张均为 **Android 模拟器真机截图**（1080 × 1920），真实数据、真实文案，深色「工业健身房」主题（霓虹青柠 `#BFF23D` + 锈橙 `#FF6A3D`）。数据面板 / 我的 等页面在无训练记录时显示为空状态，属正常表现。
+以下截图均为 **Android 16 模拟器真机截图**（1080 × 1920，手势导航/小白条沉浸模式），Apple HIG 风格、真实数据、真实文案。数据面板 / 我的 等页面在无训练记录时显示为空状态，属正常表现。
+
+底部悬浮胶囊为 **iOS 26 液态玻璃导航栏**（原生组件，见下方「iOS 26 液态玻璃」）：玻璃会实时折射身后滚动的内容，选中项是一颗可拖拽的液态水滴。
+
+### 浅色模式
 
 | | | |
 |---|---|---|
@@ -45,6 +49,19 @@
 | **数据面板** · 容量趋势 / 日历热力图 | **身体数据** · 围度 / 体重追踪 | **训练模板** · 可复用计划 |
 | <img src="docs/screenshots/07-warmup.png" width="200" alt="热身"/> | <img src="docs/screenshots/08-exercise.png" width="200" alt="动作详情"/> | <img src="docs/screenshots/09-profile.png" width="200" alt="我的"/> |
 | **热身** · 动态拉伸流程 | **动作详情** · 动画 / 要点 / 变式 | **我的** · 统计 / 偏好 / 备份 |
+
+### 深色模式
+
+| | | |
+|---|---|---|
+| <img src="docs/screenshots/dark-01-home.png" width="200" alt="首页·深色"/> | <img src="docs/screenshots/dark-02-library.png" width="200" alt="动作库·深色"/> | <img src="docs/screenshots/dark-03-workout.png" width="200" alt="训练·深色"/> |
+| **首页** | **动作库** | **训练日志** |
+| <img src="docs/screenshots/dark-04-stats.png" width="200" alt="数据面板·深色"/> | <img src="docs/screenshots/dark-05-body.png" width="200" alt="身体数据·深色"/> | <img src="docs/screenshots/dark-06-templates.png" width="200" alt="训练模板·深色"/> |
+| **数据面板** | **身体数据** | **训练模板** |
+| <img src="docs/screenshots/dark-07-warmup.png" width="200" alt="热身·深色"/> | <img src="docs/screenshots/dark-08-exercise.png" width="200" alt="动作详情·深色"/> | <img src="docs/screenshots/dark-09-profile.png" width="200" alt="我的·深色"/> |
+| **热身** | **动作详情** | **我的** |
+
+> 全面屏适配：Tab 栏高度随系统手势区（小白条）动态避让，状态栏 / 导航栏沉浸透明，内容在明暗两套主题下均不被遮挡。
 
 ---
 
@@ -83,9 +100,10 @@
 
 ## 下载与安装
 
-- **GitHub Release（推荐）**：[v1.0.0 下载页](https://github.com/Choyeon/choyeon-exercises/releases)
-  - 安装包：`app-release-arm64-v8a.apk`（约 181 MB，仅含 `arm64-v8a` 架构，适用于绝大多数现代 Android 手机）
-  - 安装前请在系统设置中允许「未知来源」安装；若提示签名，确认来自本仓库发布。
+- **GitHub Release（推荐）**：[v1.1.0 下载页](https://github.com/Choyeon/choyeon-exercises/releases/tag/v1.1.0)
+  - 安装包：`app-release-arm64-v8a.apk`（仅含 `arm64-v8a` 架构，适用于绝大多数现代 Android 手机）
+  - 首次安装请在系统设置中允许「未知来源」安装；若提示签名，确认来自本仓库发布。
+  - v1.1.0 起：底部导航换为**原生 iOS 26 液态玻璃**（Android 侧为 Jetpack Compose 真实折射），界面按 Apple HIG 全量重构。
 - **自行构建**：见下方「构建 Release APK」。
 
 > 定位：纯离线工具。没有商业化内容、没有账号、没有联网请求、没有社区 / 社交。所有数据只存在本机，导出与恢复也只走「一段纯文本」，不申请任何存储 / 分享权限。
@@ -102,11 +120,25 @@
 | 列表 | Shopify FlashList 2.0 |
 | 图片 | expo-image |
 | 动画 | react-native-reanimated 4 |
+| 液态玻璃 | iOS：`expo-glass-effect`（系统 UIGlassEffect）<br/>Android：`expo-android-glass-view`（Jetpack Compose 原生折射） |
 | 图表 | react-native-svg（手写柱状 / 热力图，不引图表库） |
 | 国际化 | i18next + react-i18next |
 | 语言 | TypeScript 6（strict） |
-| 测试 | 自研零依赖 runner（用项目自带 `typescript` 做内存转译） |
+| 测试 | 逻辑层：自研零依赖 runner（项目自带 `typescript` 内存转译）<br/>UI 层：jest-expo + @testing-library/react-native |
 | 构建 | Gradle (compileSdk 36, targetSdk 36) |
+
+### iOS 26 液态玻璃
+
+底部导航与卡片材质全部使用**第三方原生组件**，不手写复刻折射算法：
+
+- **iOS 26+**：`expo-glass-effect` 的 `GlassView` —— 系统级 `UIGlassEffect`，跟随环境光、按压时形变，文字可用 `PlatformColor('labelColor')` 自动适配。
+- **Android**：`expo-android-glass-view` —— Jetpack Compose 渲染，实时采样**同一窗口内 RN 画面的背后像素**作为背板，做真实折射（边缘色散、模糊、vibrancy、高光）。
+  - 导航栏用其 `AndroidGlassBottomTabs`：玻璃胶囊 + **可拖拽的液态选择水滴**（iOS 26 同款交互），内容滚动时背景实时跟着变。
+  - 其余玻璃面用 `AndroidGlassView`（卡片 / 搜索框等）。
+  - 依赖：Android 13+（API 33）完整折射；Android 12 仅模糊 + vibrancy；更早版本退化为半透明纯色面板。
+
+> 玻璃材质是**真实背板采样**，不是半透明遮罩——所以浅色模式下能看到卡片内容被磨砂透出，深色模式下能看见红色 / 蓝色卡片的光晕透过胶囊。
+
 
 ---
 
@@ -137,15 +169,19 @@ npm run android
 
 ```bash
 npm run typecheck   # tsc --noEmit
-npm test            # 全部单测（60 条）
+npm test            # 逻辑层单测（60 条）
+npm run test:ui     # UI 层渲染测试（jest-expo + RNTL）
 npm run verify      # typecheck + test，提交前跑这个
 ```
 
-单测 runner 是 `scripts/ts-require.js` + `scripts/run-tests.js`：直接用项目自带的
-`typescript` 把被测的 `.ts` 模块在内存里转译成 CommonJS 再 require，
-因此**可以直接测 TS 真身**，不需要额外装 `jest-expo` / `ts-jest` / `ts-node`，
-也天然支持 `@/` 路径别名。新增用例只要在 `tests/` 下建一个导出
-`{ name, tests: [{ name, fn }] }` 的 `.js` 文件即可。
+测试分两层：
+
+- **逻辑层**（`npm test`）—— runner 是 `scripts/ts-require.js` + `scripts/run-tests.js`：
+  直接用项目自带的 `typescript` 把被测的 `.ts` 模块在内存里转译成 CommonJS 再 require，
+  因此**可以直接测 TS 真身**，零额外依赖，也天然支持 `@/` 路径别名。
+  新增用例只要在 `tests/` 下建一个导出 `{ name, tests: [{ name, fn }] }` 的 `.js` 文件即可。
+- **UI 层**（`npm run test:ui`）—— jest-expo + @testing-library/react-native，
+  覆盖 Apple 原语渲染、无障碍属性，以及一个遍历所有页面的 HIG 静态审计。
 
 ### 构建 Release APK
 
@@ -153,11 +189,11 @@ npm run verify      # typecheck + test，提交前跑这个
 # 1. 生成原生项目（首次或依赖 / 资源变更后，例如更换图标）
 npx expo prebuild --platform android
 
-# 2. 配置签名（android/gradle.properties 或 ~/.gradle/gradle.properties）
-# MYAPP_RELEASE_KEYSTORE=.../release.keystore
-# MYAPP_RELEASE_KEYSTORE_PASSWORD=...
-# MYAPP_RELEASE_KEY_ALIAS=...
-# MYAPP_RELEASE_KEY_PASSWORD=...
+# 2. 配置签名（android/keystore.properties，不进版本库）
+#    RELEASE_STORE_FILE=.../release.keystore
+#    RELEASE_STORE_PASSWORD=...
+#    RELEASE_KEY_ALIAS=...
+#    RELEASE_KEY_PASSWORD=...
 
 # 3. 构建（单架构 arm64-v8a，体积更小、构建更快）
 cd android
@@ -165,6 +201,16 @@ cd android
 ```
 
 构建产物：`android/app/build/outputs/apk/release/app-release.apk`
+
+> **签名配置缺失时构建会直接失败**（而不是悄悄产出 debug 签名的包），
+> 这是有意为之 —— 未签名 / 用 debug key 签的 "release" 包装到手机上才发现就晚了。
+>
+> **改了 JS 代码后必须先删掉旧的 JS bundle 再构建**：Gradle 增量构建不会重新打包
+> `android/app/build/generated/assets/react/release/index.android.bundle`，
+> 不删的话装上去还是旧代码：
+> ```bash
+> rm -f app/build/generated/assets/react/release/index.android.bundle
+> ```
 
 > **更换图标**：运行 `ego-browser nodejs < docs/screenshots/_icon3.mjs`，它会同时刷新 `assets/` 与
 > `android/app/src/main/res/mipmap-*` 的全部密度（含 108dp 自适应前景/背景），随后直接重新构建即可。

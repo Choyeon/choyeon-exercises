@@ -6,8 +6,14 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
+import {
+  Stack,
+  useRouter,
+} from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import {
   useThemeColors,
@@ -15,6 +21,7 @@ import {
   radius,
   typography,
   strokeFromColors,
+  layout,
 } from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { safeHaptic } from '@/utils/haptic';
@@ -25,6 +32,7 @@ import {
   SectionHeader,
 } from '@/components/UIKit';
 import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { AppleNavBar } from '@/components/apple';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import { labelForEquipment } from '@/constants';
@@ -108,7 +116,7 @@ function TemplateCard({ tpl, mode, onStart, onClone }: TemplateCardProps) {
         card: {
           backgroundColor: colors.surface,
           borderRadius: radius.lg,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           marginBottom: spacing.lg,
           overflow: 'hidden',
@@ -177,7 +185,7 @@ function TemplateCard({ tpl, mode, onStart, onClone }: TemplateCardProps) {
           flex: 1,
           borderRadius: radius.md,
           paddingVertical: spacing.md,
-          borderWidth: 1,
+          borderWidth: StyleSheet.hairlineWidth,
           borderColor: frameStroke,
           alignItems: 'center',
           justifyContent: 'center',
@@ -507,23 +515,25 @@ export default function TemplatesIndexScreen() {
   const s = useMemo(
     () =>
       StyleSheet.create({
-        root: { flex: 1, backgroundColor: colors.bg },
+        root: { flex: 1, backgroundColor: colors.bg, alignItems: 'center' },
+        // Apple HIG：iPad / 宽屏下限制可读列宽。
+        readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
         headerRow: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: spacing.lg,
-          paddingTop: spacing.md,
+          paddingTop: spacing.sm,
           paddingBottom: spacing.md,
           gap: spacing.sm,
           backgroundColor: colors.bg,
         },
         mineBtn: {
           paddingHorizontal: spacing.md,
-          paddingVertical: spacing.sm,
-          borderRadius: radius.pill,
-          borderWidth: 1,
-          borderColor: accentStroke,
+          minHeight: 34,
+          justifyContent: 'center',
+          borderRadius: radius.sm,
+          backgroundColor: colors.primary + '1A',
           flexDirection: 'row',
           alignItems: 'center',
           gap: spacing.xs,
@@ -568,27 +578,28 @@ export default function TemplatesIndexScreen() {
   return (
     <SafeAreaView edges={['top']} style={s.root}>
       <Stack.Screen options={{ headerShown: false, title: headerTitle }} />
-      <View style={s.headerRow}>
-        <View style={{ flex: 1, minWidth: 0, paddingLeft: 56, paddingHorizontal: spacing.md }}>
-          <Text style={{ ...typography.h1, color: colors.textPrimary, paddingLeft: spacing.xs }} numberOfLines={1}>
-            {headerTitle}
-          </Text>
-        </View>
-        <PressableScale
-          onPress={() => setTab('mine')}
-          style={s.mineBtn}
-          scaleTo={0.95}
-          accessibilityRole="button"
-          accessibilityLabel={t('a11y.myTemplates')}
-        >
-          <Icon name="folder-heart-outline" size={14} color={colors.primary} />
-          <Text style={[s.mineBtnText, { color: colors.primary }]}>
-            {t('profile.sectionTemplates')}
-          </Text>
-        </PressableScale>
-      </View>
+      <AppleNavBar
+        style={s.readable}
+        title={headerTitle}
+        onBack={() => router.back()}
+        right={
+          <PressableScale
+            onPress={() => setTab('mine')}
+            style={s.mineBtn}
+            scaleTo={0.95}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('a11y.myTemplates')}
+          >
+            <Icon name="folder-heart-outline" size={14} color={colors.primary} />
+            <Text style={[s.mineBtnText, { color: colors.primary }]}>
+              {t('profile.sectionTemplates')}
+            </Text>
+          </PressableScale>
+        }
+      />
 
-      <View style={s.topBar}>
+      <View style={[s.topBar, s.readable]}>
         <SegmentedControl
           options={tabOptions}
           value={tab}
@@ -607,6 +618,7 @@ export default function TemplatesIndexScreen() {
       ) : null}
 
       <ScrollView
+        style={s.readable}
         contentContainerStyle={{ paddingBottom: bottomPad }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"

@@ -78,7 +78,7 @@ export const Badge: React.FC<UIBadgeProps> = function Badge({
       return {
         foreground: colors.textPrimary,
         background: colors.surfaceElevated,
-        border: getFrameStroke(colors.bg === '#07090C'),
+        border: getFrameStroke(colors.bg === '#000000'),
       };
     }
     // outline
@@ -126,7 +126,7 @@ export const Badge: React.FC<UIBadgeProps> = function Badge({
     label: {
       fontSize: geom.fontSize,
       lineHeight: geom.lineHeight,
-      fontWeight: '800' as const,
+      fontWeight: '700' as const,
       letterSpacing: 0.1,
       color: palette.foreground,
     },

@@ -148,7 +148,7 @@ export function PlateCalculator({
           borderRadius: 26,
           alignItems: 'center',
           justifyContent: 'center',
-          borderWidth: 2,
+          borderWidth: 1,
         },
         plateText: { ...typography.bodyBold, fontSize: 13 },
         plateCount: { ...typography.bodyBold, fontSize: 10 },

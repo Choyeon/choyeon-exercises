@@ -69,7 +69,7 @@ function BodyPartChipImpl({
     },
     count: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.2,
     },
   }), []);
@@ -223,7 +223,7 @@ function EquipmentChipImpl({
     },
     count: {
       fontSize: 11,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.2,
     },
   }), []);

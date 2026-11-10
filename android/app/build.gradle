@@ -1,6 +1,11 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+// 注意：这里**不要** apply `org.jetbrains.kotlin.plugin.compose`。
+// app 模块没有任何 Compose 源码（MainActivity / MainApplication 都不引用），
+// 而 Compose 编译器插件一旦启用就强制要求 Compose Runtime 在本模块 classpath 上，
+// 缺失时直接编译失败。原生液态玻璃由 expo-android-glass-view 模块自行
+// 应用该插件并声明对应依赖，与本模块无关。
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 
@@ -133,13 +138,15 @@ android {
     buildToolsVersion "36.0.0"
     compileSdk 36
 
-    namespace 'com.choyeon.exercises'
+    namespace 'com.choyeon.gym'
     defaultConfig {
-        applicationId 'com.choyeon.exercises'
+        applicationId 'com.choyeon.gym'
         minSdkVersion 24
-        targetSdkVersion 33
-        versionCode 1
-        versionName "1.0.0"
+        // 真正的 targetSdk 以文件末尾「Hard-code SDK levels」那段为准（36），
+        // 这里保持一致，避免两处写法不同造成"看 A 处以为是 33"的误解。
+        targetSdkVersion 36
+        versionCode 2
+        versionName "1.1.0"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
 
@@ -232,6 +239,13 @@ android {
 }
 
 dependencies {
+    // Compose 运行时不在这里显式声明：
+    //   · app 模块本身没有 Compose 源码（MainActivity / MainApplication 均不引用）；
+    //   · 原生液态玻璃由 expo-android-glass-view 模块渲染，它自己声明了
+    //     androidx.compose.foundation / ui 1.10.6，运行时由该模块传递进来。
+    // 之前这里锁的 1.9.5 是给已移除的旧玻璃模块用的，与插件版本错配，
+    // 会把同一个 Compose 家族拉到两个版本上。
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 

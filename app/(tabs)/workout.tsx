@@ -1,16 +1,31 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Alert,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import type { WorkoutSession } from '@/types';
-import { useThemeColors, spacing, radius, layout, strokeFromColors, muscleColor } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  layout,
+  strokeFromColors,
+  muscleColor,
+} from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { getAllExercisesSync } from '@/data/queries';
 import {
   iconForBodyPart,
-  labelForBodyPart,
-  iconForEquipment,
   getImageUrl,
 } from '@/constants';
 import {
@@ -24,7 +39,7 @@ import {
   Skeleton,
 } from '@/components/UIKit';
 import { safeHaptic } from '@/utils/haptic';
-import { formatDurationClock, formatDurationHuman } from '@/utils/format';
+import { formatDurationHuman } from '@/utils/format';
 import Svg, { Rect, Text as SvgText, Line } from 'react-native-svg';
 
 export default function WorkoutScreen() {
@@ -74,8 +89,7 @@ export default function WorkoutScreen() {
     return {
       streak: store.streakDays(),
       total: safeWorkouts.length,
-      volume: Math.round(totalVol),
-    };
+      volume: Math.round(totalVol) };
   }, [workouts]);
 
   const exercises = useMemo(() => getAllExercisesSync(), []);
@@ -126,8 +140,7 @@ export default function WorkoutScreen() {
           onPress: () => {
             safeHaptic('warning');
             deleteWorkout(id);
-          },
-        },
+          } },
       ]);
     },
     [deleteWorkout, t]
@@ -214,68 +227,59 @@ export default function WorkoutScreen() {
     const { isDark, frameStroke, accentStroke, softShadow } = strokeFromColors(colors);
     return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
+    // Apple HIG：iPad / 宽屏下限制可读列宽，避免超长行距损害可读性。
+    readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
     content: { paddingHorizontal: layout.paddingHorizontal, paddingTop: spacing.sm },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-end',
       marginBottom: spacing.lg,
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     brandLine: {
       color: colors.accent,
-      letterSpacing: 1.4,
+      letterSpacing: 1.2,
       textTransform: 'uppercase',
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '800',
-      marginBottom: spacing.xs,
-      paddingLeft: spacing.xs,
-    },
+      fontSize: 12,
+      lineHeight: 15,
+      fontWeight: '700',
+      marginBottom: spacing.xs },
     title: {
-      fontSize: 28,
-      fontWeight: '900',
-      letterSpacing: -0.6,
-      lineHeight: 34,
-      color: colors.textPrimary,
-      paddingLeft: spacing.xs,
-    },
+      fontSize: 34,
+      fontWeight: '700',
+      letterSpacing: -0.5,
+      lineHeight: 41,
+      color: colors.textPrimary },
     primaryCTA: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
       backgroundColor: colors.primary,
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.md,
-      borderRadius: 999,
-      flexShrink: 0,
-    },
+      minHeight: 44,
+      borderRadius: radius.md,
+      flexShrink: 0 },
     primaryCTAHot: {
-      backgroundColor: colors.accent,
-    },
+      backgroundColor: colors.accent },
     headerLeft: {
       flex: 1,
       minWidth: 0,
-      paddingHorizontal: spacing.md,
-    },
+      paddingHorizontal: spacing.xs },
     ctaIconTray: {
       width: 20,
       height: 20,
       borderRadius: 10,
       backgroundColor: colors.textInverse + '18',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     ctaIconTrayActive: {
-      backgroundColor: colors.textInverse + '20',
-    },
+      backgroundColor: colors.textInverse + '20' },
     ctaText: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textInverse,
-      letterSpacing: 0.3,
-    },
+      letterSpacing: 0.3 },
     activeCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -287,24 +291,20 @@ export default function WorkoutScreen() {
       marginBottom: spacing.lg,
       position: 'relative',
       overflow: 'hidden',
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     activeAccent: {
       position: 'absolute',
       left: 0,
       top: 0,
       bottom: 0,
       width: 4,
-      backgroundColor: colors.accent,
-    },
+      backgroundColor: colors.accent },
     activeBody: {
-      flex: 1,
-    },
+      flex: 1 },
     activeRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     activeBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -312,88 +312,76 @@ export default function WorkoutScreen() {
       backgroundColor: colors.accent + '22',
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
-      borderRadius: 999,
-    },
+      borderRadius: 999 },
     activePulse: {
       width: 7,
       height: 7,
       borderRadius: 4,
-      backgroundColor: colors.accent,
-    },
+      backgroundColor: colors.accent },
     activeBadgeText: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.accent,
       letterSpacing: 0.8,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     activeName: {
       fontSize: 15,
       lineHeight: 20,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
       marginLeft: spacing.sm,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     activeMeta: {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '500',
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     activeChevron: {
       width: 28,
       height: 28,
       borderRadius: 14,
       backgroundColor: colors.accent + '18',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     statsStrip: {
       flexDirection: 'row',
       paddingVertical: spacing.lg,
       paddingHorizontal: spacing.sm,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      marginBottom: spacing.lg,
-    },
+      marginBottom: spacing.lg },
     weekCard: {
       padding: spacing.lg,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      marginBottom: spacing.xl,
-    },
+      marginBottom: spacing.xl },
     weekHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     weekTitle: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: 1,
-    },
+      letterSpacing: 1 },
     barRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-end',
       height: 84,
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     barCol: {
       flex: 1,
       alignItems: 'center',
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     barBg: {
       width: '100%',
       maxWidth: 32,
@@ -401,25 +389,21 @@ export default function WorkoutScreen() {
       backgroundColor: colors.surfaceElevated,
       borderRadius: radius.sm,
       justifyContent: 'flex-end',
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     barFill: {
       width: '100%',
       borderRadius: radius.sm,
-      minHeight: 8,
-    },
+      minHeight: 8 },
     barLabel: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
-      letterSpacing: 0.4,
-    },
+      letterSpacing: 0.4 },
     gapSm: { height: spacing.sm },
     headerBtnCol: {
       gap: spacing.xs,
-      alignItems: 'flex-end',
-    },
+      alignItems: 'flex-end' },
     openTemplatesBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -428,58 +412,50 @@ export default function WorkoutScreen() {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs + 1,
       borderRadius: 999,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     openTemplatesBtnText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '800',
-      color: colors.textSecondary,
-    },
+      fontWeight: '700',
+      color: colors.textSecondary },
     tplSectionHead: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: spacing.sm,
       marginTop: spacing.xs,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     historyHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: spacing.sm,
       marginTop: spacing.sm,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     tplSectionTitle: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
-      color: colors.textPrimary,
-    },
+      fontWeight: '700',
+      color: colors.textPrimary },
     tplSectionCount: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.4,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     tplSwiperWrap: {
       marginHorizontal: -layout.paddingHorizontal,
-      marginBottom: spacing.lg,
-    },
+      marginBottom: spacing.lg },
     tplSwiperContent: {
       paddingHorizontal: layout.paddingHorizontal,
       paddingVertical: spacing.xs,
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     tplCard: {
       width: 240,
       borderRadius: radius.lg,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       backgroundColor: colors.surface,
       padding: spacing.md,
@@ -487,42 +463,36 @@ export default function WorkoutScreen() {
       elevation: 2,
       gap: spacing.sm,
       position: 'relative',
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     tplLevelStripe: {
-      position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
-    },
+      position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
     tplTitle: {
       marginLeft: spacing.xs,
       fontSize: 15,
       lineHeight: 20,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textPrimary,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     tplDesc: {
       marginLeft: spacing.xs,
       fontSize: 11,
       fontWeight: '500',
       color: colors.textSecondary,
-      lineHeight: 15,
-    },
+      lineHeight: 15 },
     tplBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginLeft: spacing.xs },
     tplBadge: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: 999,
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     tplBadgeText: {
       fontSize: 9,
       lineHeight: 12,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textSecondary,
-      letterSpacing: 0.2,
-    },
+      letterSpacing: 0.2 },
     tplStartBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -533,78 +503,68 @@ export default function WorkoutScreen() {
       paddingVertical: spacing.sm,
       borderRadius: radius.md,
       backgroundColor: colors.primary,
-      borderWidth: 1.5,
-      borderColor: accentStroke,
-    },
+      borderWidth: 1,
+      borderColor: accentStroke },
     tplStartText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '900',
-      color: isDark ? '#07090C' : '#FFFFFF',
-      letterSpacing: 0.3,
-    },
+      fontWeight: '700',
+      color: colors.textInverse,
+      letterSpacing: 0.3 },
     // Weekly Volume SVG card
     volCard: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       padding: spacing.lg,
       marginBottom: spacing.md,
       ...softShadow,
-      elevation: 2,
-    },
+      elevation: 2 },
     volHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       marginBottom: spacing.sm,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     volTitleCol: {
       flex: 1,
-      minWidth: 0,
-    },
+      minWidth: 0 },
     volTitle: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textPrimary,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     volSubtitle: {
       fontSize: 11,
       fontWeight: '500',
       color: colors.textSecondary,
       marginTop: spacing.xs,
-      lineHeight: 15,
-    },
+      lineHeight: 15 },
     volEmpty: {
       height: 160,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     volEmptyText: {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '600',
       color: colors.textTertiary,
-      textAlign: 'center',
-    },
-    // 底部占位：动态 safe area + 真实 tab 内容高度 + xxl 呼吸
+      textAlign: 'center' },
+    // 底部占位：安全区 + 悬浮玻璃胶囊高度 + 间距 + 呼吸
     bottomInset: {
       height:
         Math.max(insets.bottom, spacing.xs)
-        + (Platform.OS === 'ios' ? 58 : 56)
-        + spacing.xxl,
-    },
-  });
+        + layout.floatingTabBar.bottomGap
+        + layout.floatingTabBar.height
+        + layout.floatingTabBar.contentGap } });
   }, [colors, insets.bottom]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
-        style={styles.screen}
+        style={[styles.screen, styles.readable]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -672,8 +632,7 @@ export default function WorkoutScreen() {
                 {t('workout.activeCardMeta', {
                   count: Array.isArray(activeWorkout.exercises)
                     ? activeWorkout.exercises.filter(Boolean).length
-                    : 0,
-                })}
+                    : 0 })}
               </Text>
             </View>
             <View style={styles.activeChevron}>
@@ -767,7 +726,7 @@ export default function WorkoutScreen() {
                     </View>
                   </View>
                   <View style={styles.tplStartBtn}>
-                    <Icon name="play" size={12} color={colors.bg === '#07090C' ? '#07090C' : '#FFFFFF'} />
+                    <Icon name="play" size={12} color={colors.textInverse} />
                     <Text style={styles.tplStartText}>
                       {t('templates.start')}
                     </Text>
@@ -802,8 +761,7 @@ export default function WorkoutScreen() {
                         styles.barFill,
                         {
                           height: h,
-                          backgroundColor: fillColor,
-                        },
+                          backgroundColor: fillColor },
                       ]}
                     />
                   </View>
@@ -864,8 +822,7 @@ export default function WorkoutScreen() {
                   <Text style={styles.volSubtitle} numberOfLines={1}>
                     {t('stats.weeklyVolSub', {
                       units: unitLabel,
-                      defaultValue: `Last 7 days · total ${totalVol7} ${unitLabel}`,
-                    })}
+                      defaultValue: `Last 7 days · total ${totalVol7} ${unitLabel}` })}
                   </Text>
                 </View>
                 <Icon name="chart-bar" size={18} color={colors.textTertiary} />
@@ -876,8 +833,7 @@ export default function WorkoutScreen() {
                   <Text style={[styles.volEmptyText, { marginTop: spacing.sm }]}>
                     {t('stats.emptyBar', {
                       defaultValue:
-                        'Complete your first set to visualize weekly volume trends.',
-                    })}
+                        'Complete your first set to visualize weekly volume trends.' })}
                   </Text>
                 </View>
               ) : (
@@ -981,8 +937,7 @@ function WorkoutCard({
   session,
   exMap,
   units,
-  onDelete,
-}: {
+  onDelete }: {
   session: WorkoutSession;
   exMap: Map<string, any>;
   units: 'kg' | 'lb';
@@ -1049,40 +1004,34 @@ function WorkoutCard({
     card: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       padding: spacing.lg,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     topRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       justifyContent: 'space-between',
       marginBottom: spacing.sm,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     dateCol: {
-      flex: 1,
-    },
+      flex: 1 },
     dateRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     date: {
       fontSize: 17,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: -0.2,
       lineHeight: 22,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     time: {
       fontSize: 12,
       fontWeight: '500',
       color: colors.textSecondary,
-      lineHeight: 18,
-    },
+      lineHeight: 18 },
     deleteBtn: {
       width: 32,
       height: 32,
@@ -1091,94 +1040,79 @@ function WorkoutCard({
       borderWidth: 1,
       borderColor: colors.danger + '30',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     sessionName: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.primary,
       marginBottom: spacing.md,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     statRow: {
       flexDirection: 'row',
       marginBottom: spacing.md,
       paddingVertical: spacing.md,
       borderTopWidth: 1,
       borderBottomWidth: 1,
-      borderColor: colors.surfaceDivider,
-    },
+      borderColor: colors.surfaceDivider },
     statCol: {
       flex: 1,
       alignItems: 'center',
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     statIconTray: {
       width: 24,
       height: 24,
       borderRadius: 12,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     statValue: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     statLabel: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.8,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     previewRow: {
       flexDirection: 'row',
       gap: spacing.sm,
       marginBottom: spacing.sm,
-      flexWrap: 'wrap',
-    },
+      flexWrap: 'wrap' },
     previewItem: {
       alignItems: 'center',
       width: 58,
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     previewImgWrap: {
       borderRadius: radius.md,
-      borderWidth: 1.5,
-      overflow: 'hidden',
-    },
+      borderWidth: 1,
+      overflow: 'hidden' },
     previewImg: {
       width: 54,
       height: 54,
-      backgroundColor: colors.surfaceElevated,
-    },
+      backgroundColor: colors.surfaceElevated },
     previewSets: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textSecondary,
-      letterSpacing: 0.2,
-    },
+      letterSpacing: 0.2 },
     noteRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       paddingTop: spacing.sm,
       borderTopWidth: 1,
-      borderTopColor: colors.surfaceDivider,
-    },
+      borderTopColor: colors.surfaceDivider },
     note: {
       flex: 1,
       fontSize: 13,
       fontWeight: '500',
       color: colors.textSecondary,
-      lineHeight: 19,
-    },
-  }), [colors]);
+      lineHeight: 19 } }), [colors]);
 
   return (
     <View style={cardStyles.card}>
@@ -1275,8 +1209,7 @@ function Stat({
   label,
   value,
   icon,
-  color,
-}: {
+  color }: {
   label: string;
   value: string;
   icon: string;
@@ -1287,31 +1220,26 @@ function Stat({
     col: {
       flex: 1,
       alignItems: 'center',
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     iconTray: {
       width: 24,
       height: 24,
       borderRadius: 12,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     value: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     label: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.8,
-      textTransform: 'uppercase',
-    },
-  }), [colors]);
+      textTransform: 'uppercase' } }), [colors]);
   return (
     <View style={s.col}>
       <View style={[s.iconTray, { backgroundColor: color + '18' }]}>

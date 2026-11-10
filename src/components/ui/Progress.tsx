@@ -1,13 +1,20 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+} from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
-  WithSpringConfig,
-} from 'react-native-reanimated';
+  WithSpringConfig } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import { useThemeColors, radius, spacing, typography } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  typography,
+} from '@/theme';
 
 // ============================================================================
 // Progress — horizontal progress bar 0-100.
@@ -34,8 +41,7 @@ const SPRING_CFG: WithSpringConfig = {
   mass: 0.5,
   stiffness: 260,
   damping: 18,
-  overshootClamping: true,
-};
+  overshootClamping: true };
 
 export const Progress: React.FC<ProgressProps> = function Progress({
   value,
@@ -44,8 +50,7 @@ export const Progress: React.FC<ProgressProps> = function Progress({
   trackColor,
   label,
   rounded,
-  accessibilityLabel,
-}) {
+  accessibilityLabel }) {
   const colors = useThemeColors();
   const clamped = Math.max(0, Math.min(100, value));
   const accent = color ?? colors.primary;
@@ -57,8 +62,7 @@ export const Progress: React.FC<ProgressProps> = function Progress({
   }, [clamped, fill]);
 
   const fillStyle = useAnimatedStyle(() => ({
-    width: `${fill.value}%`,
-  }));
+    width: `${fill.value}%` }));
 
   // v1.1 token spec: height max 6px, borderRadius always pill (999 → match half-height)
   const barHeight = Math.min(6, Math.max(2, height));
@@ -72,8 +76,7 @@ export const Progress: React.FC<ProgressProps> = function Progress({
       backgroundColor: track,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
-      borderColor: colors.surfaceDivider,
-    },
+      borderColor: colors.surfaceDivider },
     fill: {
       position: 'absolute',
       top: 0,
@@ -83,16 +86,13 @@ export const Progress: React.FC<ProgressProps> = function Progress({
       backgroundColor: accent,
       alignItems: 'flex-end',
       justifyContent: 'center',
-      paddingHorizontal: spacing.sm,
-    },
+      paddingHorizontal: spacing.sm },
     label: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800' as const,
+      fontWeight: '700' as const,
       color: colors.textInverse,
-      letterSpacing: 0.2,
-    },
-  }), [accent, colors, barHeight, r, track]);
+      letterSpacing: 0.2 } }), [accent, colors, barHeight, r, track]);
 
   return (
     <View

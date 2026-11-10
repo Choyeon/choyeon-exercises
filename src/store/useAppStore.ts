@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import {
+  persist,
+  createJSONStorage,
+  StateStorage,
+} from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   WorkoutSession,
@@ -14,9 +18,11 @@ import type {
   PersonalRecord,
   CustomExercise,
   ExerciseHistoryEntry,
-  SetType,
 } from '@/types';
-import { STORAGE_KEYS, DEFAULT_LANGUAGE } from '@/constants';
+import {
+  STORAGE_KEYS,
+  DEFAULT_LANGUAGE,
+} from '@/constants';
 import { withDefaultSettings } from '@/constants/settings';
 import {
   uid,
@@ -25,14 +31,21 @@ import {
   normalizeLegacyWorkouts,
   normalizeFavoriteIds,
 } from '@/store/sanitize';
-import { lastSetsFor, weeklyProgress } from '@/utils/analytics';
-import { createBackup, parseBackup, serializeBackup, summarizeBackup } from '@/utils/backup';
+import {
+  lastSetsFor,
+  weeklyProgress,
+} from '@/utils/analytics';
+import {
+  createBackup,
+  parseBackup,
+  serializeBackup,
+  summarizeBackup,
+} from '@/utils/backup';
 import type { BackupPayload } from '@/types';
 import {
   setAppLanguage,
   i18n as i18nInstance,
   normalizeLanguage,
-  detectInitialLanguage,
 } from '@/i18n';
 import PRESET_PLANS_JSON from '@/data/plans.json';
 import type { PlanTemplate } from '@/types';
@@ -55,8 +68,7 @@ const DEFAULT_SESSION_NAME_FALLBACK: Record<LanguageCode, string> = {
   pl: "Today's session",
   ko: "Today's session",
   fr: "Today's session",
-  ja: "Today's session",
-};
+  ja: "Today's session" };
 
 /**
  * A tiny wrapper over AsyncStorage that maps STORAGE_KEYS into a single
@@ -125,8 +137,7 @@ const appStorage: StateStorage = {
     } catch {
       /* swallow */
     }
-  },
-};
+  } };
 
 async function migrate(persisted: any, version: number): Promise<any> {
   // If the payload never went through the vault, the `persisted` object may
@@ -170,8 +181,7 @@ async function migrate(persisted: any, version: number): Promise<any> {
     bodyEntries: [],
     prRecords: [],
     // -- v5
-    customExercises: [],
-  };
+    customExercises: [] };
   // -- v3 新增字段安全初始化（从 v2 / v1 / legacy 进入 v3 时）
   shape.customTemplates = Array.isArray((persisted as any)?.customTemplates)
     ? (persisted as any).customTemplates
@@ -382,8 +392,7 @@ const INITIAL_REST_TIMER: RestTimerRuntime = {
   totalSeconds: 0,
   remainingSeconds: 0,
   startedAt: null,
-  nextContext: null,
-};
+  nextContext: null };
 
 export const useAppStore = create<AppState>()(
   persist(
@@ -413,8 +422,7 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           favoriteIds: s.favoriteIds.includes(id)
             ? s.favoriteIds.filter((f) => f !== id)
-            : [...s.favoriteIds, id],
-        })),
+            : [...s.favoriteIds, id] })),
       isFavorite: (id) => get().favoriteIds.includes(id),
 
       // ------------------------------
@@ -427,19 +435,16 @@ export const useAppStore = create<AppState>()(
             {
               ...workout,
               id: uid(),
-              date: new Date().toISOString(),
-            },
+              date: new Date().toISOString() },
             ...(Array.isArray(s.workouts) ? s.workouts : []),
-          ],
-        })),
+          ] })),
       deleteWorkout: (id) =>
         set((s) => ({
           // 原实现 `w && w.id === id ? false : (w && w.id !== id)` 逻辑绕且有
           // null 项残留风险——改为直白的 filter，并顺带剔除数组中的空槽位。
           workouts: (Array.isArray(s.workouts) ? s.workouts : []).filter(
             (w) => w && String(w.id) !== String(id)
-          ),
-        })),
+          ) })),
       clearAllWorkouts: () => set({ workouts: [] }),
       resetAllData: () =>
         set({
@@ -452,8 +457,7 @@ export const useAppStore = create<AppState>()(
           bodyEntries: [],
           prRecords: [],
           customExercises: [],
-          restTimer: INITIAL_REST_TIMER,
-        }),
+          restTimer: INITIAL_REST_TIMER }),
 
       // ------------------------------
       // TEMPLATES (v3)
@@ -469,8 +473,7 @@ export const useAppStore = create<AppState>()(
           id: uid(),
           sourceId: preset.id,
           createdAt: new Date().toISOString(),
-          pinned: false,
-        };
+          pinned: false };
         set((s) => ({ customTemplates: [cloned, ...s.customTemplates] }));
         return cloned;
       },
@@ -498,31 +501,26 @@ export const useAppStore = create<AppState>()(
             ...(t as Partial<UserPlanTemplate>),
             // id / createdAt 是不可变字段：永远以已存在记录为准。
             id: existing.id,
-            createdAt: existing.createdAt,
-          } as UserPlanTemplate;
+            createdAt: existing.createdAt } as UserPlanTemplate;
           set((s) => ({
             customTemplates: (Array.isArray(s.customTemplates) ? s.customTemplates : []).map(
               (c) => (String(c?.id) === String(existing.id) ? saved : c)
-            ),
-          }));
+            ) }));
         } else {
           saved = {
             ...(t as Omit<UserPlanTemplate, 'id' | 'createdAt'>),
             id: uid(),
             createdAt: now,
-            pinned: t.pinned ?? false,
-          } as UserPlanTemplate;
+            pinned: t.pinned ?? false } as UserPlanTemplate;
           set((s) => ({
-            customTemplates: [saved, ...(Array.isArray(s.customTemplates) ? s.customTemplates : [])],
-          }));
+            customTemplates: [saved, ...(Array.isArray(s.customTemplates) ? s.customTemplates : [])] }));
         }
         return saved;
       },
       deleteCustomTemplate: (id) =>
         set((s) => ({
           customTemplates: s.customTemplates.filter((c) => c.id !== id),
-          pinnedTemplateIds: s.pinnedTemplateIds.filter((pid) => pid !== id),
-        })),
+          pinnedTemplateIds: s.pinnedTemplateIds.filter((pid) => pid !== id) })),
       togglePinTemplate: (id) =>
         set((s) => ({
           customTemplates: s.customTemplates.map((c) =>
@@ -534,8 +532,7 @@ export const useAppStore = create<AppState>()(
             // 最多 3 个；超过时保留最早的 2 个再加当前（让用户自行移除，这里做温和FIFO）
             const next = [...s.pinnedTemplateIds, id];
             return next.slice(-3);
-          })(),
-        })),
+          })() })),
       startWorkoutFromTemplate: (templateId, sessionIdx = 0, sessionNameOverride) => {
         const allTemplates = [...PRESET_PLANS, ...get().customTemplates];
         const tpl = allTemplates.find((t) => t.id === templateId);
@@ -573,8 +570,7 @@ export const useAppStore = create<AppState>()(
             exerciseId: exId,
             weight: 0,
             reps: repTarget,
-            completed: false,
-          }));
+            completed: false }));
           toAppend.push({ exerciseId: exId, sets });
         }
         set((s) => {
@@ -586,9 +582,7 @@ export const useAppStore = create<AppState>()(
                 !cur /* first-creation just happened */ || cur.name === s.activeWorkout.name
                   ? sessionName
                   : s.activeWorkout.name,
-              exercises: [...s.activeWorkout.exercises, ...toAppend],
-            },
-          };
+              exercises: [...s.activeWorkout.exercises, ...toAppend] } };
         });
       },
 
@@ -600,13 +594,11 @@ export const useAppStore = create<AppState>()(
         const entry: BodyProfileEntry = {
           ...e,
           id: e.id || uid(),
-          createdAt: new Date().toISOString(),
-        };
+          createdAt: new Date().toISOString() };
         set((s) => ({
           bodyEntries: [entry, ...s.bodyEntries].sort((a, b) =>
             a.date < b.date ? 1 : a.date > b.date ? -1 : 0
-          ),
-        }));
+          ) }));
         return entry;
       },
       updateBodyEntry: (id, patch) =>
@@ -618,10 +610,8 @@ export const useAppStore = create<AppState>()(
                   ...b,
                   ...(patch.date ? { date: patch.date } : {}),
                   ...(patch.note !== undefined ? { note: patch.note } : {}),
-                  ...(patch.metrics ? { metrics: { ...b.metrics, ...patch.metrics } } : {}),
-                }
-          ),
-        })),
+                  ...(patch.metrics ? { metrics: { ...b.metrics, ...patch.metrics } } : {}) }
+          ) })),
       deleteBodyEntry: (id) =>
         set((s) => ({ bodyEntries: s.bodyEntries.filter((b) => b.id !== id) })),
 
@@ -636,9 +626,7 @@ export const useAppStore = create<AppState>()(
             totalSeconds: Math.max(1, Math.floor(seconds || 0)),
             remainingSeconds: Math.max(1, Math.floor(seconds || 0)),
             startedAt: Date.now(),
-            nextContext: context || null,
-          },
-        }),
+            nextContext: context || null } }),
       adjustRestTimer: (delta) =>
         set((s) => {
           if (!s.restTimer.active) return s;
@@ -659,14 +647,11 @@ export const useAppStore = create<AppState>()(
               startedAt:
                 s.restTimer.startedAt == null
                   ? s.restTimer.startedAt
-                  : Date.now() - (total - remaining) * 1000,
-            },
-          };
+                  : Date.now() - (total - remaining) * 1000 } };
         }),
       stopRestTimer: () =>
         set({
-          restTimer: { ...INITIAL_REST_TIMER },
-        }),
+          restTimer: { ...INITIAL_REST_TIMER } }),
 
       // ------------------------------
       // ACTIVE WORKOUT
@@ -717,9 +702,7 @@ export const useAppStore = create<AppState>()(
                         i18nInstance.language || get().settings.language || DEFAULT_LANGUAGE
                       );
                       return DEFAULT_SESSION_NAME_FALLBACK[canonical];
-                    })(),
-            },
-          };
+                    })() } };
         }),
       endWorkout: (note) => {
         // Double-calling guard
@@ -742,8 +725,7 @@ export const useAppStore = create<AppState>()(
           date: new Date().toISOString(),
           duration,
           exercises: exercisesWithSets,
-          note,
-        };
+          note };
         // — PR 扫描：endWorkout 时遍历所有完成集
         //   深度防御(经验698545): 所有持久化数组强制 ?? [] ，防止旧 vault/merge 未初始化时 undefined.filter / ... spread 闪退
         //
@@ -785,8 +767,7 @@ export const useAppStore = create<AppState>()(
                 reps: r,
                 date: today,
                 sessionId: session.id,
-                createdAt: new Date().toISOString(),
-              };
+                createdAt: new Date().toISOString() };
               collectedPRs.push(record);
               touch(record);
             }
@@ -797,8 +778,7 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           workouts: [session, ...(Array.isArray(s.workouts) ? s.workouts : [])],
           activeWorkout: null,
-          prRecords: collectedPRs.length > 0 ? [...collectedPRs, ...(Array.isArray(s.prRecords) ? s.prRecords : [])] : (Array.isArray(s.prRecords) ? s.prRecords : []),
-        }));
+          prRecords: collectedPRs.length > 0 ? [...collectedPRs, ...(Array.isArray(s.prRecords) ? s.prRecords : [])] : (Array.isArray(s.prRecords) ? s.prRecords : []) }));
         return { session, newPRs: collectedPRs };
       },
       cancelWorkout: () => set({ activeWorkout: null }),
@@ -818,17 +798,14 @@ export const useAppStore = create<AppState>()(
             exerciseId,
             weight: 0,
             reps: 0,
-            completed: false,
-          };
+            completed: false };
           return {
             activeWorkout: {
               ...s.activeWorkout,
               exercises: [
                 ...s.activeWorkout.exercises,
                 { exerciseId, sets: [firstSet] },
-              ],
-            },
-          };
+              ] } };
         }),
       removeExerciseFromActive: (exerciseId) =>
         set((s) => {
@@ -839,9 +816,7 @@ export const useAppStore = create<AppState>()(
               ...s.activeWorkout,
               exercises: (Array.isArray(s.activeWorkout.exercises) ? s.activeWorkout.exercises : []).filter(
                 (e) => e && String(e.exerciseId) !== targetId
-              ),
-            },
-          };
+              ) } };
         }),
       addSetToExercise: (exerciseId) =>
         set((s) => {
@@ -864,13 +839,9 @@ export const useAppStore = create<AppState>()(
                       exerciseId: targetId,
                       weight: Number(lastSet?.weight) || 0,
                       reps: Number(lastSet?.reps) || 0,
-                      completed: false,
-                    },
-                  ],
-                };
-              }),
-            },
-          };
+                      completed: false },
+                  ] };
+              }) } };
         }),
       removeSet: (exerciseId, setId) =>
         set((s) => {
@@ -884,11 +855,8 @@ export const useAppStore = create<AppState>()(
                 if (!e || String(e.exerciseId) !== targetId) return e;
                 return {
                   ...e,
-                  sets: (Array.isArray(e.sets) ? e.sets : []).filter((x) => x && String(x.id) !== targetSetId),
-                };
-              }),
-            },
-          };
+                  sets: (Array.isArray(e.sets) ? e.sets : []).filter((x) => x && String(x.id) !== targetSetId) };
+              }) } };
         }),
       updateSet: (exerciseId, setId, patch) =>
         set((s) => {
@@ -914,11 +882,8 @@ export const useAppStore = create<AppState>()(
                       next.completedAt = undefined;
                     }
                     return next;
-                  }),
-                };
-              }),
-            },
-          };
+                  }) };
+              }) } };
         }),
 
       // ------------------------------
@@ -964,8 +929,7 @@ export const useAppStore = create<AppState>()(
       lastSetsFor: (exerciseId) => {
         const safeWorkouts = Array.isArray(get().workouts) ? get().workouts : [];
         return lastSetsFor(safeWorkouts, String(exerciseId), {
-          countOnlyWorkingSets: get().settings.countOnlyWorkingSets,
-        });
+          countOnlyWorkingSets: get().settings.countOnlyWorkingSets });
       },
       weeklyProgress: () =>
         weeklyProgress(get().workouts, get().settings.weeklyGoal ?? 0, 1, new Date()),
@@ -975,7 +939,7 @@ export const useAppStore = create<AppState>()(
       // ------------------------------
       prRecords: [],
       checkAndRecordPR: (payload) => {
-        const { exerciseId, weight, reps, sessionId, note, forceDate } = payload || {} as any;
+        const { exerciseId, weight, reps, sessionId, note, forceDate } = payload || ({} as any);
         if (!exerciseId) return null;
         const safeWeight = Number(weight) || 0;
         const safeReps = Math.max(0, Math.floor(Number(reps) || 0));
@@ -992,8 +956,7 @@ export const useAppStore = create<AppState>()(
           date: forceDate && /^\d{4}-\d{2}-\d{2}$/.test(forceDate) ? forceDate : today,
           sessionId: sessionId ?? undefined,
           note: note ?? undefined,
-          createdAt: new Date().toISOString(),
-        };
+          createdAt: new Date().toISOString() };
         set((s) => ({ prRecords: [record, ...(Array.isArray(s.prRecords) ? s.prRecords : [])] }));
         return record;
       },
@@ -1029,19 +992,16 @@ export const useAppStore = create<AppState>()(
         const record: CustomExercise = {
           ...e,
           id: e.id && String(e.id).trim() ? String(e.id) : `custom-${uid()}`,
-          createdAt: new Date().toISOString(),
-        };
+          createdAt: new Date().toISOString() };
         set((s) => ({
-          customExercises: [record, ...(Array.isArray(s.customExercises) ? s.customExercises : [])],
-        }));
+          customExercises: [record, ...(Array.isArray(s.customExercises) ? s.customExercises : [])] }));
         return record;
       },
       updateCustomExercise: (id, patch) =>
         set((s) => ({
           customExercises: (Array.isArray(s.customExercises) ? s.customExercises : []).map((c) =>
             c && String(c.id) === String(id) ? { ...c, ...patch, id: c.id } : c
-          ),
-        })),
+          ) })),
       deleteCustomExercise: (id) =>
         set((s) => ({
           customExercises: (Array.isArray(s.customExercises) ? s.customExercises : []).filter(
@@ -1050,8 +1010,7 @@ export const useAppStore = create<AppState>()(
           // 联动清理收藏，否则收藏列表里会留下一个永远查不到名字的幽灵 id
           favoriteIds: (Array.isArray(s.favoriteIds) ? s.favoriteIds : []).filter(
             (f) => String(f) !== String(id)
-          ),
-        })),
+          ) })),
 
       // ------------------------------
       // BACKUP (v5) —— 纯文本，不落盘、不联网
@@ -1067,8 +1026,7 @@ export const useAppStore = create<AppState>()(
             pinnedTemplateIds: s.pinnedTemplateIds,
             bodyEntries: s.bodyEntries,
             prRecords: s.prRecords,
-            customExercises: s.customExercises,
-          })
+            customExercises: s.customExercises })
         );
       },
       importBackup: (text, mode = 'merge') => {
@@ -1085,8 +1043,7 @@ export const useAppStore = create<AppState>()(
             pinnedTemplateIds: incoming.pinnedTemplateIds,
             bodyEntries: incoming.bodyEntries,
             prRecords: incoming.prRecords,
-            customExercises: incoming.customExercises,
-          });
+            customExercises: incoming.customExercises });
           return { ok: true as const, summary: summarizeBackup(incoming), mode };
         }
 
@@ -1135,8 +1092,7 @@ export const useAppStore = create<AppState>()(
           };
         });
         return { ok: true as const, summary: summarizeBackup(incoming), mode };
-      },
-    }),
+      } }),
     {
       name: VAULT_KEY,
       version: PERSIST_VERSION,
@@ -1164,8 +1120,6 @@ export const useAppStore = create<AppState>()(
         pinnedTemplateIds: state.pinnedTemplateIds,
         bodyEntries: state.bodyEntries,
         prRecords: state.prRecords,
-        customExercises: state.customExercises,
-      }),
-    }
+        customExercises: state.customExercises }) }
   )
 );

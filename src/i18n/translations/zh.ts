@@ -272,7 +272,7 @@ export const zh = {
     openTemplates: '管理训练模板',
     openBody: '打开身体数据',
     about: '关于',
-    aboutBody: 'Choyeon Exercises 是一款无商业化内容的离线训练工具：分类浏览动作要领、收藏动作、记录重量×次数、训练历史统计。',
+    aboutBody: 'Choyeon Gym 是一款无商业化内容的离线训练工具：分类浏览动作要领、收藏动作、记录重量×次数、训练历史统计。',
     version: '版本',
     themeDark: '深色模式',
     themeLight: '浅色模式',

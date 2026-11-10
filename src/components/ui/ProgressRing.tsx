@@ -1,5 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+} from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import Animated, {
   useAnimatedProps,
@@ -8,7 +12,10 @@ import Animated, {
   WithSpringConfig,
 } from 'react-native-reanimated';
 import { useEffect } from 'react';
-import { useThemeColors, typography } from '@/theme';
+import {
+  useThemeColors,
+  typography,
+} from '@/theme';
 
 // ============================================================================
 // ProgressRing — circular SVG progress indicator.
@@ -170,7 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   label: {
-    fontWeight: '800',
+    fontWeight: '700',
     letterSpacing: 0.1,
   },
 });

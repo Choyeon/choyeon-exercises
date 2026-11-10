@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "Choyeon Exercises",
-    "slug": "ChoyeonExercises",
+    "name": "Choyeon Gym",
+    "slug": "ChoyeonGym",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "choyeon-exercises",
+    "scheme": "choyeon-gym",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.choyeon.exercises"
+      "bundleIdentifier": "com.choyeon.gym"
     },
     "android": {
-      "package": "com.choyeon.exercises",
+      "package": "com.choyeon.gym",
       "adaptiveIcon": {
         "backgroundColor": "#F2F2F4",
         "foregroundImage": "./assets/adaptive/ic_launcher_foreground.png",

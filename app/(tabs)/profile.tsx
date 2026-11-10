@@ -1,16 +1,36 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Switch, Alert, Platform } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Alert,
+  Platform,
+} from 'react-native';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
-import { useThemeColors, spacing, radius, layout, muscleColor as muscleColorOf } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  layout,
+  muscleColor as muscleColorOf,
+} from '@/theme';
 import { useAppStore } from '@/store/useAppStore';
 import { normalizeLanguage } from '@/i18n';
 import type { LanguageCode, WeightUnit, OneRmFormula } from '@/types';
 import { getAllExercisesSync } from '@/data/queries';
 import { displayNameZh } from '@/constants';
-import { WEEKLY_GOAL_PRESETS, ONE_RM_FORMULA_LABELS } from '@/constants/settings';
+import {
+  WEEKLY_GOAL_PRESETS,
+  ONE_RM_FORMULA_LABELS,
+} from '@/constants/settings';
 import { BackupSheet } from '@/components/BackupSheet';
 import { PlateConfigSheet } from '@/components/PlateConfigSheet';
 import {
@@ -23,7 +43,11 @@ import {
 } from '@/components/UIKit';
 import type { OptionPickerOption } from '@/components/UIKit';
 import { safeHaptic } from '@/utils/haptic';
-import { formatCompactCount, dateShort } from '@/utils/format';
+import { GroupedRows } from '@/components/apple';
+import {
+  formatCompactCount,
+  dateShort,
+} from '@/utils/format';
 
 // APP_VERSION is read from expo-constants manifest at runtime so this file
 // never drifts again.  The static literal here is used ONLY as a fallback
@@ -70,11 +94,8 @@ export default function ProfileScreen() {
   // ----------------------------------------------------------
   const {
     totalWorkouts,
-    totalExercises,
-    totalSets,
     totalVolume,
-    streak,
-  } = useMemo(() => {
+    streak } = useMemo(() => {
     const store = useAppStore.getState();
     let volAcc = 0;
     let setAcc = 0;
@@ -104,8 +125,7 @@ export default function ProfileScreen() {
       // Streak math lives only in the store to guarantee the same
       // "yesterday grace" semantics as the Workout tab; avoids the earlier
       // drift where Profile & Workout showed different streak numbers.
-      streak: store.streakDays(),
-    };
+      streak: store.streakDays() };
   }, [workouts]);
 
   // ----------------------------------------------------------
@@ -204,8 +224,7 @@ export default function ProfileScreen() {
         onPress: () => {
           safeHaptic('warning');
           resetAllData();
-        },
-      },
+        } },
     ]);
   };
 
@@ -275,8 +294,7 @@ export default function ProfileScreen() {
         sublabel:
           n === 0
             ? t('profile.goalNoneSub', { defaultValue: '只记录，不做达成度提醒' })
-            : t('profile.goalSub', { defaultValue: '一周内完成 {{n}} 次训练即达标', n }),
-      })),
+            : t('profile.goalSub', { defaultValue: '一周内完成 {{n}} 次训练即达标', n }) })),
     [t]
   );
 
@@ -285,8 +303,7 @@ export default function ProfileScreen() {
       (Object.keys(ONE_RM_FORMULA_LABELS) as OneRmFormula[]).map((k) => ({
         value: k,
         label: effectiveLang === 'zh' ? ONE_RM_FORMULA_LABELS[k].zh : ONE_RM_FORMULA_LABELS[k].en,
-        sublabel: t('profile.oneRmSub', { defaultValue: '影响 1RM 估算与 %1RM 反推' }),
-      })),
+        sublabel: t('profile.oneRmSub', { defaultValue: '影响 1RM 估算与 %1RM 反推' }) })),
     [t, effectiveLang]
   );
 
@@ -328,129 +345,113 @@ export default function ProfileScreen() {
 
   const styles = useMemo(() => StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
+    // Apple HIG：iPad / 宽屏下限制可读列宽，避免超长行距损害可读性。
+    readable: { width: '100%', maxWidth: layout.maxContentWidth, alignSelf: 'center' },
     content: { paddingHorizontal: layout.paddingHorizontal, paddingTop: spacing.sm },
-    header: { marginBottom: spacing.md, minWidth: 0, paddingHorizontal: spacing.md },
+    // Apple HIG 大标题：34pt / Bold / 紧字距
+    header: { marginBottom: spacing.lg, minWidth: 0, paddingHorizontal: spacing.xs },
     brandLine: {
       color: colors.primary,
-      letterSpacing: 1.4,
+      letterSpacing: 1.2,
       textTransform: 'uppercase',
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '800',
-      marginBottom: spacing.xs,
-      paddingLeft: spacing.xs,
-    },
+      fontSize: 12,
+      lineHeight: 15,
+      fontWeight: '700',
+      marginBottom: spacing.xs },
     title: {
-      fontSize: 28,
-      fontWeight: '900',
-      letterSpacing: -0.6,
-      lineHeight: 34,
-      color: colors.textPrimary,
-      paddingLeft: spacing.xs,
-    },
+      fontSize: 34,
+      fontWeight: '700',
+      letterSpacing: -0.5,
+      lineHeight: 41,
+      color: colors.textPrimary },
     heroCard: {
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       padding: spacing.lg,
-      marginBottom: spacing.xl,
-    },
+      marginBottom: spacing.xl },
     heroTop: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     avatarTray: {
       width: 54,
       height: 54,
       borderRadius: radius.lg,
       backgroundColor: colors.primary + '18',
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.primaryStroke,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     heroLeftCol: {
       flex: 1,
-      minWidth: 0,
-    },
+      minWidth: 0 },
     heroName: {
       fontSize: 20,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.3,
       color: colors.textPrimary,
       lineHeight: 26,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     heroSubtitle: {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '500',
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     heroRank: {
       alignItems: 'center',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: radius.md,
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: colors.surfaceBorder },
     heroRankVal: {
       fontSize: 20,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: -0.3,
       color: colors.accent,
-      lineHeight: 22,
-    },
+      lineHeight: 22 },
     heroRankLabel: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.6,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     heroStats: {
       flexDirection: 'row',
       paddingVertical: spacing.md,
       borderTopWidth: 1,
       borderBottomWidth: 1,
-      borderColor: colors.surfaceDivider,
-    },
+      borderColor: colors.surfaceDivider },
+    // iOS 分组列表的 section header：13pt 大写 tertiary 文本
     sectionHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: spacing.md,
-      marginTop: spacing.sm,
-      gap: spacing.md,
-    },
+      marginBottom: spacing.sm,
+      marginTop: spacing.xl,
+      gap: spacing.md },
     sectionTitle: {
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '800',
-      color: colors.textPrimary,
-      letterSpacing: -0.1,
-    },
-    sectionCount: {
-      fontSize: 10,
-      lineHeight: 14,
-      fontWeight: '800',
+      fontSize: 13,
+      lineHeight: 16,
+      fontWeight: '600',
       color: colors.textTertiary,
-      letterSpacing: 0.4,
-      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase' },
+    sectionCount: {
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
+      color: colors.textTertiary,
       flexDirection: 'row',
-      alignItems: 'center',
-    },
+      alignItems: 'center' },
     statsRow: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: spacing.sm,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.sm },
     pillBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -459,18 +460,16 @@ export default function ProfileScreen() {
       paddingVertical: spacing.xs + 1,
       borderRadius: 999,
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       minHeight: 30,
-      paddingRight: spacing.sm,
-    },
+      paddingRight: spacing.sm },
     pillBtnLabel: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textSecondary,
-      maxWidth: 140,
-    },
+      maxWidth: 140 },
     pillInfoAccent:    { color: colors.info },
     pillPrimaryAccent: { color: colors.primary },
     pillWarningAccent: { color: colors.warning },
@@ -483,104 +482,88 @@ export default function ProfileScreen() {
       backgroundColor: colors.danger + '0E',
       borderWidth: 1,
       borderColor: colors.danger + '28',
-      marginBottom: spacing.xl,
-    },
+      marginBottom: spacing.xl },
     dangerIconTray: {
       width: 36,
       height: 36,
       borderRadius: radius.md,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.danger + '18',
-    },
+      backgroundColor: colors.danger + '18' },
     dangerBody: {
-      flex: 1,
-    },
+      flex: 1 },
     dangerTitle: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.danger,
       letterSpacing: -0.1,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     dangerSub: {
       fontSize: 12,
       fontWeight: '500',
       color: colors.textSecondary,
-      lineHeight: 18,
-    },
+      lineHeight: 18 },
     versionRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.xs,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     versionText: {
       fontSize: 10,
       lineHeight: 14,
       fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.6,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     gapMd: { height: spacing.md },
     prCardRow: {
       flexDirection: 'row',
       marginHorizontal: -layout.paddingHorizontal + spacing.sm,
       paddingHorizontal: layout.paddingHorizontal - spacing.sm,
-      marginBottom: spacing.md,
-    },
+      marginBottom: spacing.md },
     prMiniCard: {
       width: 200,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       marginRight: spacing.sm,
       overflow: 'hidden',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     prTopStripe: {
       height: 4,
-      width: '100%',
-    },
+      width: '100%' },
     prCardBody: {
-      padding: spacing.md,
-    },
+      padding: spacing.md },
     prCardName: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
       letterSpacing: -0.1,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     prCardValueRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-end',
-      gap: spacing.xs,
-    },
+      gap: spacing.xs },
     prCardStats: {
       flex: 1,
-      minWidth: 0,
-    },
+      minWidth: 0 },
     prCardValue: {
       fontSize: 14,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textPrimary,
       letterSpacing: -0.1,
-      lineHeight: 18,
-    },
+      lineHeight: 18 },
     prCardDate: {
       fontSize: 10,
       lineHeight: 14,
       fontWeight: '600',
       color: colors.textTertiary,
-      marginTop: spacing.xs,
-    },
+      marginTop: spacing.xs },
     prDeleteBtn: {
       width: 28,
       height: 28,
@@ -590,8 +573,7 @@ export default function ProfileScreen() {
       backgroundColor: colors.danger + '10',
       borderWidth: 1,
       borderColor: colors.danger + '22',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     prPill: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -602,27 +584,24 @@ export default function ProfileScreen() {
       borderWidth: 1,
       backgroundColor: colors.accent + '12',
       borderColor: colors.accent + '30',
-      minHeight: 26,
-    },
+      minHeight: 26 },
     prPillText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.accent,
-      letterSpacing: 0.1,
-    },
+      letterSpacing: 0.1 },
     bottomInset: {
       height:
         Math.max(insets.bottom, spacing.xs)
-        + (Platform.OS === 'ios' ? 58 : 56)
-        + spacing.xxl,
-    },
-  }), [colors, insets.bottom]);
+        + layout.floatingTabBar.bottomGap
+        + layout.floatingTabBar.height
+        + layout.floatingTabBar.contentGap } }), [colors, insets.bottom]);
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
-        style={styles.screen}
+        style={[styles.screen, styles.readable]}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
@@ -682,6 +661,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        <GroupedRows>
         <SettingRow
           icon="translate"
           label={t('profile.language')}
@@ -726,6 +706,7 @@ export default function ProfileScreen() {
             </PressableScale>
           }
         />
+        </GroupedRows>
 
         {/* section: Training */}
         <SlabDivider accent={colors.muscle.back} />
@@ -736,6 +717,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        <GroupedRows>
         <SettingRow
           icon="timer-sand"
           label={t('profile.restTimerEnabled')}
@@ -820,6 +802,7 @@ export default function ProfileScreen() {
             </PressableScale>
           }
         />
+        </GroupedRows>
 
         {/* section: 目标与计算口径（v5） */}
         <SlabDivider accent={colors.muscle['upper legs']} />
@@ -832,12 +815,12 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
+        <GroupedRows>
         <SettingRow
           icon="calendar-check"
           label={t('profile.weeklyGoal', { defaultValue: '每周训练目标' })}
           desc={t('profile.weeklyGoalDesc', {
-            defaultValue: '决定首页与数据面板的「本周达成度」进度环。',
-          })}
+            defaultValue: '决定首页与数据面板的「本周达成度」进度环。' })}
           accent={colors.success}
           right={
             <PressableScale
@@ -858,8 +841,7 @@ export default function ProfileScreen() {
           icon="chart-line"
           label={t('profile.oneRmFormula', { defaultValue: '1RM 估算公式' })}
           desc={t('profile.oneRmFormulaDesc', {
-            defaultValue: '训练页的实时 1RM 徽标与强度百分比按此公式计算。',
-          })}
+            defaultValue: '训练页的实时 1RM 徽标与强度百分比按此公式计算。' })}
           accent={colors.accent}
           right={
             <PressableScale
@@ -880,8 +862,7 @@ export default function ProfileScreen() {
           icon="filter-outline"
           label={t('profile.countOnlyWorkingSets', { defaultValue: '容量只统计正式组' })}
           desc={t('profile.countOnlyWorkingSetsDesc', {
-            defaultValue: '开启后热身组不计入总容量与统计；关闭则全部计入。',
-          })}
+            defaultValue: '开启后热身组不计入总容量与统计；关闭则全部计入。' })}
           accent={colors.info}
           right={
             <Switch
@@ -898,8 +879,7 @@ export default function ProfileScreen() {
           icon="calculator-variant-outline"
           label={t('profile.plateConfig', { defaultValue: '杠铃配置' })}
           desc={t('profile.plateConfigDesc', {
-            defaultValue: '设置空杆重量与你健身房实际有的片，配重计算才准。',
-          })}
+            defaultValue: '设置空杆重量与你健身房实际有的片，配重计算才准。' })}
           accent={colors.warning}
           right={
             <PressableScale
@@ -919,6 +899,7 @@ export default function ProfileScreen() {
             </PressableScale>
           }
         />
+        </GroupedRows>
 
         {/* section: 数据备份（纯文本，零权限零联网） */}
         <SlabDivider accent={colors.muscle.chest} />
@@ -934,8 +915,7 @@ export default function ProfileScreen() {
           icon="database-export-outline"
           label={t('profile.backup', { defaultValue: '导出 / 导入数据' })}
           desc={t('profile.backupDesc', {
-            defaultValue: '全部数据都在本机。导出为一段文本自行保存；换机时贴回即可恢复。',
-          })}
+            defaultValue: '全部数据都在本机。导出为一段文本自行保存；换机时贴回即可恢复。' })}
           accent={colors.primary}
           right={
             <PressableScale
@@ -1032,8 +1012,7 @@ export default function ProfileScreen() {
           label={t('warmup.openFromProfile', { defaultValue: 'Open Warmup' })}
           desc={t('warmup.emptyHint', {
             defaultValue:
-              'Dynamic warmup before training + static stretches post-workout to reduce injury risk.',
-          })}
+              'Dynamic warmup before training + static stretches post-workout to reduce injury risk.' })}
           accent={colors.info}
           right={
             <PressableScale
@@ -1078,12 +1057,14 @@ export default function ProfileScreen() {
                   router.push('/(tabs)/workout' as any);
                 }}
                 style={[styles.pillBtn, { backgroundColor: colors.info + '12', borderColor: colors.info + '30' }]}
+                hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel={t('a11y.startWorkout')}
               >
                 <Text style={[styles.pillBtnLabel, { color: colors.info }]}>
-                  Start →
+                  {t('home.startWorkout')}
                 </Text>
+                <Icon name="chevron-right" size={11} color={colors.info} />
               </PressableScale>
             }
           />
@@ -1103,8 +1084,7 @@ export default function ProfileScreen() {
                 weight: pr.weight,
                 units: settings.units,
                 reps: pr.reps,
-                date: dateShort(pr.date),
-              });
+                date: dateShort(pr.date) });
               // Remove 🏆 prefix if present (cleaner compact card display)
               const cleanedText = typeof bestText === 'string'
                 ? bestText.replace(/^🏆\s*/u, '')
@@ -1139,14 +1119,12 @@ export default function ProfileScreen() {
                                   safeHaptic('success');
                                   toast.show({
                                     title: t('pr.deleted') || 'PR deleted',
-                                    variant: 'success',
-                                  });
-                                },
-                              },
+                                    variant: 'success' });
+                                } },
                             ]
                           );
                         }}
-                        hitSlop={4}
+                        hitSlop={8}
                         style={styles.prDeleteBtn}
                         scaleTo={0.92}
                         accessibilityRole="button"
@@ -1315,8 +1293,7 @@ function SettingRow({
   label,
   desc,
   accent,
-  right,
-}: {
+  right }: {
   icon: string;
   label: string;
   desc?: string;
@@ -1325,51 +1302,48 @@ function SettingRow({
 }) {
   const colors = useThemeColors();
   const s = useMemo(() => StyleSheet.create({
+    // iOS 分组行：左图标托盘 + 标题/副标题 + 右侧控件，无独立卡片边框。
     sRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: spacing.lg,
+      minHeight: 44,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
       backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: radius.lg,
-      marginBottom: spacing.sm,
-      gap: spacing.sm,
-    },
+      gap: spacing.md },
     sIcon: {
-      width: 38,
-      height: 38,
-      borderRadius: radius.md,
+      width: 30,
+      height: 30,
+      borderRadius: radius.sm,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     sBody: {
       flex: 1,
-      minWidth: 0,
-      paddingRight: spacing.sm,
-    },
+      minWidth: 0 },
     sLabel: {
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '800',
+      fontSize: 17,
+      lineHeight: 22,
+      fontWeight: '400',
       color: colors.textPrimary,
-      letterSpacing: -0.1,
-      marginBottom: spacing.xs,
-    },
+      letterSpacing: -0.2 },
     sDesc: {
-      fontSize: 12,
-      fontWeight: '500',
-      color: colors.textSecondary,
+      fontSize: 13,
       lineHeight: 18,
-    },
-  }), [colors]);
+      fontWeight: '400',
+      color: colors.textSecondary,
+      marginTop: 1 } }), [colors]);
   const accentColor = accent ?? colors.primary;
   return (
-    <View style={s.sRow}>
+    <View
+      style={s.sRow}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={desc ? `${label}, ${desc}` : label}
+    >
       <View
         style={[
           s.sIcon,
-          { backgroundColor: accentColor + '16' },
+          { backgroundColor: accentColor + '1A' },
         ]}
       >
         <Icon name={icon} size={16} color={accentColor} />
@@ -1393,8 +1367,7 @@ function InfoCard({
   icon,
   title,
   desc,
-  accent,
-}: {
+  accent }: {
   icon: string;
   title: string;
   desc: string;
@@ -1408,10 +1381,9 @@ function InfoCard({
       padding: spacing.lg,
       backgroundColor: colors.surface,
       borderRadius: radius.lg,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      marginBottom: spacing.sm,
-    },
+      marginBottom: spacing.sm },
     left: {
       width: 36,
       height: 36,
@@ -1419,26 +1391,21 @@ function InfoCard({
       borderWidth: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      flexShrink: 0,
-    },
+      flexShrink: 0 },
     body: {
       flex: 1,
-      minWidth: 0,
-    },
+      minWidth: 0 },
     title: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: -0.1,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     desc: {
       fontSize: 12,
       fontWeight: '500',
       color: colors.textSecondary,
-      lineHeight: 18,
-    },
-  }), [colors]);
+      lineHeight: 18 } }), [colors]);
   return (
     <View style={i.card}>
       <View

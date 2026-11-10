@@ -7,7 +7,10 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Animated, {
   useSharedValue,
@@ -18,10 +21,15 @@ import Animated, {
   Easing,
   interpolate,
   Extrapolation,
-  cancelAnimation,
-} from 'react-native-reanimated';
+  cancelAnimation } from 'react-native-reanimated';
 import type { BodyPart, Exercise, PlanTemplate } from '@/types';
-import { useThemeColors, spacing, radius, layout, strokeFromColors } from '@/theme';
+import {
+  useThemeColors,
+  spacing,
+  radius,
+  layout,
+  strokeFromColors,
+} from '@/theme';
 import type { Colors } from '@/theme';
 import {
   PressableScale,
@@ -33,7 +41,6 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { safeHaptic } from '@/utils/haptic';
 import {
-  BODY_PART_LABELS,
   getImageUrl,
   iconForBodyPart,
   iconForEquipment,
@@ -74,26 +81,29 @@ function createHomeStyles(
 ) {
   // —— 统一走 theme 令牌，不再本文件手写 rgba ——
   const { isDark, frameStroke, accentStroke, softShadow } = strokeFromColors(colors);
-  // 底部避让 = 动态 safe area + 真实 tab 内容高度(56/58) + 预留 24px 呼吸(不让最后一卡贴边)。
-  // 不能再用 layout.tabBarHeight 硬编码 —— tabs/_layout 的 tabBar 高度现在是动态(随insets变)。
+  // 底部避让 = 安全区 + 悬浮玻璃胶囊高度 + 间距 + 呼吸空间。
+  // iOS 26 的 Tab 栏是浮在内容之上的玻璃胶囊，不再是贴边不透明条。
   const bottomPad = Math.max(bottomInset, spacing.xs)
-    + (Platform.OS === 'ios' ? 58 : 56)
-    + spacing.xl;
+    + layout.floatingTabBar.bottomGap
+    + layout.floatingTabBar.height
+    + layout.floatingTabBar.contentGap;
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.bg },
     scroll: {
       paddingTop: spacing.md,
       // 注意：ScrollView 外层 style.paddingBottom 只影响容器边框与可视区域的距离，
       // 不会让最后一屏内容往下推。真正的底部tabBar避让必须写在 contentContainerStyle（下面 scrollContent 里）。
-    },
+      // Apple HIG：iPad / 宽屏下限制可读列宽，避免超长行距损害可读性。
+      width: '100%',
+      maxWidth: layout.maxContentWidth,
+      alignSelf: 'center' },
     scrollContent: {
       paddingHorizontal: layout.paddingHorizontal,
       paddingTop: spacing.md,
       // ↓ 关键：把底部避让写在 scrollContent（contentContainerStyle），
       // 才能让 03 浏览完整动作库 CTA 卡片的底部在滚到末端时不被 floating tabBar 压住。
       paddingBottom: bottomPad,
-      gap: spacing.xl,
-    },
+      gap: spacing.xl },
 
     // ===== HERO =====
     heroRow: { gap: spacing.md },
@@ -101,121 +111,100 @@ function createHomeStyles(
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     greetingCol: { flex: 1, minWidth: 0, gap: spacing.xs, paddingHorizontal: spacing.md },
     statusPill: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: hasActiveWorkout ? colors.primary : colors.surfaceBorder,
-      backgroundColor: hasActiveWorkout ? colors.primary + '1A' : colors.surface,
-    },
+      backgroundColor: hasActiveWorkout ? colors.primary + '1A' : colors.surface },
     statusPillText: {
-      fontSize: 10,
-      lineHeight: 14,
-      fontWeight: '900',
-      letterSpacing: 0.6,
-      color: hasActiveWorkout ? colors.primary : colors.textSecondary,
-    },
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '600',
+      letterSpacing: -0.1,
+      color: hasActiveWorkout ? colors.primary : colors.textSecondary },
     megaTitle: {
       fontSize: 34,
-      fontWeight: '900',
-      letterSpacing: -1.4,
-      lineHeight: 36,
+      fontWeight: '700',
+      letterSpacing: -0.5,
+      lineHeight: 41,
       color: colors.textPrimary,
-      includeFontPadding: false,
-      paddingLeft: spacing.xs,
-    },
+      includeFontPadding: false },
     megaTitleAccent: { color: colors.primary },
     statLine: {
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: spacing.sm,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     statNum: {
       fontSize: 12,
       lineHeight: 16,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.5,
-      color: colors.primary,
-    },
+      color: colors.primary },
     statDash: {
       flex: 0,
       width: 22,
       height: 2,
-      backgroundColor: colors.textSecondary + '66',
-    },
+      backgroundColor: colors.textSecondary + '66' },
     statText: {
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '700',
       letterSpacing: 0.2,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
 
-    // ===== Neo-brutalist CTA card (开始/继续训练) — 保留对比但柔化 3→2px 描边 =====
+    // ===== iOS filled CTA (开始/继续训练) =====
     ctaCard: {
       marginTop: spacing.sm,
-      borderRadius: radius.xl,
-      borderWidth: 2,
-      borderColor: accentStroke,
-      backgroundColor: colors.primary + (isDark ? '' : 'F2'),
+      borderRadius: radius.lg,
+      backgroundColor: colors.primary,
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.xl,
-      ...softShadow,
-      elevation: 3,
+      paddingVertical: spacing.lg,
+      minHeight: 68,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: spacing.md,
-    },
-    ctaTextCol: { flex: 1, minWidth: 0, gap: spacing.xs },
+      gap: spacing.md },
+    ctaTextCol: { flex: 1, minWidth: 0, gap: 2 },
     ctaLabel: {
       fontSize: 20,
       lineHeight: 26,
-      fontWeight: '900',
-      color: isDark ? '#07090C' : '#FFFFFF',
-      letterSpacing: -0.3,
-    },
+      fontWeight: '700',
+      color: colors.textInverse,
+      letterSpacing: -0.3 },
     ctaSubLabel: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '800',
-      letterSpacing: 1,
-      color: isDark ? 'rgba(7,9,12,0.75)' : 'rgba(255,255,255,0.82)',
-    },
+      fontSize: 13,
+      lineHeight: 17,
+      fontWeight: '400',
+      letterSpacing: -0.1,
+      color: colors.textInverse + (isDark ? 'A6' : 'CC') },
     ctaPlay: {
-      width: 46,
-      height: 46,
+      width: 40,
+      height: 40,
       borderRadius: radius.pill,
-      borderWidth: 2,
-      borderColor: accentStroke,
-      backgroundColor: isDark ? '#FFFFFF' : '#101418',
+      backgroundColor: colors.textInverse + '26',
       alignItems: 'center',
-      justifyContent: 'center',
-      ...softShadow,
-    },
+      justifyContent: 'center' },
 
     // ===== Search wrap (neo 降柔：2.5→1.5px 描边 + blur shadow) =====
     searchWrap: {
       borderRadius: radius.xl,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       ...softShadow,
       elevation: 2,
-      backgroundColor: colors.surface,
-    },
+      backgroundColor: colors.surface },
     searchFakeInput: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.sm,
       paddingHorizontal: spacing.lg,
       height: 48,
-      borderRadius: radius.xl - 2,
-    },
+      borderRadius: radius.xl - 2 },
     searchFakeInputPlaceholder: {
       flex: 1,
       minWidth: 0,
@@ -223,8 +212,7 @@ function createHomeStyles(
       fontSize: 15,
       lineHeight: 20,
       fontWeight: '500',
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     searchFakeInputFilled: {
       flex: 1,
       minWidth: 0,
@@ -232,178 +220,147 @@ function createHomeStyles(
       fontSize: 15,
       lineHeight: 20,
       fontWeight: '600',
-      letterSpacing: -0.1,
-    },
+      letterSpacing: -0.1 },
     searchClearBtn: {
       width: 22,
       height: 22,
       borderRadius: 11,
       backgroundColor: colors.surfaceElevated,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
 
-    // ===== Section Header — 序号方块 stroke 2→1.5 accent =====
+    // ===== Section Header — iOS 分组列表样式：13pt 大写 tertiary 小标题 =====
     sectionHead: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.sm,
-      marginBottom: spacing.md,
-    },
+      justifyContent: 'space-between',
+      gap: spacing.md,
+      marginBottom: spacing.sm },
     sectionIndexTag: {
-      width: 24,
-      height: 24,
-      borderRadius: radius.sm,
-      borderWidth: 1.5,
-      borderColor: accentStroke,
-      backgroundColor: colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+      display: 'none' },
     sectionIndexText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.2,
-      color: isDark ? '#07090C' : '#FFFFFF',
-    },
+      color: colors.textInverse },
     sectionTitle: {
       flex: 1,
-      fontSize: 16,
-      lineHeight: 22,
-      fontWeight: '900',
-      letterSpacing: -0.1,
-      color: colors.textPrimary,
-    },
+      fontSize: 13,
+      lineHeight: 16,
+      fontWeight: '600',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+      color: colors.textTertiary },
     sectionRule: {
-      flex: 1,
-      height: StyleSheet.hairlineWidth,
-      backgroundColor: colors.surfaceDivider,
-      marginHorizontal: spacing.md,
-      alignSelf: 'center',
-      opacity: 0.9,
-    },
+      display: 'none' },
     // ---- 本周目标进度条 ----
     weekCard: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
       backgroundColor: colors.surface,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       borderRadius: radius.lg,
       padding: spacing.md,
-      marginBottom: spacing.lg,
-    },
+      marginBottom: spacing.lg },
     weekIconTray: {
       width: 38,
       height: 38,
       borderRadius: radius.md,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.success + '18',
-    },
+      backgroundColor: colors.success + '18' },
     weekBody: { flex: 1, minWidth: 0 },
     weekTitle: {
       fontSize: 13,
       lineHeight: 17,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textPrimary,
-      marginBottom: spacing.xs,
-    },
+      marginBottom: spacing.xs },
     weekTrack: {
       height: 6,
       borderRadius: 3,
       backgroundColor: colors.surfaceElevated,
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     weekFill: { height: '100%', borderRadius: 3, backgroundColor: colors.success },
     weekMeta: {
       marginTop: spacing.xs - 1,
       fontSize: 11,
       lineHeight: 15,
       fontWeight: '600',
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     sectionCountTag: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      backgroundColor: colors.surface,
-    },
+      backgroundColor: colors.surface },
     sectionCountText: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.3,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     sectionSubHead: {
       marginTop: spacing.xs,
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '700',
-      letterSpacing: 0.2,
-      color: colors.textTertiary,
-      marginLeft: 24 + spacing.sm,
-    },
+      marginBottom: spacing.sm,
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '400',
+      letterSpacing: -0.1,
+      color: colors.textSecondary },
 
     // ===== Quick entries: 3 列瓷片（最突兀的块 → 最大力度柔化 2.5→1.5 描边 + softShadow）=====
     quickGrid: {
       flexDirection: 'row',
       gap: spacing.md,
-      marginTop: spacing.xs,
-    },
+      marginTop: spacing.xs },
     quickTile: {
       flex: 1,
       borderRadius: radius.xl,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       backgroundColor: colors.surface,
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.md,
       gap: spacing.sm,
       ...softShadow,
-      elevation: 2,
-    },
+      elevation: 2 },
     quickIconWrap: {
       width: 40,
       height: 40,
       borderRadius: radius.lg,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       // 边框色由 JSX 覆盖（按肌群/accent/info 上色），这里给个兜底
       borderColor: frameStroke,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     quickTitle: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     quickHint: {
       fontSize: 10,
       lineHeight: 14,
       fontWeight: '700',
       letterSpacing: 0.2,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
 
     // ===== Muscle Atlas 5x2 compact tiles（2→1.5 描边, shadow 柔化）=====
     atlasGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
-      marginTop: spacing.sm,
-    },
+      marginTop: spacing.sm },
     atlasTile: {
       width: `${100 / 2 - spacing.sm / 2}%`,
       borderRadius: radius.lg,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       backgroundColor: colors.surface,
       padding: spacing.sm,
@@ -412,44 +369,38 @@ function createHomeStyles(
       justifyContent: 'space-between',
       gap: spacing.sm,
       ...softShadow,
-      elevation: 2,
-    },
+      elevation: 2 },
     atlasIconWrap: {
       width: 32,
       height: 32,
       borderRadius: radius.md,
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     atlasInfo: { flex: 1, minWidth: 0, gap: spacing.xs },
     atlasLabel: {
       fontSize: 13,
       lineHeight: 18,
-      fontWeight: '800',
-      color: colors.textPrimary,
-    },
+      fontWeight: '700',
+      color: colors.textPrimary },
     atlasCount: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.3,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
     indexChip: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
-      backgroundColor: colors.surface,
-    },
+      backgroundColor: colors.surface },
     indexChipText: {
       fontSize: 9,
       lineHeight: 12,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.4,
-      color: colors.textTertiary,
-    },
+      color: colors.textTertiary },
 
     // ===== Recommended horizontal swiper（2.5→2 描边, shadow柔化）=====
     recSwiperWrap: {
@@ -464,53 +415,46 @@ function createHomeStyles(
     recCard: {
       width: 220,
       borderRadius: radius.xl,
-      borderWidth: 2,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       backgroundColor: colors.surface,
       overflow: 'hidden',
       ...softShadow,
-      elevation: 3,
-    },
+      elevation: 3 },
     recThumb: {
       width: '100%',
       aspectRatio: 4 / 3,
-      borderBottomWidth: 1.5,
-      borderBottomColor: frameStroke,
-    },
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: frameStroke },
     recCardBody: {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.md,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     recTitle: {
       fontSize: 14,
       lineHeight: 18,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textPrimary,
-      flexShrink: 1,
-    },
+      flexShrink: 1 },
     recMeta: {
       fontSize: 10,
       lineHeight: 14,
       fontWeight: '700',
       letterSpacing: 0.2,
       color: colors.textSecondary,
-      flexShrink: 1,
-    },
+      flexShrink: 1 },
     recTagsRow: {
       flexDirection: 'row',
       flexWrap: 'nowrap',
       gap: spacing.xs,
       minWidth: 0,
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     recActions: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginTop: spacing.xs,
-      gap: spacing.sm,
-    },
+      gap: spacing.sm },
     recAddBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -518,33 +462,30 @@ function createHomeStyles(
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.sm,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.primary,
       backgroundColor: colors.primary + '18',
       flex: 1,
       minWidth: 0,
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     recAddBtnText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.2,
       color: colors.primary,
       flexShrink: 1,
       minWidth: 0,
-      maxWidth: 104,
-    },
+      maxWidth: 104 },
     recFavBtn: {
       width: 34,
       height: 34,
       borderRadius: radius.pill,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      backgroundColor: colors.bg,
-    },
+      backgroundColor: colors.bg },
 
     // ===== Shuffle pill =====
     rightPill: {
@@ -554,74 +495,61 @@ function createHomeStyles(
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: radius.pill,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
-      backgroundColor: colors.surface,
-    },
+      backgroundColor: colors.surface },
     rightPillText: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       letterSpacing: 0.3,
-      color: colors.textSecondary,
-    },
+      color: colors.textSecondary },
 
-    // ===== Library mega CTA（你截图的 03 浏览完整动作库 卡 → 边框 3→2 柔化）=====
+    // ===== Library CTA — iOS 列表行（inset grouped，无阴影）=====
     libCard: {
-      borderRadius: radius.xl,
-      borderWidth: 2,
+      borderRadius: radius.lg,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: frameStroke,
       backgroundColor: colors.surface,
-      padding: spacing.lg,
-      ...softShadow,
-      elevation: 3,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      minHeight: 60,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     libIcon: {
-      width: 62,
-      height: 62,
-      borderRadius: radius.xl,
-      borderWidth: 1.5,
-      borderColor: accentStroke,
+      width: 34,
+      height: 34,
+      borderRadius: radius.sm,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: colors.primary + '1F',
-    },
-    libBody: { flex: 1, minWidth: 0, gap: spacing.xs },
+      backgroundColor: colors.primary + '1A' },
+    libBody: { flex: 1, minWidth: 0, gap: 2 },
     libTitle: {
       fontSize: 17,
       lineHeight: 22,
-      fontWeight: '900',
+      fontWeight: '600',
       letterSpacing: -0.2,
-      color: colors.textPrimary,
-    },
+      color: colors.textPrimary },
     libSub: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '700',
-      letterSpacing: 0.2,
-      color: colors.textSecondary,
-    },
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '400',
+      letterSpacing: -0.1,
+      color: colors.textSecondary },
     libCtaPill: {
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.md,
-      borderRadius: radius.pill,
-      backgroundColor: colors.primary,
-      borderWidth: 1.5,
-      borderColor: accentStroke,
-      ...softShadow,
-      elevation: 2,
-    },
+      minHeight: 32,
+      justifyContent: 'center',
+      borderRadius: radius.sm,
+      backgroundColor: colors.primary + '1A' },
     libCtaText: {
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '900',
-      letterSpacing: 0.6,
-      color: isDark ? '#07090C' : '#FFFFFF',
-    },
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '600',
+      letterSpacing: -0.1,
+      color: colors.primary },
 
     // ===== Pinned Templates 横滑卡 (v1.1.0 MVP) =====
     pinHeaderRow: {
@@ -629,29 +557,25 @@ function createHomeStyles(
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: spacing.sm,
-      gap: spacing.md,
-    },
-    pinTitle: { fontSize: 14, lineHeight: 18, fontWeight: '900', color: colors.textPrimary },
+      gap: spacing.md },
+    pinTitle: { fontSize: 14, lineHeight: 18, fontWeight: '700', color: colors.textPrimary },
     pinCount: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textTertiary,
       letterSpacing: 0.4,
-      textTransform: 'uppercase',
-    },
+      textTransform: 'uppercase' },
     pinSwiperWrap: {
-      marginHorizontal: -layout.paddingHorizontal,
-    },
+      marginHorizontal: -layout.paddingHorizontal },
     pinSwiperContent: {
       paddingHorizontal: layout.paddingHorizontal,
       paddingVertical: spacing.xs,
-      gap: spacing.md,
-    },
+      gap: spacing.md },
     pinCard: {
       width: 260,
       borderRadius: radius.xl,
-      borderWidth: 1.5,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: accentStroke,
       backgroundColor: colors.surface,
       padding: spacing.md,
@@ -659,8 +583,7 @@ function createHomeStyles(
       elevation: 3,
       gap: spacing.sm,
       position: 'relative',
-      overflow: 'hidden',
-    },
+      overflow: 'hidden' },
     pinStar: {
       position: 'absolute',
       top: spacing.sm,
@@ -670,25 +593,22 @@ function createHomeStyles(
       borderRadius: 11,
       backgroundColor: colors.accent + '22',
       alignItems: 'center',
-      justifyContent: 'center',
-    },
+      justifyContent: 'center' },
     pinNum: {
       fontSize: 10,
       lineHeight: 14,
-      fontWeight: '900',
+      fontWeight: '700',
       letterSpacing: 0.6,
-      color: colors.accent,
-    },
+      color: colors.accent },
     pinCardTitle: {
       fontSize: 16,
       lineHeight: 22,
-      fontWeight: '900',
+      fontWeight: '700',
       color: colors.textPrimary,
       letterSpacing: -0.1,
       maxWidth: 200,
       minWidth: 0,
-      flexShrink: 1,
-    },
+      flexShrink: 1 },
     pinCardDesc: {
       fontSize: 11,
       lineHeight: 15,
@@ -696,28 +616,25 @@ function createHomeStyles(
       color: colors.textSecondary,
       maxWidth: 220,
       minWidth: 0,
-      flexShrink: 1,
-    },
+      flexShrink: 1 },
     pinBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
     pinBadge: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
       borderRadius: 999,
       backgroundColor: colors.surfaceElevated,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: colors.surfaceBorder,
       flexShrink: 1,
-      maxWidth: 180,
-    },
+      maxWidth: 180 },
     pinBadgeText: {
       fontSize: 9,
       lineHeight: 12,
-      fontWeight: '800',
+      fontWeight: '700',
       color: colors.textSecondary,
       letterSpacing: 0.2,
       minWidth: 0,
-      flexShrink: 1,
-    },
+      flexShrink: 1 },
     pinBtnRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs },
     pinBtnStart: {
       flex: 1,
@@ -728,39 +645,33 @@ function createHomeStyles(
       paddingVertical: spacing.sm,
       borderRadius: radius.md,
       backgroundColor: colors.primary,
-      borderWidth: 1.5,
-      borderColor: accentStroke,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: accentStroke },
     pinBtnStartText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '900',
-      color: isDark ? '#07090C' : '#FFFFFF',
-      letterSpacing: 0.3,
-    },
+      fontWeight: '700',
+      color: colors.textInverse,
+      letterSpacing: 0.3 },
     pinBtnOpen: {
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: radius.md,
       backgroundColor: colors.bg,
-      borderWidth: 1.5,
-      borderColor: frameStroke,
-    },
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: frameStroke },
     pinBtnOpenText: {
       fontSize: 11,
       lineHeight: 14,
-      fontWeight: '900',
-      color: colors.textSecondary,
-    },
-  });
+      fontWeight: '700',
+      color: colors.textSecondary } });
 }
 
 export type HomeStyles = ReturnType<typeof createHomeStyles>;
 
 const ANIM_EASE = {
   duration: 520,
-  easing: Easing.bezier(0.22, 1, 0.36, 1),
-};
+  easing: Easing.bezier(0.22, 1, 0.36, 1) };
 
 function seededRand(n: number) {
   // 轻量：不引入随机种子库；使用Date天的日种子让当日不变，明天变化
@@ -809,8 +720,7 @@ const withDelay: any =
 const StaggerIn = memo(function StaggerIn({
   index,
   trigger,
-  children,
-}: {
+  children }: {
   index: number;
   trigger: number;
   children: React.ReactNode;
@@ -830,10 +740,8 @@ const StaggerIn = memo(function StaggerIn({
     opacity: progress.value,
     transform: [
       {
-        translateY: interpolate(progress.value, [0, 1], [18, 0], Extrapolation.CLAMP),
-      },
-    ],
-  }));
+        translateY: interpolate(progress.value, [0, 1], [18, 0], Extrapolation.CLAMP) },
+    ] }));
 
   return <Animated.View style={anim}>{children}</Animated.View>;
 });
@@ -854,8 +762,7 @@ function HomeSectionHeader({
   subtitle,
   trigger,
   animIdx,
-  styles,
-}: {
+  styles }: {
   index: string;
   title: string;
   right?: React.ReactNode;
@@ -948,8 +855,7 @@ export default function HomeScreen() {
       safeHaptic('light');
       router.push({
         pathname: '/(tabs)/library',
-        params: params as any,
-      } as Parameters<typeof router.push>[0]);
+        params: params as any } as Parameters<typeof router.push>[0]);
     },
     [router],
   );
@@ -959,8 +865,7 @@ export default function HomeScreen() {
       safeHaptic('light');
       router.push({
         pathname: '/exercise/[id]',
-        params: { id },
-      } as Parameters<typeof router.push>[0]);
+        params: { id } } as Parameters<typeof router.push>[0]);
     },
     [router],
   );
@@ -1008,8 +913,7 @@ export default function HomeScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const breathAnim = useAnimatedStyle(() => ({
-    transform: [{ scale: breathScale.value }],
-  }));
+    transform: [{ scale: breathScale.value }] }));
 
   // ===== Render pieces =====
   const bodyPartCounts = useMemo(() => store.countByBodyPart(), [store]);
@@ -1102,7 +1006,7 @@ export default function HomeScreen() {
                   <Icon
                     name="play"
                     size={20}
-                    color={colors.bg === '#07090C' ? '#07090C' : '#FFFFFF'}
+                    color={colors.primary}
                   />
                 </View>
               </Animated.View>
@@ -1132,8 +1036,7 @@ export default function HomeScreen() {
                     {t('home.weekGoal', {
                       defaultValue: '本周 {{done}} / {{goal}} 次',
                       done: weekStat.done,
-                      goal: weekStat.goal,
-                    })}
+                      goal: weekStat.goal })}
                     {weekStat.done >= weekStat.goal
                       ? ` · ${t('home.weekGoalDone', { defaultValue: '已达标' })}`
                       : ''}
@@ -1149,8 +1052,7 @@ export default function HomeScreen() {
                   <Text style={s.weekMeta} numberOfLines={1}>
                     {t('home.weekGoalStreak', {
                       defaultValue: '连续训练 {{n}} 天',
-                      n: streak,
-                    })}
+                      n: streak })}
                   </Text>
                 </>
               ) : (
@@ -1160,8 +1062,7 @@ export default function HomeScreen() {
                   </Text>
                   <Text style={s.weekMeta} numberOfLines={1}>
                     {t('home.weekGoalSetHint', {
-                      defaultValue: '去设置里定一个每周目标，首页会显示达成度。',
-                    })}
+                      defaultValue: '去设置里定一个每周目标，首页会显示达成度。' })}
                   </Text>
                 </>
               )}
@@ -1289,7 +1190,7 @@ export default function HomeScreen() {
                           <Icon
                             name="play"
                             size={12}
-                            color={colors.bg === '#07090C' ? '#07090C' : '#FFFFFF'}
+                            color={colors.textInverse}
                           />
                           <Text style={s.pinBtnStartText}>{t('templates.start')}</Text>
                         </PressableScale>
@@ -1590,7 +1491,7 @@ export default function HomeScreen() {
             accessibilityLabel={t('home.libraryEntry')}
           >
             <View style={s.libIcon} pointerEvents="none">
-              <Icon name="book-open-page-variant" size={26} color={colors.primary} />
+              <Icon name="book-open-page-variant" size={18} color={colors.primary} />
             </View>
             <View style={s.libBody}>
               <Text style={s.libTitle} numberOfLines={1}>
